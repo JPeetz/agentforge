@@ -108,16 +108,17 @@
       <h1>AgentForge</h1>
       <p class="af-login-subtitle">Capability-secured agent orchestration.<br>Built in Go. Forged in volcanic glass.</p>
 
-      <form class="af-login-form" hx-post="/api/auth/login" hx-target="#login-error">
-        <input type="password" name="token" class="af-input" placeholder="Enter your API token" autofocus>
+      <form class="af-login-form" id="login-form">
+        <input type="text" name="username" class="af-input" placeholder="Username" required autocomplete="username">
+        <input type="password" name="password" class="af-input" placeholder="Password" required autocomplete="current-password">
         <button type="submit" class="af-btn af-btn-primary af-login-btn">Authenticate</button>
       </form>
 
       <div id="login-error" style="min-height: 24px; margin-top: 12px;"></div>
 
       <div class="af-login-demo">
-        <p>First time?</p>
-        <code>agentforge token generate</code>
+        <p>Default admin credentials are derived from your config secret.</p>
+        <code>Username: admin</code>
       </div>
 
       <p class="af-login-footer">AgentForge v0.1.0 · BUSL-1.1</p>
@@ -125,5 +126,45 @@
   </div>
 
   <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+  <script>
+    document.getElementById('login-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const errEl = document.getElementById('login-error');
+      errEl.innerHTML = '';
+
+      const username = this.username.value.trim();
+      const password = this.password.value;
+
+      if (!username || !password) {
+        errEl.innerHTML = '<div style="color:#EF4444;font-size:13px">Username and password are required.</div>';
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          errEl.innerHTML = '<div style="color:#EF4444;font-size:13px">' + (data.error || 'Login failed') + '</div>';
+          return;
+        }
+
+        // Store tokens
+        localStorage.setItem('af_access_token', data.accessToken);
+        localStorage.setItem('af_refresh_token', data.refreshToken);
+        localStorage.setItem('af_user', JSON.stringify(data.user));
+
+        // Redirect to dashboard
+        window.location.href = '/dashboard';
+      } catch (err) {
+        errEl.innerHTML = '<div style="color:#EF4444;font-size:13px">Network error: ' + err.message + '</div>';
+      }
+    });
+  </script>
 </body>
 </html>

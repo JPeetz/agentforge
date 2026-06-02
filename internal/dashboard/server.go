@@ -15,39 +15,56 @@ import (
 	"strings"
 	"time"
 
+	"github.com/agentforge/agentforge/internal/auth"
 	"github.com/agentforge/agentforge/internal/bus"
 	"github.com/agentforge/agentforge/internal/channel"
 	"github.com/agentforge/agentforge/internal/config"
+	"github.com/agentforge/agentforge/internal/cost"
+	"github.com/agentforge/agentforge/internal/llm"
 	"github.com/agentforge/agentforge/internal/api/mcp"
+	"github.com/agentforge/agentforge/internal/mcpclient"
 	"github.com/agentforge/agentforge/internal/session"
+	"github.com/agentforge/agentforge/internal/sse"
 )
 
 //go:embed static
 var staticFS embed.FS
 
 type Server struct {
-	cfg        *config.Config
-	store      *config.PersistedStore
-	bus        bus.Bus
-	sessionMgr *session.Manager
-	mcpMgr     *mcp.Manager
-	chanMgr    *channel.Manager
-	mux        *http.ServeMux
-	log        *slog.Logger
-	started    time.Time
+	cfg          *config.Config
+	store        *config.PersistedStore
+	bus          bus.Bus
+	sessionMgr   *session.Manager
+	mcpMgr       *mcp.Manager
+	mcpClientMgr *mcpclient.ClientManager
+	chanMgr      *channel.Manager
+	costTracker  *cost.Tracker
+	authStore    *auth.Store
+	authManager  *auth.Manager
+	sseHub       *sse.Hub
+	adapter      llm.Adapter
+	mux          *http.ServeMux
+	log          *slog.Logger
+	started      time.Time
 }
 
-func New(cfg *config.Config, b bus.Bus, sessionMgr *session.Manager, mcpMgr *mcp.Manager, chanMgr *channel.Manager) (*Server, error) {
+func New(cfg *config.Config, b bus.Bus, sessionMgr *session.Manager, mcpMgr *mcp.Manager, mcpClientMgr *mcpclient.ClientManager, chanMgr *channel.Manager, costTracker *cost.Tracker, authStore *auth.Store, authManager *auth.Manager, hub *sse.Hub, adapter llm.Adapter) (*Server, error) {
 	s := &Server{
-		cfg:        cfg,
-		store:      config.NewStore(cfg),
-		bus:        b,
-		sessionMgr: sessionMgr,
-		mcpMgr:     mcpMgr,
-		chanMgr:    chanMgr,
-		mux:        http.NewServeMux(),
-		log:        slog.New(slog.NewJSONHandler(os.Stdout, nil)),
-		started:    time.Now(),
+		cfg:          cfg,
+		store:        config.NewStore(cfg),
+		bus:          b,
+		sessionMgr:   sessionMgr,
+		mcpMgr:       mcpMgr,
+		mcpClientMgr: mcpClientMgr,
+		chanMgr:      chanMgr,
+		costTracker:  costTracker,
+		authStore:    authStore,
+		authManager:  authManager,
+		sseHub:       hub,
+		adapter:      adapter,
+		mux:          http.NewServeMux(),
+		log:          slog.New(slog.NewJSONHandler(os.Stdout, nil)),
+		started:      time.Now(),
 	}
 
 	staticSub, err := fs.Sub(staticFS, "static")
@@ -68,6 +85,14 @@ func New(cfg *config.Config, b bus.Bus, sessionMgr *session.Manager, mcpMgr *mcp
 	s.mux.HandleFunc("/api/pipelines/validate", s.handlePipelineValidate)
 	s.mux.HandleFunc("/api/mcp", s.handleMCPAPI)
 	s.mux.HandleFunc("/api/auth/login", s.handleLoginAPI)
+	s.mux.HandleFunc("/api/auth/refresh", s.handleRefreshAPI)
+	s.mux.HandleFunc("/api/auth/me", s.handleMeAPI)
+	s.mux.HandleFunc("/api/auth/apikey", s.handleAPIKeyAPI)
+	s.mux.HandleFunc("/api/cost/summary", s.handleCostSummary)
+	s.mux.HandleFunc("/api/cost/daily", s.handleCostDaily)
+	s.mux.HandleFunc("/api/cost/budget", s.handleCostBudget)
+	s.mux.HandleFunc("/api/chat/stream", s.handleChatStream)
+	s.mux.HandleFunc("/api/chat/stream", s.handleChatStream)
 
 	return s, nil
 }
@@ -1020,17 +1045,6 @@ func (s *Server) toolTableRow(name, category string, enabled bool, version, desc
 		statusLabel = "Off"
 	}
 	return fmt.Sprintf(`<tr><td style="font-weight:600;font-family:var(--font-mono);font-size:13px"><img src="/static/img/icons/tools-icon.png" width="14" style="vertical-align:middle;margin-right:6px;opacity:0.5">%s</td><td><span class="badge badge-magma">%s</span></td><td><span class="badge %s">%s</span></td><td style="font-family:var(--font-mono);font-size:11px;color:var(--text-dim)">%s</td><td style="font-size:12px;color:var(--text-dim);max-width:300px">%s</td></tr>`, name, category, statusCls, statusLabel, version, desc)
-}
-
-// ── Auth ────────────────────────────────────────────────────────────────────
-
-func (s *Server) handleLoginAPI(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "method not allowed", 405)
-		return
-	}
-	w.Header().Set("Content-Type", "text/html")
-	w.Write([]byte(`<div style="color:#22C55E;font-size:14px;text-align:center;margin-top:12px">✓ Authenticated. Redirecting...</div><script>setTimeout(function(){location.href='/dashboard'},800)</script>`))
 }
 
 func (s *Server) handleHealth(w http.ResponseWriter, r *http.Request) {

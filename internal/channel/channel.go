@@ -63,6 +63,13 @@ func NewManager(cfg *config.ChannelsConfig) *Manager {
 	if cfg.Discord.Enabled && cfg.Discord.BotToken != "" {
 		m.adapters["discord"] = NewDiscordAdapter(cfg.Discord)
 	}
+	if cfg.Slack.Enabled && cfg.Slack.BotToken != "" {
+		m.adapters["slack"] = NewSlackAdapter(cfg.Slack)
+	}
+	if cfg.Signal.Enabled {
+		// Signal adapter gracefully skips if signal-cli is not found
+		m.adapters["signal"] = NewSignalAdapter(cfg.Signal)
+	}
 
 	return m
 }

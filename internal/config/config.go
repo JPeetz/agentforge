@@ -25,6 +25,7 @@ type Config struct {
 	Providers  ProvidersConfig `mapstructure:"providers" json:"providers"`
 	LLM        LLMConfig      `mapstructure:"llm" json:"llm"`
 	Security   SecurityConfig `mapstructure:"security" json:"security"`
+	Auth       AuthConfig     `mapstructure:"auth" json:"auth"`
 	Workers    WorkersConfig  `mapstructure:"workers" json:"workers"`
 	Channels   ChannelsConfig `mapstructure:"channels" json:"channels"`
 	Tools      ToolsConfig    `mapstructure:"tools" json:"tools"`
@@ -34,12 +35,27 @@ type Config struct {
 	Pipelines  PipelinesConfig  `mapstructure:"pipelines" json:"pipelines"`
 	Agents     AgentsConfig    `mapstructure:"agents" json:"agents"`
 	Session    SessionConfig   `mapstructure:"session" json:"session"`
+	Cost       CostConfig     `mapstructure:"cost" json:"cost"`
 
 	// Convenience accessors (backward compat)
 	DaemonHost string `mapstructure:"-" json:"-"`
 	DaemonPort int    `mapstructure:"-" json:"-"`
 	MCPPort    int    `mapstructure:"-" json:"-"` // first enabled MCP server port (convenience)
 	GRPCPort   int    `mapstructure:"-" json:"-"`
+}
+
+type AuthConfig struct {
+	AdminPassword     string `mapstructure:"adminPassword" json:"-"`
+	JWTExpiryMins     int    `mapstructure:"jwtExpiryMins" json:"jwtExpiryMins"`
+	RefreshExpiryDays int    `mapstructure:"refreshExpiryDays" json:"refreshExpiryDays"`
+	AllowRegistration bool   `mapstructure:"allowRegistration" json:"allowRegistration"`
+}
+
+// CostConfig holds cost tracking and budget settings.
+type CostConfig struct {
+	BudgetLimit  float64 `mapstructure:"budgetLimit" json:"budgetLimit"`
+	AlertPercent int     `mapstructure:"alertPercent" json:"alertPercent"`
+	AlertEnabled bool    `mapstructure:"alertEnabled" json:"alertEnabled"`
 }
 
 type DaemonConfig struct {
@@ -64,6 +80,23 @@ type MCPServer struct {
 	Args      []string          `mapstructure:"args,omitempty" json:"args,omitempty"`
 	Env       map[string]string `mapstructure:"env,omitempty" json:"env,omitempty"`
 	ToolFilter []string         `mapstructure:"toolFilter,omitempty" json:"toolFilter,omitempty"`
+}
+
+// MCPClientConfig holds MCP client connection settings.
+type MCPClientConfig struct {
+	Enabled bool              `mapstructure:"enabled" json:"enabled"`
+	Servers []MCPClientServer `mapstructure:"servers" json:"servers"`
+}
+
+// MCPClientServer describes an external MCP server to connect to.
+type MCPClientServer struct {
+	Name        string   `mapstructure:"name" json:"name"`
+	URL         string   `mapstructure:"url" json:"url"`
+	Transport   string   `mapstructure:"transport" json:"transport"`
+	Command     string   `mapstructure:"command,omitempty" json:"command,omitempty"`
+	Args        []string `mapstructure:"args,omitempty" json:"args,omitempty"`
+	ToolFilter  []string `mapstructure:"toolFilter,omitempty" json:"toolFilter,omitempty"`
+	AutoConnect bool     `mapstructure:"autoConnect" json:"autoConnect"`
 }
 
 type GRPCConfig struct {
@@ -524,6 +557,15 @@ func setDefaults(v *viper.Viper) {
 	v.SetDefault("session.truncateAfterCompaction", true)
 	v.SetDefault("session.pruneToolOutputs", true)
 	v.SetDefault("session.maxToolOutputChars", 8000)
+
+	v.SetDefault("auth.jwtExpiryMins", 15)
+	v.SetDefault("auth.refreshExpiryDays", 7)
+	v.SetDefault("auth.allowRegistration", false)
+
+	v.SetDefault("cost.budgetLimit", 50.0)
+	v.SetDefault("cost.alertPercent", 80)
+	v.SetDefault("cost.alertEnabled", true)
+
 	v.SetDefault("ui.fontSize", "medium")
 	v.SetDefault("ui.compactMode", false)
 	v.SetDefault("ui.colorAccent", "#FF6B2C")

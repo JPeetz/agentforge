@@ -41,6 +41,7 @@ func (m *mockAdapter) Chat(_ context.Context, req llm.Request) (llm.Response, er
 	}, nil
 }
 func (m *mockAdapter) HealthCheck(_ context.Context) error { return nil }
+func (m *mockAdapter) ContextWindow() int { return 128000 }
 
 // ── E2E Test: Agent receives prompt, calls LLM, writes to memory ────────────
 
