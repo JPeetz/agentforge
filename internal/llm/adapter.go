@@ -8,9 +8,11 @@
 package llm
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -19,6 +21,8 @@ import (
 	"sync/atomic"
 	"time"
 )
+
+var ErrStreamingNotSupported = errors.New("llm: streaming not supported")
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -76,17 +80,26 @@ type Usage struct {
 	TotalTokens      int `json:"total_tokens"`
 }
 
+// StreamChunk represents a single streaming response chunk from an LLM.
+type StreamChunk struct {
+	Model     string    `json:"model,omitempty"`
+	Content   string    `json:"content,omitempty"`
+	Done      bool      `json:"done"`
+	Role      string    `json:"role,omitempty"`
+	Finish    string    `json:"finish,omitempty"`
+	Usage     Usage     `json:"usage,omitempty"`
+	Error     string    `json:"error,omitempty"`
+	ToolCalls []ToolCall `json:"tool_calls,omitempty"`
+}
+
 // ── Adapter Interface ────────────────────────────────────────────────────────
 
 // Adapter is the interface all LLM providers implement.
 type Adapter interface {
 	Provider() string
-
-	// ContextWindow returns the model's max context window in tokens.
-	// Returns 0 if unknown — session manager falls back to config.
 	ContextWindow() int
-
 	Chat(ctx context.Context, req Request) (Response, error)
+	StreamChat(ctx context.Context, req Request) (<-chan StreamChunk, error)
 	HealthCheck(ctx context.Context) error
 }
 
@@ -139,6 +152,32 @@ func (b *Breaker) Chat(ctx context.Context, req Request) (Response, error) {
 
 	b.recordSuccess()
 	return resp, nil
+}
+
+func (b *Breaker) StreamChat(ctx context.Context, req Request) (<-chan StreamChunk, error) {
+	if !b.allow() {
+		return nil, fmt.Errorf("llm: circuit breaker open for %s", b.inner.Provider())
+	}
+	ch, err := b.inner.StreamChat(ctx, req)
+	if err != nil {
+		b.recordFailure()
+		return ch, err
+	}
+	out := make(chan StreamChunk, 100)
+	go func() {
+		defer close(out)
+		for chunk := range ch {
+			out <- chunk
+			if chunk.Done || chunk.Error != "" {
+				if chunk.Error != "" {
+					b.recordFailure()
+				} else {
+					b.recordSuccess()
+				}
+			}
+		}
+	}()
+	return out, nil
 }
 
 func (b *Breaker) HealthCheck(ctx context.Context) error {
@@ -235,6 +274,21 @@ func (fc *FallbackChain) Chat(ctx context.Context, req Request) (Response, error
 	}
 
 	return Response{}, fmt.Errorf("llm: all adapters failed: %w", lastErr)
+}
+
+func (fc *FallbackChain) StreamChat(ctx context.Context, req Request) (<-chan StreamChunk, error) {
+	ch, err := fc.primary.StreamChat(ctx, req)
+	if err == nil {
+		return ch, nil
+	}
+	for _, fb := range fc.fallbacks {
+		ch, err = fb.StreamChat(ctx, req)
+		if err == nil {
+			fmt.Printf("llm: streaming fell back from %s to %s\n", fc.primary.Provider(), fb.Provider())
+			return ch, nil
+		}
+	}
+	return nil, fmt.Errorf("llm: all streaming adapters failed: %w", err)
 }
 
 func (fc *FallbackChain) HealthCheck(ctx context.Context) error {
@@ -372,6 +426,82 @@ func (c *OpenAIClient) Chat(ctx context.Context, req Request) (Response, error) 
 	return resp, nil
 }
 
+// StreamChat streams an OpenAI-compatible chat response token-by-token.
+func (c *OpenAIClient) StreamChat(ctx context.Context, req Request) (<-chan StreamChunk, error) {
+	if req.Model == "" {
+		req.Model = c.cfg.Model
+	}
+	body, err := json.Marshal(req)
+	if err != nil {
+		return nil, fmt.Errorf("llm: openai stream marshal: %w", err)
+	}
+	url := strings.TrimRight(c.cfg.BaseURL, "/") + "/chat/completions"
+	httpReq, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewReader(body))
+	if err != nil {
+		return nil, fmt.Errorf("llm: openai stream request: %w", err)
+	}
+	httpReq.Header.Set("Content-Type", "application/json")
+	httpReq.Header.Set("Authorization", "Bearer "+c.cfg.APIKey)
+	httpResp, err := http.DefaultClient.Do(httpReq)
+	if err != nil {
+		return nil, fmt.Errorf("llm: openai stream http: %w", err)
+	}
+	out := make(chan StreamChunk, 256)
+	go func() {
+		defer close(out)
+		defer httpResp.Body.Close()
+		if httpResp.StatusCode >= 300 {
+			respBody, _ := io.ReadAll(io.LimitReader(httpResp.Body, 10<<20))
+			out <- StreamChunk{Error: fmt.Sprintf("openai http %d: %s", httpResp.StatusCode, string(respBody)), Done: true}
+			return
+		}
+		reader := bufio.NewReader(httpResp.Body)
+		var usage Usage
+		var modelName string
+		var finishReason string
+		for {
+			line, err := reader.ReadString('\n')
+			if err != nil {
+				if usage.TotalTokens > 0 || finishReason != "" {
+					out <- StreamChunk{Done: true, Model: modelName, Usage: usage, Finish: finishReason}
+				} else {
+					out <- StreamChunk{Done: true}
+				}
+				return
+			}
+			line = strings.TrimSpace(line)
+			if !strings.HasPrefix(line, "data:") { continue }
+			data := strings.TrimSpace(strings.TrimPrefix(line, "data:"))
+			if data == "" || data == "[DONE]" {
+				if data == "[DONE]" {
+					out <- StreamChunk{Done: true, Model: modelName, Usage: usage, Finish: finishReason}
+					return
+				}
+				continue
+			}
+			var chunk struct {
+				Model string `json:"model"`
+				Choices []struct {
+					Delta struct {
+						Role    string `json:"role"`
+						Content string `json:"content"`
+					} `json:"delta"`
+					FinishReason string `json:"finish_reason"`
+				} `json:"choices"`
+				Usage *Usage `json:"usage"`
+			}
+			if json.Unmarshal([]byte(data), &chunk) != nil { continue }
+			if chunk.Model != "" { modelName = chunk.Model }
+			if chunk.Usage != nil && chunk.Usage.TotalTokens > 0 { usage = *chunk.Usage }
+			if len(chunk.Choices) == 0 { continue }
+			delta := chunk.Choices[0].Delta
+			if chunk.Choices[0].FinishReason != "" { finishReason = chunk.Choices[0].FinishReason }
+			out <- StreamChunk{Content: delta.Content, Role: delta.Role, Done: false}
+		}
+	}()
+	return out, nil
+}
+
 func (c *OpenAIClient) HealthCheck(ctx context.Context) error {
 	url := strings.TrimRight(c.cfg.BaseURL, "/") + "/models"
 	httpReq, err := http.NewRequestWithContext(ctx, "GET", url, nil)
@@ -441,6 +571,43 @@ type ollamaChatResp struct {
 	Done      bool    `json:"done"`
 	EvalCount int     `json:"eval_count"`
 	PromptEvalCount int `json:"prompt_eval_count"`
+}
+
+// StreamChat streams an Ollama /api/chat response as NDJSON chunks.
+func (c *OllamaClient) StreamChat(ctx context.Context, req Request) (<-chan StreamChunk, error) {
+	if req.Model == "" { req.Model = c.cfg.Model }
+	ollamaReq := ollamaChatReq{Model: req.Model, Messages: req.Messages, Stream: true}
+	body, _ := json.Marshal(ollamaReq)
+	url := strings.TrimRight(c.cfg.BaseURL, "/") + "/api/chat"
+	httpReq, _ := http.NewRequestWithContext(ctx, "POST", url, bytes.NewReader(body))
+	httpReq.Header.Set("Content-Type", "application/json")
+	httpResp, err := http.DefaultClient.Do(httpReq)
+	if err != nil { return nil, fmt.Errorf("llm: ollama stream http: %w", err) }
+	out := make(chan StreamChunk, 256)
+	go func() {
+		defer close(out)
+		defer httpResp.Body.Close()
+		if httpResp.StatusCode >= 300 {
+			respBody, _ := io.ReadAll(io.LimitReader(httpResp.Body, 10<<20))
+			out <- StreamChunk{Error: fmt.Sprintf("ollama http %d: %s", httpResp.StatusCode, string(respBody)), Done: true}
+			return
+		}
+		scanner := bufio.NewScanner(httpResp.Body)
+		buf := make([]byte, 0, 64*1024)
+		scanner.Buffer(buf, 1024*1024)
+		var usage Usage
+		for scanner.Scan() {
+			var chunk ollamaChatResp
+			if json.Unmarshal(scanner.Bytes(), &chunk) != nil { continue }
+			if chunk.Done {
+				usage = Usage{PromptTokens: chunk.PromptEvalCount, CompletionTokens: chunk.EvalCount, TotalTokens: chunk.PromptEvalCount + chunk.EvalCount}
+				out <- StreamChunk{Done: true, Model: chunk.Model, Usage: usage, Finish: "stop"}
+				return
+			}
+			out <- StreamChunk{Content: chunk.Message.Content, Role: chunk.Message.Role}
+		}
+	}()
+	return out, nil
 }
 
 func (c *OllamaClient) Chat(ctx context.Context, req Request) (Response, error) {
@@ -594,6 +761,78 @@ type anthropicResp struct {
 		InputTokens  int `json:"input_tokens"`
 		OutputTokens int `json:"output_tokens"`
 	} `json:"usage"`
+}
+
+// StreamChat streams an Anthropic Messages API response via SSE.
+func (c *AnthropicClient) StreamChat(ctx context.Context, req Request) (<-chan StreamChunk, error) {
+	if req.Model == "" { req.Model = c.cfg.Model }
+	var sys string
+	var aMsgs []anthropicMessage
+	for _, m := range req.Messages {
+		if m.Role == "system" { sys = m.Content; continue }
+		aMsgs = append(aMsgs, anthropicMessage{Role: m.Role, Content: m.Content})
+	}
+	maxToks := req.MaxTokens
+	if maxToks == 0 { maxToks = 4096 }
+	body, _ := json.Marshal(anthropicReq{Model: req.Model, MaxTokens: maxToks, Messages: aMsgs, System: sys, Temperature: req.Temperature})
+	url := strings.TrimRight(c.cfg.BaseURL, "/") + "/v1/messages"
+	httpReq, _ := http.NewRequestWithContext(ctx, "POST", url, bytes.NewReader(body))
+	httpReq.Header.Set("Content-Type", "application/json")
+	httpReq.Header.Set("x-api-key", c.cfg.APIKey)
+	httpReq.Header.Set("anthropic-version", "2023-06-01")
+	httpResp, err := http.DefaultClient.Do(httpReq)
+	if err != nil { return nil, fmt.Errorf("llm: anthropic stream http: %w", err) }
+	out := make(chan StreamChunk, 256)
+	go func() {
+		defer close(out)
+		defer httpResp.Body.Close()
+		if httpResp.StatusCode >= 300 {
+			respBody, _ := io.ReadAll(io.LimitReader(httpResp.Body, 10<<20))
+			out <- StreamChunk{Error: fmt.Sprintf("anthropic http %d: %s", httpResp.StatusCode, string(respBody)), Done: true}
+			return
+		}
+		reader := bufio.NewReader(httpResp.Body)
+		var usage Usage
+		var mName string
+		var finish string
+		for {
+			line, err := reader.ReadString('\n')
+			if err != nil {
+				if usage.TotalTokens > 0 || finish != "" {
+					out <- StreamChunk{Done: true, Model: mName, Usage: usage, Finish: finish}
+				} else { out <- StreamChunk{Done: true} }
+				return
+			}
+			line = strings.TrimSpace(line)
+			if !strings.HasPrefix(line, "data:") { continue }
+			data := strings.TrimSpace(strings.TrimPrefix(line, "data:"))
+			if data == "" { continue }
+			var chunk struct {
+				Type string `json:"type"`
+				Delta struct {
+					Type       string `json:"type"`
+					Text       string `json:"text"`
+					StopReason string `json:"stop_reason"`
+				} `json:"delta"`
+				Usage  struct { OutputTokens int `json:"output_tokens"` } `json:"usage"`
+				Message struct { Model string `json:"model"` } `json:"message"`
+			}
+			if json.Unmarshal([]byte(data), &chunk) != nil { continue }
+			switch chunk.Type {
+			case "content_block_delta":
+				if chunk.Delta.Type == "text_delta" { out <- StreamChunk{Content: chunk.Delta.Text} }
+			case "message_start":
+				mName = chunk.Message.Model
+			case "message_delta":
+				if chunk.Usage.OutputTokens > 0 { usage.CompletionTokens = chunk.Usage.OutputTokens }
+				if chunk.Delta.StopReason != "" { finish = chunk.Delta.StopReason }
+			case "message_stop":
+				out <- StreamChunk{Done: true, Model: mName, Usage: usage, Finish: finish}
+				return
+			}
+		}
+	}()
+	return out, nil
 }
 
 func (c *AnthropicClient) Chat(ctx context.Context, req Request) (Response, error) {
