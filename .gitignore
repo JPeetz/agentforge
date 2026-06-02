@@ -1,0 +1,28 @@
+# Binaries
+agentforge
+agentforge-*
+agentctl
+*.exe
+
+# Go
+*.test
+*.out
+coverage.html
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# AgentForge runtime
+data/
+.agentforge/
+
+# Environment
+.env
+.env.local

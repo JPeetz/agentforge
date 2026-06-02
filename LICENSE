@@ -1,0 +1,26 @@
+Business Source License 1.1
+
+License text copyright © 2017 MariaDB Corporation Ab, All Rights Reserved.
+"Business Source License" is a trademark of MariaDB Corporation Ab.
+
+Parameters
+
+Licensor:             AgentForge Contributors
+Licensed Work:        AgentForge — capability-secured agent orchestration framework
+Additional Use Grant: You may make production use of the Licensed Work,
+                      provided you do not offer the Licensed Work as a hosted
+                      service (SaaS, PaaS, or similar) to third parties.
+Change Date:          Four years from the date the Licensed Work is first
+                      made available to the public.
+Change License:       Apache License, Version 2.0
+
+For information about alternative licensing arrangements for the Licensed Work,
+please contact: licensing@agentforge.dev
+
+Notice
+
+The Business Source License (this document, or the "License") is not an Open
+Source license. However, the Licensed Work will eventually be made available
+under an Open Source License, as stated in this License.
+
+License text copyright © 2023 AgentForge Contributors, All Rights Reserved.

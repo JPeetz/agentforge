@@ -1,0 +1,118 @@
+# AgentForge Configuration
+# All values can be overridden with AGENTFORGE_ prefix env vars (e.g., AGENTFORGE_DAEMON_HOST).
+# Run `agentforge config list` to see effective values.
+
+daemon:
+  host: 127.0.0.1           # Bind address
+  port: 8080                # HTTP port for dashboard + API
+
+mcp:
+  port: 9090                # MCP server port
+  enabled: false            # Enable Model Context Protocol server
+
+grpc:
+  port: 9091                # gRPC port (future)
+
+# ── Memory (MeMex Zero RAG) ─────────────────────────────────────────────────
+memory:
+  root: $HOME/.agentforge/memory
+  autoCommit: true          # Auto git-commit memory on change
+  commitInterval: 30s       # Max interval between auto-commits
+  indexEnabled: true        # Enable FTS5 full-text search index
+  compressInterval: 24h     # How often to compress older entries
+  maxDailySize: 10MB        # Soft cap per daily log before compression
+
+# ── LLM Providers ───────────────────────────────────────────────────────────
+llm:
+  provider: openai          # Primary provider
+  model: gpt-4o             # Primary model
+  apiKey: ""                # Override with AGENTFORGE_LLM_APIKEY or set here
+  baseUrl: ""               # Custom endpoint (local, proxy, etc.)
+  timeout: 60s
+  temperature: 0.7
+  maxTokens: 4096
+  fallbacks:                # Fallback chain in order of priority
+    - provider: openrouter
+      model: deepseek/deepseek-v4-pro
+    - provider: ollama
+      model: gemma3:27b
+      baseUrl: http://127.0.0.1:11434
+  retryCount: 3             # Max retries before giving up
+  retryDelay: 2s            # Delay between retries
+
+# ── Security ────────────────────────────────────────────────────────────────
+security:
+  capabilitySecret: ""      # HMAC secret for capability tokens (auto-generated if empty)
+  defaultTokenBudget: 1000000
+  defaultTimeout: 3600s     # Max agent session lifetime
+  enforceOnSpawn: true      # Check capabilities when spawning
+  enforceOnToolCall: true   # Check capabilities on every tool invocation
+  auditEnabled: true        # Log all capability checks
+  allowFileSystem: true     # Agents can read/write workspace files
+  allowNetwork: true        # Agents can make HTTP calls
+  allowShell: false         # Agents can exec shell commands (DANGER — off by default)
+  allowBrowser: false       # Agents can drive a browser
+  sandboxMode: "non-main"   # "off", "non-main", or "all"
+  approvedPaths:            # Filesystem paths agents may access
+    - $HOME/.agentforge
+    - $HOME/.openclaw/workspace
+  deniedPaths:              # Never accessible, overrides approvedPaths
+    - /etc
+    - /var
+    - $HOME/.ssh
+
+# ── Workers (Department Agent Pools) ────────────────────────────────────────
+workers:
+  contentMaxAgents: 3       # Content pipeline max concurrent agents
+  seoMaxAgents: 1           # SEO auditor max concurrent
+  socialMaxAgents: 2        # Social distribution max concurrent
+  defaultMaxAgents: 2       # Default for any new department
+  heartbeatInterval: 30s    # Agent heartbeat check frequency
+
+# ── Channels ────────────────────────────────────────────────────────────────
+channels:
+  telegram:
+    enabled: false
+    botToken: ""            # From @BotFather
+    allowFrom: []           # Telegram user IDs (empty = all paired)
+  discord:
+    enabled: false
+    botToken: ""
+    allowFrom: []
+  signal:
+    enabled: false
+  whatsapp:
+    enabled: false
+
+# ── Tools ───────────────────────────────────────────────────────────────────
+tools:
+  webSearch: true           # Web search capability
+  webFetch: true            # Web page fetching
+  imageGen: false           # Image generation (fal.ai, etc.)
+  browser: false            # Browser automation (Playwright)
+  codeExec: false           # Sandbox code execution
+  gitOps: true              # Git operations (commit, push, branch)
+  cron: true                # Scheduled job creation
+
+# ── Skills ──────────────────────────────────────────────────────────────────
+skills:
+  autoInstall: true         # Auto-install recommended skills
+  marketplace: "skillsmp"   # "skillsmp" or "clawhub" or "local"
+  marketplaceUrl: "https://skillsmp.com/api/v1"
+  localPath: $HOME/.agentforge/skills
+  allowAutoUpdate: true     # Update installed skills automatically
+
+# ── Logging ─────────────────────────────────────────────────────────────────
+logging:
+  level: info               # debug, info, warn, error
+  format: json              # json or text
+  output: stdout            # stdout, stderr, or file path
+  maxAge: 7d                # Log retention
+  maxSize: 100MB            # Max log size before rotation
+
+# ── UI ──────────────────────────────────────────────────────────────────────
+ui:
+  theme: dark               # dark or light
+  sidebarCollapsed: false
+  autoRefreshSecs: 30       # Dashboard auto-refresh interval
+  showAnimations: true      # Particle effects, transitions

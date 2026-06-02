@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgentForge — Dashboard</title>
+<link rel="icon" href="/static/img/icons/logo-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/agentforge.css">
+<style>
+:root {
+  --magma: #FF6B2C;
+  --magma-glow: rgba(255,107,44,0.15);
+  --bg: #0A0A10;
+  --panel: #111118;
+  --panel-hover: #161620;
+  --border: rgba(255,107,44,0.08);
+  --text: #E8E3DC;
+  --text-dim: #8B8680;
+  --font: 'Inter', sans-serif;
+  --font-head: 'Space Grotesk', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --radius: 10px;
+  --radius-lg: 16px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);background:var(--bg);color:var(--text);overflow:hidden;height:100vh;position:relative}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 70% 30%, rgba(255,107,44,0.06) 0%, transparent 60%),radial-gradient(ellipse at 20% 80%, rgba(56,189,248,0.03) 0%, transparent 50%);z-index:0;pointer-events:none}
+.bg-texture{position:fixed;top:0;right:0;width:40%;height:100%;opacity:0.04;z-index:0;object-fit:cover;pointer-events:none;mask-image:linear-gradient(to left, rgba(0,0,0,0.3) 0%, transparent 100%);-webkit-mask-image:linear-gradient(to left, rgba(0,0,0,0.3) 0%, transparent 100%)}
+
+/* Layout */
+.layout{display:flex;height:100vh;position:relative;z-index:1}
+
+/* Sidebar */
+.sidebar{width:220px;background:var(--panel);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0}
+.sidebar-header{padding:20px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border)}
+.sidebar-header img{width:28px;height:28px;border-radius:6px}
+.sidebar-header h1{font-family:var(--font-head);font-size:15px;font-weight:700;letter-spacing:-0.3px}
+.sidebar-header span{font-family:var(--font-mono);font-size:10px;color:var(--text-dim);margin-left:auto}
+.sidebar-nav{flex:1;padding:12px 8px;display:flex;flex-direction:column;gap:2px;overflow-y:auto}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:var(--text-dim);text-decoration:none;font-size:13px;font-weight:500;transition:all 0.15s;cursor:pointer;border:none;background:none;width:100%;text-align:left}
+.nav-item:hover{background:var(--panel-hover);color:var(--text)}
+.nav-item.active{background:var(--magma-glow);color:var(--magma);border-left:3px solid var(--magma);padding-left:9px}
+.nav-item img{width:18px;height:18px;opacity:0.6}
+.nav-item.active img{opacity:1}
+.nav-item .badge{margin-left:auto;font-size:10px;padding:2px 6px;border-radius:10px;background:rgba(255,107,44,0.15);color:var(--magma);font-family:var(--font-mono)}
+
+/* Main area */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{display:flex;align-items:center;padding:0 24px;height:52px;border-bottom:1px solid var(--border);background:rgba(17,17,24,0.8);backdrop-filter:blur(12px);gap:16px;flex-shrink:0}
+.topbar h2{font-family:var(--font-head);font-size:16px;font-weight:600}
+.topbar-spacer{flex:1}
+.topbar-status{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-dim)}
+.topbar-dot{width:7px;height:7px;border-radius:50%;background:#22C55E;box-shadow:0 0 6px rgba(34,197,94,0.5)}
+.content{flex:1;overflow-y:auto;padding:24px;display:flex;flex-direction:column;gap:20px}
+
+/* Cards & panels */
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;backdrop-filter:blur(8px)}
+.panel-header{display:flex;align-items:center;gap:8px;margin-bottom:16px;font-family:var(--font-head);font-size:14px;font-weight:600}
+.panel-header img{width:16px;height:16px;opacity:0.7}
+
+/* Stat grid */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.stat-card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:16px;transition:all 0.15s}
+.stat-card:hover{border-color:var(--magma);box-shadow:0 0 20px var(--magma-glow)}
+.stat-card .stat-val{font-family:var(--font-head);font-size:26px;font-weight:700;margin-bottom:4px}
+.stat-card .stat-label{font-size:12px;color:var(--text-dim)}
+.stat-card .stat-change{font-size:11px;margin-top:6px}
+.stat-up{color:#22C55E}
+.stat-down{color:#EF4444}
+
+/* Activity */
+.activity-item{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);font-size:13px}
+.activity-item:last-child{border-bottom:none}
+.activity-dot{width:8px;height:8px;border-radius:50%;margin-top:5px;flex-shrink:0}
+.dot-success{background:#22C55E;box-shadow:0 0 6px rgba(34,197,94,0.4)}
+.dot-magma{background:var(--magma);box-shadow:0 0 6px var(--magma-glow)}
+.dot-warn{background:#F59E0B}
+.dot-err{background:#EF4444}
+.activity-body{flex:1;min-width:0}
+.activity-title{font-weight:500}
+.activity-meta{font-size:11px;color:var(--text-dim);margin-top:2px}
+
+/* Table */
+.data-table{width:100%;border-collapse:collapse;font-size:13px}
+.data-table th{padding:10px 12px;text-align:left;color:var(--text-dim);font-weight:500;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid var(--border)}
+.data-table td{padding:10px 12px;border-bottom:1px solid var(--border)}
+.data-table tr:hover{background:rgba(255,107,44,0.03)}
+.data-table .agent-name{display:flex;align-items:center;gap:8px;font-weight:500}
+.data-table .agent-name img{width:16px;height:16px;border-radius:4px}
+
+/* Badges */
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:500;gap:4px}
+.badge-live{background:rgba(34,197,94,0.12);color:#22C55E}
+.badge-idle{background:rgba(139,134,128,0.12);color:var(--text-dim)}
+.badge-magma{background:rgba(255,107,44,0.1);color:var(--magma)}
+.badge-info{background:rgba(56,189,248,0.1);color:#38BDF8}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.15s;border:1px solid transparent;text-decoration:none}
+.btn-primary{background:var(--magma);color:#fff}
+.btn-primary:hover{background:#E85D1A}
+.btn-ghost{background:transparent;border-color:var(--border);color:var(--text-dim)}
+.btn-ghost:hover{background:var(--panel-hover);color:var(--text)}
+.btn img{width:14px;height:14px}
+
+/* Pipeline cards */
+.pipeline-card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:16px;transition:all 0.15s}
+.pipeline-card:hover{border-color:var(--magma)}
+.pipeline-name{font-weight:600;font-size:14px;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.pipeline-stages{display:flex;gap:4px;margin-bottom:8px}
+.pipeline-stage{width:8px;height:8px;border-radius:2px}
+.stage-done{background:#22C55E}
+.stage-run{background:var(--magma);animation:pulse 2s infinite}
+.stage-pend{background:rgba(139,134,128,0.3)}
+.stage-fail{background:#EF4444}
+.pipeline-meta{font-size:11px;color:var(--text-dim)}
+
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+
+/* Two col */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+@media(max-width:900px){.grid-2,.grid-3{grid-template-columns:1fr}}
+
+/* Search */
+.search-bar{position:relative;margin-bottom:16px}
+.search-bar input{width:100%;padding:10px 14px 10px 36px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:var(--font-mono);font-size:12px;outline:none;transition:border-color 0.15s}
+.search-bar input:focus{border-color:var(--magma)}
+.search-bar img{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:14px;height:14px;opacity:0.5}
+
+/* Settings form */
+.setting-row{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--border)}
+.setting-row:last-child{border-bottom:none}
+.setting-label{font-size:14px;font-weight:500}
+.setting-desc{font-size:12px;color:var(--text-dim);margin-top:2px}
+.setting-input{width:300px;padding:8px 12px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;font-family:var(--font-mono);outline:none}
+.setting-input:focus{border-color:var(--magma)}
+
+/* Empty state */
+.empty-state{text-align:center;padding:60px 20px;color:var(--text-dim)}
+.empty-state img{width:48px;height:48px;opacity:0.2;margin-bottom:16px}
+.empty-state h3{font-family:var(--font-head);font-size:16px;margin-bottom:8px;color:var(--text)}
+.empty-state p{font-size:13px;max-width:400px;margin:0 auto}
+
+/* Log lines */
+.log-line{font-family:var(--font-mono);font-size:11px;padding:4px 0;border-bottom:1px solid var(--border);line-height:1.6}
+.log-line:last-child{border-bottom:none}
+.log-ts{color:var(--text-dim);margin-right:12px}
+.log-info{color:#38BDF8}
+.log-warn{color:#F59E0B}
+.log-err{color:#EF4444}
+.log-ok{color:#22C55E}
+
+/* Tabs */
+.tabs{display:flex;gap:2px;margin-bottom:20px;border-bottom:1px solid var(--border)}
+.tab{display:flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px 8px 0 0;color:var(--text-dim);font-size:13px;cursor:pointer;transition:all 0.15s;border:none;background:none;font-weight:500}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--magma);border-bottom:2px solid var(--magma);margin-bottom:-1px}
+.tab img{width:14px;height:14px;opacity:0.6}
+.tab.active img{opacity:1}
+
+/* Chat panel */
+.chat-panel{display:flex;flex-direction:column;height:100%}
+.chat-messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px}
+.chat-msg{padding:12px 16px;border-radius:var(--radius);font-size:14px;max-width:80%;line-height:1.5}
+.chat-msg.agent{background:var(--panel);border:1px solid var(--border);align-self:flex-start}
+.chat-msg.user{background:var(--magma-glow);border:1px solid var(--magma);align-self:flex-end}
+.chat-input-bar{display:flex;gap:8px;padding:12px;border-top:1px solid var(--border)}
+.chat-input-bar input{flex:1;padding:10px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;color:var(--text);outline:none;font-size:13px}
+.chat-input-bar input:focus{border-color:var(--magma)}
+
+/* Loading skeleton */
+@keyframes shimmer{0%{background-position:-200px 0}100%{background-position:200px 0}}
+.skeleton{background:linear-gradient(90deg,var(--panel) 25%,rgba(255,107,44,0.05) 50%,var(--panel) 75%);background-size:400px 100%;animation:shimmer 1.5s infinite;border-radius:var(--radius)}
+.skeleton-text{height:14px;margin-bottom:8px}
+.skeleton-card{height:80px}
+</style>
+</head>
+<body>
+<img class="bg-texture" src="/static/img/illustrations/hero-dashboard.png" alt="">
+
+<div class="layout" id="app">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <img src="/static/img/icons/logo-icon.png" alt="AF">
+      <h1>AgentForge</h1>
+      <span>v0.1</span>
+    </div>
+    <nav class="sidebar-nav">
+      <a class="nav-item active" data-page="overview" hx-get="/api/pages/overview" hx-target="#content" hx-trigger="click">
+        <img src="/static/img/icons/nav-dashboard.png" alt=""> Overview
+      </a>
+      <a class="nav-item" data-page="chat" hx-get="/api/pages/chat" hx-target="#content" hx-trigger="click">
+        <img src="/static/img/icons/agent-chat.png" alt=""> Chat
+      </a>
+      <a class="nav-item" data-page="agents" hx-get="/api/pages/agents" hx-target="#content" hx-trigger="click">
+        <img src="/static/img/icons/nav-agents.png" alt=""> Agents
+        <span class="badge" id="agent-count">12</span>
+      </a>
+      <a class="nav-item" data-page="memory" hx-get="/api/pages/memory" hx-target="#content" hx-trigger="click">
+        <img src="/static/img/icons/nav-memory.png" alt=""> Memory
+      </a>
+      <a class="nav-item" data-page="pipelines" hx-get="/api/pages/pipelines" hx-target="#content" hx-trigger="click">
+        <img src="/static/img/icons/nav-pipelines.png" alt=""> Pipelines
+      </a>
+      <a class="nav-item" data-page="channels" hx-get="/api/pages/channels" hx-target="#content" hx-trigger="click">
+        <img src="/static/img/icons/nav-agents.png" alt=""> Channels
+      </a>
+      <a class="nav-item" data-page="skills" hx-get="/api/pages/skills" hx-target="#content" hx-trigger="click">
+        <img src="/static/img/icons/nav-skills.png" alt=""> Skills
+      </a>
+      
+      <a class="nav-item" data-page="tools" hx-get="/api/pages/tools" hx-target="#content" hx-trigger="click">
+        <img src="/static/img/icons/tools-icon.png" alt=""> Tools
+        <span class="badge" id="tool-count">19</span>
+      </a>
+
+      
+      <a class="nav-item" data-page="skills-marketplace" hx-get="/api/pages/skills-marketplace" hx-target="#content" hx-trigger="click">
+        <img src="/static/img/icons/nav-skills.png" alt=""> Skills MP
+      </a>
+      <a class="nav-item" data-page="pipeline-editor" hx-get="/api/pages/pipeline-editor" hx-target="#content" hx-trigger="click">
+        <img src="/static/img/icons/nav-pipelines.png" alt=""> Pipeline Editor
+      </a>
+      <a class="nav-item" data-page="agent-profiles" hx-get="/api/pages/agent-profiles" hx-target="#content" hx-trigger="click">
+        <img src="/static/img/icons/nav-agents.png" alt=""> Agent Profiles
+      </a>
+
+      <a class="nav-item" data-page="security" hx-get="/api/pages/security" hx-target="#content" hx-trigger="click">
+        <img src="/static/img/icons/nav-security.png" alt=""> Security
+      </a>
+      <a class="nav-item" data-page="mcp" hx-get="/api/pages/mcp" hx-target="#content" hx-trigger="click">
+        <img src="/static/img/icons/nav-security.png" alt=""> MCP Servers
+        <span class="badge" id="mcp-count">0</span>
+      </a>
+      <a class="nav-item" data-page="logs" hx-get="/api/pages/logs" hx-target="#content" hx-trigger="click">
+        <img src="/static/img/icons/activity-icon.png" alt=""> Logs
+      </a>
+      <a class="nav-item" data-page="settings" hx-get="/api/pages/settings" hx-target="#content" hx-trigger="click">
+        <img src="/static/img/icons/nav-settings.png" alt=""> Settings
+      </a>
+      
+    </nav>
+  </aside>
+
+  <!-- Main -->
+  <div class="main">
+    <div class="topbar">
+      <h2 id="page-title">Overview</h2>
+      <span class="topbar-spacer"></span>
+      <div class="topbar-status"><span class="topbar-dot"></span> System Online</div>
+      <button class="btn btn-ghost" id="refresh-btn" onclick="refreshPage()"><img src="/static/img/icons/refresh-icon.png" alt=""> Refresh</button>
+    </div>
+    <div class="content" id="content"></div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/htmx.org@2.0.4"></script>
+<script>
+// Active page tracking
+document.querySelectorAll('.nav-item[data-page]').forEach(item => {
+  item.addEventListener('htmx:afterRequest', () => {
+    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+    item.classList.add('active');
+    var title = item.textContent.trim().replace(/\d+$/,''); document.getElementById('page-title').textContent = title;
+  });
+});
+
+// Auto-load overview on page load
+window.addEventListener('DOMContentLoaded', () => {
+  htmx.ajax('GET', '/api/pages/overview', '#content');
+});
+
+function refreshPage() {
+  const active = document.querySelector('.nav-item.active');
+  if (active) {
+    htmx.ajax('GET', active.getAttribute('hx-get'), '#content');
+  }
+}
+
+// Auto-refresh every 30s
+setInterval(() => {
+  const active = document.querySelector('.nav-item.active');
+  if (active && active.dataset.page === 'overview') {
+    htmx.ajax('GET', '/api/pages/overview', '#content');
+  }
+}, 30000);
+</script>
+
+<!-- Agent Edit Modal -->
+<div id="agent-edit-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:1000;align-items:center;justify-content:center">
+<div style="background:var(--panel);border-radius:14px;width:540px;max-height:80vh;overflow-y:auto;padding:24px;border:1px solid rgba(139,134,128,0.15);box-shadow:0 20px 60px rgba(0,0,0,0.4)">
+<h3 id="ae-modal-title" style="margin:0 0 20px 0;color:var(--text);font-size:18px">Create Agent Profile</h3>
+<form id="agent-edit-form" onsubmit="event.preventDefault();saveAgentProfile()">
+<input id="ae-agent-id" type="hidden">
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+<div><label style="font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-dim);display:block;margin-bottom:4px">Agent Name</label>
+<input id="ae-name" style="width:100%;border:1px solid rgba(139,134,128,0.2);background:rgba(250,243,240,0.03);color:var(--text);padding:8px 12px;border-radius:6px;font-size:13px" placeholder="e.g. Content Writer"></div>
+<div><label style="font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-dim);display:block;margin-bottom:4px">Department</label>
+<select id="ae-department" style="width:100%;border:1px solid rgba(139,134,128,0.2);background:rgba(250,243,240,0.03);color:var(--text);padding:8px 12px;border-radius:6px;font-size:13px">
+<option value="content">Content</option><option value="seo">SEO</option><option value="social">Social</option><option value="security">Security</option><option value="devops">DevOps</option><option value="memory">Memory</option><option value="orchestrator">Orchestrator</option><option value="monitor">Monitor</option></select></div>
+<div><label style="font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-dim);display:block;margin-bottom:4px">Model (provider/id)</label>
+<input id="ae-model" style="width:100%;border:1px solid rgba(139,134,128,0.2);background:rgba(250,243,240,0.03);color:var(--text);padding:8px 12px;border-radius:6px;font-size:13px" placeholder="e.g. openai/gpt-4o"></div>
+<div><label style="font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-dim);display:block;margin-bottom:4px">Temperature</label>
+<input id="ae-temperature" type="number" step="0.1" min="0" max="2" value="0.7" style="width:100%;border:1px solid rgba(139,134,128,0.2);background:rgba(250,243,240,0.03);color:var(--text);padding:8px 12px;border-radius:6px;font-size:13px"></div>
+<div><label style="font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-dim);display:block;margin-bottom:4px">Max Tokens</label>
+<input id="ae-maxTokens" type="number" value="4096" style="width:100%;border:1px solid rgba(139,134,128,0.2);background:rgba(250,243,240,0.03);color:var(--text);padding:8px 12px;border-radius:6px;font-size:13px"></div>
+<div><label style="font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-dim);display:block;margin-bottom:4px">Timeout</label>
+<input id="ae-timeout" value="300s" style="width:100%;border:1px solid rgba(139,134,128,0.2);background:rgba(250,243,240,0.03);color:var(--text);padding:8px 12px;border-radius:6px;font-size:13px"></div>
+</div>
+<div style="margin-top:16px"><label style="font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-dim);display:block;margin-bottom:8px">Capabilities</label>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+<label class="toggle"><input id="ae-fs" type="checkbox" checked><span class="toggle-slider"></span> Filesystem</label>
+<label class="toggle"><input id="ae-net" type="checkbox" checked><span class="toggle-slider"></span> Network</label>
+<label class="toggle"><input id="ae-shell" type="checkbox"><span class="toggle-slider"></span> Shell</label>
+<label class="toggle"><input id="ae-spawn" type="checkbox"><span class="toggle-slider"></span> Spawn Subagents</label></div>
+<div style="margin-top:10px"><label style="font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-dim);display:block;margin-bottom:4px">Token Budget</label>
+<input id="ae-budget" type="number" value="100000" style="width:100%;border:1px solid rgba(139,134,128,0.2);background:rgba(250,243,240,0.03);color:var(--text);padding:8px 12px;border-radius:6px;font-size:13px"></div></div>
+<div style="margin-top:20px;display:flex;gap:10px;justify-content:flex-end">
+<button type="button" class="btn btn-ghost" onclick="closeAgentModal()">Cancel</button>
+<button type="submit" class="btn btn-primary">Save Agent</button></div>
+</form>
+</div>
+</div>
+
+</body>
+</html>

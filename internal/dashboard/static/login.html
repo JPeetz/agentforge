@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AgentForge — Login</title>
+  <link rel="icon" href="/static/img/icons/favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/agentforge.css">
+  <style>
+    .af-login-wrapper {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .af-login-bg {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 50% 30%, rgba(255,107,44,0.08) 0%, transparent 70%),
+                  radial-gradient(ellipse at 80% 80%, rgba(56,189,248,0.05) 0%, transparent 60%);
+      z-index: 0;
+    }
+    .af-login-particles { z-index: 1; }
+    .af-login-card {
+      width: 420px;
+      padding: 48px;
+      text-align: center;
+      position: relative;
+      z-index: 2;
+    }
+    .af-login-logo-large {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 24px;
+      display: block;
+      border-radius: 20px;
+      box-shadow: 0 0 30px var(--af-magma-glow);
+    }
+    .af-login-card h1 {
+      font-family: var(--af-font-heading);
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      margin-bottom: 8px;
+    }
+    .af-login-subtitle {
+      color: var(--af-text-secondary);
+      font-size: 14px;
+      margin-bottom: 32px;
+      line-height: 1.5;
+    }
+    .af-login-form {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .af-login-form input {
+      text-align: center;
+      padding: 14px 16px;
+      font-size: 15px;
+      letter-spacing: 2px;
+    }
+    .af-login-btn {
+      width: 100%;
+      padding: 14px;
+      font-size: 15px;
+      justify-content: center;
+      letter-spacing: 0.5px;
+    }
+    .af-login-footer {
+      margin-top: 32px;
+      font-size: 12px;
+      color: var(--af-text-muted);
+    }
+    .af-login-demo {
+      margin-top: 20px;
+      padding: 12px;
+      border-radius: var(--af-radius);
+      background: var(--af-magma-subtle);
+      border: 1px solid var(--af-glass-border);
+    }
+    .af-login-demo p { font-size: 12px; color: var(--af-text-secondary); margin-bottom: 4px; }
+    .af-login-demo code { font-size: 11px; color: var(--af-magma); }
+  </style>
+</head>
+<body>
+  <div class="af-login-wrapper">
+    <div class="af-login-bg"></div>
+    <div class="af-login-particles af-particles">
+      <div class="af-particle" style="top:15%;left:10%;width:4px;height:4px;animation-delay:0s;animation-duration:7s;"></div>
+      <div class="af-particle" style="top:25%;left:85%;width:3px;height:3px;animation-delay:1s;animation-duration:5s;"></div>
+      <div class="af-particle" style="top:70%;left:20%;width:5px;height:5px;animation-delay:2s;animation-duration:8s;"></div>
+      <div class="af-particle" style="top:80%;left:75%;width:3px;height:3px;animation-delay:0.5s;animation-duration:6s;"></div>
+      <div class="af-particle" style="top:40%;left:50%;width:4px;height:4px;animation-delay:1.5s;animation-duration:9s;"></div>
+      <div class="af-particle" style="top:10%;left:40%;width:2px;height:2px;animation-delay:3s;animation-duration:7s;"></div>
+      <div class="af-particle" style="top:60%;left:90%;width:4px;height:4px;animation-delay:2.5s;animation-duration:6s;"></div>
+      <div class="af-particle" style="top:90%;left:30%;width:3px;height:3px;animation-delay:1s;animation-duration:8s;"></div>
+    </div>
+
+    <div class="af-glass af-login-card af-animate-in">
+      <img src="/static/img/icons/logo-icon.png" alt="AgentForge" class="af-login-logo-large">
+      <h1>AgentForge</h1>
+      <p class="af-login-subtitle">Capability-secured agent orchestration.<br>Built in Go. Forged in volcanic glass.</p>
+
+      <form class="af-login-form" hx-post="/api/auth/login" hx-target="#login-error">
+        <input type="password" name="token" class="af-input" placeholder="Enter your API token" autofocus>
+        <button type="submit" class="af-btn af-btn-primary af-login-btn">Authenticate</button>
+      </form>
+
+      <div id="login-error" style="min-height: 24px; margin-top: 12px;"></div>
+
+      <div class="af-login-demo">
+        <p>First time?</p>
+        <code>agentforge token generate</code>
+      </div>
+
+      <p class="af-login-footer">AgentForge v0.1.0 · BUSL-1.1</p>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+</body>
+</html>
