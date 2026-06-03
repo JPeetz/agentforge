@@ -45,6 +45,16 @@ type StatusEvent struct {
 	Model   string `json:"model,omitempty"`
 }
 
+type CostUpdateEvent struct {
+	SessionID       string  `json:"session_id"`
+	Model           string  `json:"model"`
+	DeltaCost       float64 `json:"delta_cost"`
+	TotalCost       float64 `json:"total_cost"`
+	InputTokens     int     `json:"input_tokens"`
+	OutputTokens    int     `json:"output_tokens"`
+	CachedTokens    int     `json:"cached_tokens"`
+}
+
 type Usage struct {
 	PromptTokens     int `json:"prompt_tokens"`
 	CompletionTokens int `json:"completion_tokens"`
@@ -270,4 +280,16 @@ func NewStatusEvent(agent, status, message string) SSEEvent {
 
 func NewErrorEvent(errStr string) SSEEvent {
 	return SSEEvent{Event: "error", Data: StreamChunk{Error: errStr, Done: true}}
+}
+
+func NewCostUpdateEvent(sessionID, model string, deltaCost, totalCost float64, inputTokens, outputTokens, cachedTokens int) SSEEvent {
+	return SSEEvent{Event: "cost_update", Data: CostUpdateEvent{
+		SessionID:    sessionID,
+		Model:        model,
+		DeltaCost:    deltaCost,
+		TotalCost:    totalCost,
+		InputTokens:  inputTokens,
+		OutputTokens: outputTokens,
+		CachedTokens: cachedTokens,
+	}}
 }

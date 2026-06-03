@@ -101,6 +101,7 @@ func (s *Server) drainStream(ctx context.Context, client *sse.Client, ch <-chan 
 	var toolCalls []llm.ToolCall
 	var finish string
 	var usage llm.Usage
+	var prevTotalCost float64
 
 	for {
 		select {
@@ -128,9 +129,23 @@ func (s *Server) drainStream(ctx context.Context, client *sse.Client, ch <-chan 
 			}
 			if chunk.Usage.TotalTokens > 0 {
 				usage = chunk.Usage
-				// Record cost when we have usage data
+				// Record cost when we have usage data and emit real-time cost update
 				if tracker != nil {
 					tracker.RecordWithCached(model, usage, 0, client.ID)
+					currentTotalCost := tracker.GetTotalCost()
+					deltaCost := currentTotalCost - prevTotalCost
+					if deltaCost > 0 {
+						s.sseHub.SendToClient(client, sse.NewCostUpdateEvent(
+							client.ID,
+							model,
+							deltaCost,
+							currentTotalCost,
+							usage.PromptTokens,
+							usage.CompletionTokens,
+							0,
+						))
+						prevTotalCost = currentTotalCost
+					}
 				}
 			}
 			if chunk.Done {
