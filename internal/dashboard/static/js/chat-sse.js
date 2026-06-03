@@ -1,4 +1,4 @@
-// AgentForge SSE Chat — real-time streaming chat client
+// AgentForge SSE Chat — real-time streaming chat client with Markdown support
 (function() {
   var streaming = false;
   var currentAbortController = null;
@@ -11,7 +11,10 @@
     var div = document.getElementById('chat-messages');
 
     // Add user message
-    div.innerHTML += '<div class="chat-msg user">' + escapeHtml(msg) + '</div>';
+    var userMsg = document.createElement('div');
+    userMsg.className = 'chat-msg user';
+    userMsg.textContent = msg;
+    div.appendChild(userMsg);
     inp.value = '';
     div.scrollTop = div.scrollHeight;
 
@@ -60,9 +63,8 @@
             } else if (line.startsWith('data: ')) {
               var data = line.slice(6);
               handleSSE(eventType, data);
-              eventType = ''; // Reset after processing
+              eventType = '';
             }
-            // Empty lines are SSE event boundaries, reset eventType
             if (line === '') {
               eventType = '';
             }
@@ -83,14 +85,13 @@
     var out = document.getElementById('stream-output');
     if (!out) return;
 
-    // Remove typing indicator on first real chunk
     var typing = document.getElementById('typing-indicator');
     if (typing) typing.style.display = 'none';
 
     switch(event) {
       case 'chunk':
         if (d.content) {
-          out.textContent += d.content;
+          appendStreamChunk(out, d.content);
         }
         break;
       case 'tool_call':
@@ -106,26 +107,78 @@
         endStream(d.error || 'Unknown error');
         break;
       case 'ping':
-        // keep-alive, ignore
         break;
     }
     var div = document.getElementById('chat-messages');
     div.scrollTop = div.scrollHeight;
   }
 
+  function appendStreamChunk(container, content) {
+    // Find or create content div
+    var contentDiv = container.querySelector('.stream-content');
+    if (!contentDiv) {
+      contentDiv = document.createElement('div');
+      contentDiv.className = 'stream-content';
+      container.appendChild(contentDiv);
+    }
+
+    // Append raw content
+    contentDiv.textContent += content;
+  }
+
+  function renderMarkdown(container, text) {
+    var html = escapeHtml(text);
+
+    // Code blocks (triple backticks)
+    html = html.replace(/```([^\n]*)\n([\s\S]*?)```/g, function(match, lang, code) {
+      var copyBtn = '<button class="code-block-copy" onclick="copyCode(this)" title="Copy code">Copy</button>';
+      return '<pre style="position:relative;background:rgba(0,0,0,0.3);padding:10px 12px;border-radius:6px;overflow-x:auto;margin:6px 0;border:1px solid rgba(139,134,128,0.2)">' + copyBtn + '<code>' + code.trim() + '</code></pre>';
+    });
+
+    // Inline code
+    html = html.replace(/`([^`]+)`/g, '<code style="background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:3px;font-family:monospace;font-size:12px">$1</code>');
+
+    // Bold
+    html = html.replace(/\*\*([^\*]+)\*\*/g, '<strong>$1</strong>');
+
+    // Italic
+    html = html.replace(/\*([^\*]+)\*/g, '<em>$1</em>');
+
+    // Line breaks
+    html = html.replace(/\n/g, '<br>');
+
+    container.innerHTML = html;
+  }
+
+  window.copyCode = function(btn) {
+    var codeBlock = btn.nextElementSibling;
+    var text = codeBlock.textContent;
+    navigator.clipboard.writeText(text).then(function() {
+      var oldText = btn.textContent;
+      btn.textContent = '✓ Copied!';
+      btn.style.background = 'rgba(34,197,94,0.4)';
+      setTimeout(function() {
+        btn.textContent = oldText;
+        btn.style.background = '';
+      }, 2000);
+    }).catch(function(err) {
+      console.error('Failed to copy:', err);
+      btn.textContent = 'Copy failed';
+    });
+  };
+
   function handleToolCall(d) {
     if (!d.name) return;
     var div = document.getElementById('chat-messages');
 
-    // Find or create tool progress element
     var toolId = 'tool-' + d.id;
     var existing = document.getElementById(toolId);
     if (d.done) {
       if (existing) {
         existing.className = 'tool-progress tool-done';
         existing.innerHTML = d.error
-          ? '<span class="tool-error">✗</span> ' + escapeHtml(d.name) + ': ' + escapeHtml(d.error)
-          : '<span class="tool-done">✓</span> ' + escapeHtml(d.name);
+          ? '<span style="color:#EF4444">✗</span> ' + escapeHtml(d.name) + ': ' + escapeHtml(d.error)
+          : '<span style="color:#22C55E">✓</span> ' + escapeHtml(d.name);
       }
     } else {
       if (!existing) {
@@ -162,9 +215,14 @@
       out.classList.remove('streaming');
       if (err) {
         out.innerHTML = '<span class="chat-error">Error: ' + escapeHtml(err) + '</span>';
+      } else {
+        // Final Markdown render
+        var contentDiv = out.querySelector('.stream-content');
+        if (contentDiv) {
+          renderMarkdown(contentDiv, contentDiv.textContent);
+        }
       }
     }
-    // Clean up tool progress indicators
     var spinners = document.querySelectorAll('.tool-progress .tool-spinner');
     spinners.forEach(function(s) {
       var tool = s.parentElement;
@@ -173,10 +231,8 @@
         s.innerHTML = '⏱';
       }
     });
-    // Remove status message
     var statusMsg = document.getElementById('status-message');
     if (statusMsg) statusMsg.remove();
-    // Remove typing indicator
     var typing = document.getElementById('typing-indicator');
     if (typing) typing.remove();
   }

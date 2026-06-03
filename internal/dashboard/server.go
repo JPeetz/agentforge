@@ -638,17 +638,226 @@ func settingSecret(w http.ResponseWriter, label, current, desc string) {
 // ── Chat partial ─────────────────────────────────────────────────────────────
 
 func (s *Server) renderChat(w http.ResponseWriter) {
-	fmt.Fprint(w, `<div class="panel chat-panel" style="flex:1;min-height:500px">
-<div class="chat-messages" id="chat-messages">
+	fmt.Fprint(w, `<div class="panel chat-panel" style="flex:1;display:flex;flex-direction:column">
+<div class="chat-messages" id="chat-messages" style="flex:1;overflow-y:auto;padding:16px;min-height:400px;border-bottom:1px solid rgba(139,134,128,0.15)">
 <div class="chat-msg agent">I'm AgentForge. I am a capability-secured agent orchestration system. I can help you spawn agents, run pipelines, search memory, and audit your security posture. What would you like to do?</div>
-<div class="chat-msg user">What agents are currently running?</div>
-<div class="chat-msg agent">Three departments are active: <strong>Content</strong> (3 slots, 1 agent running), <strong>SEO</strong> (1 slot, 1 agent running), and <strong>Social</strong> (2 slots, 1 agent idle). All systems operational with no security violations.</div>
 </div>
-<div class="chat-input-bar">
-<input placeholder="Type a message..." id="chat-input" onkeydown="if(event.key==='Enter'){var m=this.value;var div=document.getElementById('chat-messages');div.innerHTML+='<div class=&quot;chat-msg user&quot;>'+m+'</div>';this.value='';div.scrollTop=div.scrollHeight}">
-<button class="btn btn-primary" onclick="var i=document.getElementById('chat-input');var m=i.value;var div=document.getElementById('chat-messages');if(m){div.innerHTML+='<div class=&quot;chat-msg user&quot;>'+m+'</div>';i.value='';div.scrollTop=div.scrollHeight;setTimeout(function(){div.innerHTML+='<div class=&quot;chat-msg agent&quot;>Processing: &quot;'+m+'&quot; — AgentForge engine dispatch initiated.</div>';div.scrollTop=div.scrollHeight},500)}"><img src="/static/img/icons/chat-send.png"> Send</button>
+<div class="chat-input-bar" style="display:flex;gap:8px;padding:12px;background:rgba(250,243,240,0.02)">
+<input placeholder="Type a message... (Shift+Enter for new line)" id="chat-input" style="flex:1;border:1px solid rgba(139,134,128,0.2);background:rgba(250,243,240,0.03);color:var(--text-primary);padding:10px 12px;border-radius:6px;font-size:13px;resize:none;max-height:100px" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat()}">
+<label class="file-upload-btn" title="Attach file (images, documents, code)">
+  <input type="file" id="chat-file-input" multiple style="display:none" accept="image/*,.pdf,.doc,.docx,.txt,.js,.py,.go,.sql,.json" onchange="handleFileUpload()">
+  <img src="/static/img/icons/paperclip.png" width="18" alt="Attach">
+</label>
+<button class="btn btn-primary" id="send-btn" onclick="sendChat()" style="white-space:nowrap"><img src="/static/img/icons/chat-send.png"> Send</button>
 </div>
-</div>`)
+</div>
+
+<style>
+.chat-messages {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.chat-msg {
+  padding: 12px 14px;
+  border-radius: 8px;
+  max-width: 80%;
+  word-wrap: break-word;
+  line-height: 1.5;
+  font-size: 13px;
+}
+
+.chat-msg.user {
+  align-self: flex-end;
+  background: rgba(139, 134, 128, 0.2);
+  border: 1px solid rgba(139, 134, 128, 0.3);
+  color: var(--text-primary);
+}
+
+.chat-msg.agent {
+  align-self: flex-start;
+  background: rgba(250, 243, 240, 0.05);
+  border: 1px solid rgba(139, 134, 128, 0.15);
+  color: var(--text-primary);
+}
+
+.chat-msg.streaming {
+  background: rgba(250, 243, 240, 0.03);
+}
+
+.chat-msg code {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.chat-msg pre {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 10px 12px;
+  border-radius: 6px;
+  overflow-x: auto;
+  margin: 4px 0;
+  position: relative;
+}
+
+.code-block-copy {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: rgba(139, 134, 128, 0.3);
+  border: none;
+  color: var(--text-primary);
+  padding: 4px 8px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 11px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.chat-msg pre:hover .code-block-copy {
+  opacity: 1;
+}
+
+.code-block-copy:hover {
+  background: rgba(139, 134, 128, 0.5);
+}
+
+.typing-indicator {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.typing-indicator span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(139, 134, 128, 0.6);
+  animation: typing 1.4s infinite;
+}
+
+.typing-indicator span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.typing-indicator span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes typing {
+  0%, 60%, 100% { opacity: 0.5; transform: translateY(0); }
+  30% { opacity: 1; transform: translateY(-8px); }
+}
+
+.tool-progress {
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  color: var(--text-dim);
+  font-size: 12px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin: 4px 0;
+}
+
+.tool-progress.tool-done {
+  background: rgba(34, 197, 94, 0.15);
+  border-color: rgba(34, 197, 94, 0.4);
+}
+
+.tool-spinner {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 2px solid rgba(34, 197, 94, 0.3);
+  border-top-color: rgba(34, 197, 94, 0.8);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.tool-stale .tool-spinner {
+  animation: none;
+  border: none;
+}
+
+.chat-error {
+  color: #EF4444;
+  font-weight: 600;
+}
+
+.chat-status {
+  padding: 8px 12px;
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 6px;
+  color: rgba(59, 130, 246, 1);
+  font-size: 12px;
+  margin: 4px 0;
+}
+
+.file-upload-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid rgba(139, 134, 128, 0.2);
+  background: rgba(250, 243, 240, 0.03);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.file-upload-btn:hover {
+  border-color: var(--af-magma);
+  background: rgba(250, 243, 240, 0.05);
+}
+
+.file-upload-btn img {
+  filter: brightness(0.9);
+}
+</style>
+
+<script>
+function handleFileUpload() {
+  var input = document.getElementById('chat-file-input');
+  var files = input.files;
+  if (files.length === 0) return;
+
+  var div = document.getElementById('chat-messages');
+
+  for (var i = 0; i < files.length; i++) {
+    var file = files[i];
+    var fileMsg = document.createElement('div');
+    fileMsg.className = 'chat-msg user';
+    fileMsg.innerHTML = '<strong>📎 ' + escapeHtml(file.name) + '</strong><br><span style="font-size:11px;color:var(--text-dim)">' + (file.size / 1024).toFixed(1) + ' KB</span>';
+    div.appendChild(fileMsg);
+  }
+
+  // Add to actual message (for now, just list the files)
+  // TODO: Send files to backend with SSE support
+
+  input.value = '';
+  div.scrollTop = div.scrollHeight;
+}
+
+function escapeHtml(s) {
+  return s.replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
+}
+</script>`)
 }
 
 
