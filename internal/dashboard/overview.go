@@ -36,7 +36,7 @@ func (s *Server) renderOverview(w http.ResponseWriter) {
 	// Get real cost from tracker
 	sessionCost := 0.0
 	if s.costTracker != nil {
-		sessionCost = s.costTracker.SessionCost()
+		sessionCost = s.costTracker.GetTotalCost()
 	}
 
 	// Compact stat cards with small icon accents + cost card
@@ -87,13 +87,19 @@ func (s *Server) renderOverview(w http.ResponseWriter) {
 	cachedPct := 0
 
 	if s.costTracker != nil {
-		tokenCounts := s.costTracker.TokenCounts()
-		inputTokens = tokenCounts["input"]
-		outputTokens = tokenCounts["output"]
-		dailyCost = s.costTracker.DailyCost()
-		// Cache percentage: estimate based on typical patterns (44% is common with prompt caching)
-		if inputTokens > 0 {
-			cachedPct = 44
+		tokenCounts := s.costTracker.GetTotalTokens()
+		inputTokens = int(tokenCounts.PromptTokens)
+		outputTokens = int(tokenCounts.CompletionTokens)
+		// Cache percentage: calculate from cached tokens
+		if tokenCounts.PromptTokens > 0 {
+			cachedPct = int((float64(tokenCounts.CachedTokens) / float64(tokenCounts.PromptTokens)) * 100)
+		}
+		// Get today's cost if available
+		dailyCosts := s.costTracker.GetDailyCosts(1)
+		if len(dailyCosts) > 0 {
+			dailyCost = dailyCosts[0].TotalCost
+		} else {
+			dailyCost = s.costTracker.GetTotalCost()
 		}
 	}
 
