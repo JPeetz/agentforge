@@ -235,12 +235,8 @@ func (c *StdioClient) Name() string { return c.name }
 func (c *StdioClient) Connect() error {
 	c.cmd = exec.Command(c.command, c.args...)
 
-	if len(c.env) > 0 {
-		c.cmd.Env = os.Environ()
-		for k, v := range c.env {
-			c.cmd.Env = append(c.cmd.Env, k+"="+v)
-		}
-	}
+	// Use filtered environment (blocks secrets like API keys, tokens, passwords)
+	c.cmd.Env = FilterEnvironment(c.env)
 
 	var err error
 	c.stdin, err = c.cmd.StdinPipe()

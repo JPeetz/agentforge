@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/agentforge/agentforge/internal/config"
+	"github.com/agentforge/agentforge/internal/mcpclient"
 	"github.com/agentforge/agentforge/internal/tool"
 )
 
@@ -247,13 +248,8 @@ func (m *Manager) startStdioLocked(inst *serverInstance) error {
 
 	cmd := exec.Command(inst.cfg.Command, inst.cfg.Args...)
 
-	// Set environment variables
-	if len(inst.cfg.Env) > 0 {
-		cmd.Env = os.Environ()
-		for k, v := range inst.cfg.Env {
-			cmd.Env = append(cmd.Env, k+"="+v)
-		}
-	}
+	// Use filtered environment (blocks secrets like API keys, tokens, passwords)
+	cmd.Env = mcpclient.FilterEnvironment(inst.cfg.Env)
 
 	stdin, err := cmd.StdinPipe()
 	if err != nil {
