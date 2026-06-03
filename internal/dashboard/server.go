@@ -92,7 +92,6 @@ func New(cfg *config.Config, b bus.Bus, sessionMgr *session.Manager, mcpMgr *mcp
 	s.mux.HandleFunc("/api/cost/daily", s.handleCostDaily)
 	s.mux.HandleFunc("/api/cost/budget", s.handleCostBudget)
 	s.mux.HandleFunc("/api/chat/stream", s.handleChatStream)
-	s.mux.HandleFunc("/api/chat/stream", s.handleChatStream)
 
 	return s, nil
 }
