@@ -26,3 +26,12 @@ data/
 # Environment
 .env
 .env.local
+
+# Internal development docs (local only)
+CRITICAL_FIXES_COMPLETE.md
+CRITICAL_FIXES_PROGRESS.md
+FIXPLAN_CRITICAL_*.md
+HIGH_PRIORITY_FIXES_PLAN.md
+HIGH_PRIORITY_FIXES_PROGRESS.md
+SECURITY_AUDIT.md
+DEVLOG.md
