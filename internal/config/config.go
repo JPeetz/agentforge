@@ -442,6 +442,11 @@ func Load(configPath string) (*Config, error) {
 	}
 	cfg.GRPCPort = cfg.GRPC.Port
 
+	// Validate configuration before returning
+	if err := cfg.Validate(); err != nil {
+		return nil, err
+	}
+
 	return &cfg, nil
 }
 
@@ -597,6 +602,236 @@ func MaskAPIKey(key string) string {
 		return "••••"
 	}
 	return "••••" + key[len(key)-4:]
+}
+
+// Validate checks critical configuration constraints.
+// Returns error if any validation fails, with detailed context.
+func (c *Config) Validate() error {
+	// Port validation
+	if err := c.validatePorts(); err != nil {
+		return err
+	}
+
+	// Provider validation
+	if err := c.validateProviders(); err != nil {
+		return err
+	}
+
+	// Channel validation
+	if err := c.validateChannels(); err != nil {
+		return err
+	}
+
+	// Security validation
+	if err := c.validateSecurity(); err != nil {
+		return err
+	}
+
+	// LLM configuration validation
+	if err := c.validateLLM(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// validatePorts ensures all port numbers are valid (1-65535).
+func (c *Config) validatePorts() error {
+	ports := map[string]int{
+		"daemon.port": c.Daemon.Port,
+		"grpc.port":   c.GRPC.Port,
+	}
+
+	for name, port := range ports {
+		if port < 1 || port > 65535 {
+			return fmt.Errorf("config validation: invalid port for %s: %d (must be 1-65535)", name, port)
+		}
+	}
+
+	// Validate MCP server ports
+	for i, srv := range c.MCP.Servers {
+		if srv.Enabled {
+			if srv.Port < 1 || srv.Port > 65535 {
+				return fmt.Errorf("config validation: invalid port for mcp.servers[%d] %q: %d (must be 1-65535)", i, srv.Name, srv.Port)
+			}
+		}
+	}
+
+	// Validate SMTP port if Email enabled
+	if c.Channels.Email.Enabled && c.Channels.Email.SMTPPort > 0 {
+		if c.Channels.Email.SMTPPort < 1 || c.Channels.Email.SMTPPort > 65535 {
+			return fmt.Errorf("config validation: invalid smtp port: %d (must be 1-65535)", c.Channels.Email.SMTPPort)
+		}
+	}
+
+	return nil
+}
+
+// validateProviders ensures enabled providers have required configuration.
+func (c *Config) validateProviders() error {
+	// Check LLM provider is configured
+	if c.LLM.Provider == "" {
+		return errors.New("config validation: llm.provider is required")
+	}
+
+	providerConfigs := map[string]ProviderConfig{
+		"openai":     c.Providers.OpenAI,
+		"anthropic":  c.Providers.Anthropic,
+		"openrouter": c.Providers.OpenRouter,
+		"google":     c.Providers.Google,
+		"deepseek":   c.Providers.DeepSeek,
+		"ollama":     c.Providers.Ollama,
+		"groq":       c.Providers.Groq,
+		"mistral":    c.Providers.Mistral,
+		"cohere":     c.Providers.Cohere,
+	}
+
+	// Validate enabled providers have API keys (except ollama which is self-hosted)
+	for name, provider := range providerConfigs {
+		if !provider.Enabled {
+			continue
+		}
+		if name != "ollama" && provider.APIKey == "" {
+			return fmt.Errorf("config validation: provider %q is enabled but apiKey is empty", name)
+		}
+		if provider.Model == "" {
+			return fmt.Errorf("config validation: provider %q is enabled but model is empty", name)
+		}
+	}
+
+	// Validate custom providers
+	for i, cp := range c.Providers.Custom {
+		if !cp.Enabled {
+			continue
+		}
+		if cp.Name == "" {
+			return fmt.Errorf("config validation: custom provider[%d] name is empty", i)
+		}
+		if cp.APIKey == "" {
+			return fmt.Errorf("config validation: custom provider %q is enabled but apiKey is empty", cp.Name)
+		}
+		if cp.BaseURL == "" {
+			return fmt.Errorf("config validation: custom provider %q is enabled but baseUrl is empty", cp.Name)
+		}
+		if cp.Model == "" {
+			return fmt.Errorf("config validation: custom provider %q is enabled but model is empty", cp.Name)
+		}
+	}
+
+	return nil
+}
+
+// validateChannels ensures enabled channels have required configuration.
+func (c *Config) validateChannels() error {
+	if c.Channels.Telegram.Enabled && c.Channels.Telegram.BotToken == "" {
+		return errors.New("config validation: telegram is enabled but botToken is empty")
+	}
+
+	if c.Channels.Discord.Enabled && c.Channels.Discord.BotToken == "" {
+		return errors.New("config validation: discord is enabled but botToken is empty")
+	}
+
+	if c.Channels.Signal.Enabled && c.Channels.Signal.PhoneNumber == "" {
+		return errors.New("config validation: signal is enabled but phoneNumber is empty")
+	}
+
+	if c.Channels.WhatsApp.Enabled {
+		if c.Channels.WhatsApp.APIKey == "" {
+			return errors.New("config validation: whatsapp is enabled but apiKey is empty")
+		}
+		if c.Channels.WhatsApp.PhoneNumberID == "" {
+			return errors.New("config validation: whatsapp is enabled but phoneNumberId is empty")
+		}
+	}
+
+	if c.Channels.Email.Enabled {
+		if c.Channels.Email.SMTPHost == "" {
+			return errors.New("config validation: email is enabled but smtpHost is empty")
+		}
+		if c.Channels.Email.SMTPPort == 0 {
+			return errors.New("config validation: email is enabled but smtpPort is not set")
+		}
+		if c.Channels.Email.FromAddress == "" {
+			return errors.New("config validation: email is enabled but fromAddress is empty")
+		}
+	}
+
+	if c.Channels.Slack.Enabled && c.Channels.Slack.BotToken == "" {
+		return errors.New("config validation: slack is enabled but botToken is empty")
+	}
+
+	return nil
+}
+
+// validateSecurity ensures security configuration is consistent.
+func (c *Config) validateSecurity() error {
+	if c.Security.CapabilitySecret == "" && c.Security.EnforceOnSpawn {
+		return errors.New("config validation: security.enforceOnSpawn is true but capabilitySecret is empty")
+	}
+
+	if c.Security.EnforceOnToolCall && c.Security.CapabilitySecret == "" {
+		return errors.New("config validation: security.enforceOnToolCall is true but capabilitySecret is empty")
+	}
+
+	if c.Security.DefaultTokenBudget < 0 {
+		return fmt.Errorf("config validation: security.defaultTokenBudget cannot be negative: %d", c.Security.DefaultTokenBudget)
+	}
+
+	if c.Security.DefaultTimeout <= 0 {
+		return fmt.Errorf("config validation: security.defaultTimeout must be positive: %v", c.Security.DefaultTimeout)
+	}
+
+	if c.Security.SandboxMode != "" && c.Security.SandboxMode != "none" && c.Security.SandboxMode != "non-main" && c.Security.SandboxMode != "strict" {
+		return fmt.Errorf("config validation: invalid sandboxMode: %q (must be 'none', 'non-main', or 'strict')", c.Security.SandboxMode)
+	}
+
+	return nil
+}
+
+// validateLLM ensures LLM configuration is consistent.
+func (c *Config) validateLLM() error {
+	if c.LLM.Provider == "" {
+		return errors.New("config validation: llm.provider is required")
+	}
+
+	if c.LLM.Model == "" {
+		return errors.New("config validation: llm.model is required")
+	}
+
+	if c.LLM.Temperature < 0 || c.LLM.Temperature > 2 {
+		return fmt.Errorf("config validation: llm.temperature out of range: %f (must be 0-2)", c.LLM.Temperature)
+	}
+
+	if c.LLM.TopP < 0 || c.LLM.TopP > 1 {
+		return fmt.Errorf("config validation: llm.topP out of range: %f (must be 0-1)", c.LLM.TopP)
+	}
+
+	if c.LLM.MaxTokens <= 0 {
+		return fmt.Errorf("config validation: llm.maxTokens must be positive: %d", c.LLM.MaxTokens)
+	}
+
+	if c.LLM.Timeout <= 0 {
+		return fmt.Errorf("config validation: llm.timeout must be positive: %v", c.LLM.Timeout)
+	}
+
+	if c.LLM.RetryCount < 0 {
+		return fmt.Errorf("config validation: llm.retryCount cannot be negative: %d", c.LLM.RetryCount)
+	}
+
+	if c.LLM.RateLimit.Enabled {
+		if c.LLM.RateLimit.RequestsPerMin <= 0 {
+			return fmt.Errorf("config validation: llm.rateLimit.requestsPerMin must be positive: %d", c.LLM.RateLimit.RequestsPerMin)
+		}
+		if c.LLM.RateLimit.TokensPerMin <= 0 {
+			return fmt.Errorf("config validation: llm.rateLimit.tokensPerMin must be positive: %d", c.LLM.RateLimit.TokensPerMin)
+		}
+	}
+
+	if c.LLM.MaxConcurrency <= 0 {
+		return fmt.Errorf("config validation: llm.maxConcurrency must be positive: %d", c.LLM.MaxConcurrency)
+	}
+
+	return nil
 }
 
 func (c *Config) ToJSON() ([]byte, error) {
