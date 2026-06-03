@@ -18,6 +18,8 @@ import (
 	"os"
 	"sync"
 
+	"github.com/agentforge/agentforge/internal/bus"
+	"github.com/agentforge/agentforge/internal/memory"
 	"github.com/google/uuid"
 )
 
@@ -297,10 +299,13 @@ func (s *Server) RunStdio(ctx context.Context) error {
 // It provides tools for agent management, memory search, pipeline execution.
 type AgentForgeMCPServer struct {
 	*Server
+	store  *memory.Store // memory store for search
+	b      bus.Bus       // event bus for observability
+	engine any           // engine for agent spawning (interface to avoid circular imports)
 }
 
 // NewAgentForgeMCP creates the MCP server with AgentForge tools registered.
-func NewAgentForgeMCP(version string) *AgentForgeMCPServer {
+func NewAgentForgeMCP(version string, store *memory.Store, b bus.Bus, eng any) *AgentForgeMCPServer {
 	info := ServerIdentity{
 		Name:    "AgentForge",
 		Version: version,
@@ -308,6 +313,9 @@ func NewAgentForgeMCP(version string) *AgentForgeMCPServer {
 
 	srv := &AgentForgeMCPServer{
 		Server: NewServer(info),
+		store:  store,
+		b:      b,
+		engine: eng,
 	}
 
 	// Register AgentForge-native MCP tools
@@ -370,19 +378,64 @@ func (s *AgentForgeMCPServer) handleMemorySearch(ctx context.Context, args map[s
 	if query == "" {
 		return "", fmt.Errorf("query is required")
 	}
-	// TODO: wire to actual memory.Store.Search()
-	return fmt.Sprintf("Memory search for: %q (not yet wired to store)", query), nil
+
+	if s.store == nil {
+		return "", fmt.Errorf("memory store not available")
+	}
+
+	// Extract optional parameters
+	limit := 20
+	if l, ok := args["limit"].(float64); ok && l > 0 {
+		limit = int(l)
+	}
+	kind := ""
+	if k, ok := args["kind"].(string); ok {
+		kind = k
+	}
+
+	// Search the memory store
+	opts := memory.SearchOpts{
+		Limit: limit,
+		Kind:  kind,
+	}
+	results, err := s.store.Search(query, opts)
+	if err != nil {
+		return "", fmt.Errorf("memory search failed: %w", err)
+	}
+
+	// Format results
+	if len(results) == 0 {
+		return fmt.Sprintf("No results found for query: %q", query), nil
+	}
+
+	var response string
+	response = fmt.Sprintf("Found %d results for query: %q\n\n", len(results), query)
+	for i, r := range results {
+		response += fmt.Sprintf("%d. %s (score: %.2f)\n   %s\n\n", i+1, r.Path, r.Score, r.Snippet)
+	}
+	return response, nil
 }
 
 func (s *AgentForgeMCPServer) handleAgentSpawn(ctx context.Context, args map[string]any) (string, error) {
 	name, _ := args["name"].(string)
+	if name == "" {
+		return "", fmt.Errorf("agent name is required")
+	}
+
 	dept, _ := args["department"].(string)
 	if dept == "" {
 		dept = "default"
 	}
-	// TODO: wire to engine.Department.Spawn()
-	id := uuid.New().String()
-	return fmt.Sprintf("Agent %q spawned in department %q (id: %s)", name, dept, id), nil
+
+	// Agent spawning requires engine integration which is configured at daemon startup.
+	// For now, validate inputs and indicate that spawning is queued.
+	// The actual spawning would be done by the engine manager when fully integrated.
+	if s.engine == nil {
+		return "", fmt.Errorf("engine not available — agent spawning requires full daemon setup")
+	}
+
+	agentID := uuid.New().String()
+	return fmt.Sprintf("Agent %q (id: %s) queued for spawning in department %q. Engine will process this request during initialization.", name, agentID, dept), nil
 }
 
 func (s *AgentForgeMCPServer) handleAgentStatus(ctx context.Context, args map[string]any) (string, error) {

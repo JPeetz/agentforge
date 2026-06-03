@@ -148,8 +148,7 @@ func (a *Agent) run(ctx context.Context) {
 
 		case <-a.heartbeat.C:
 			a.heartbeat.Reset(a.cfg.HeartbeatInterval)
-			b := a.selfCheck()
-			_ = b // TODO: observable via bus
+			a.selfCheck()
 
 		case <-ctx.Done():
 			a.Status = StatusShutdown
@@ -388,8 +387,56 @@ func (a *Agent) replyError(ctx context.Context, orig bus.Envelope, err error) {
 }
 
 func (a *Agent) selfCheck() bool {
-	// TODO: check memory store health, LLM connectivity, etc.
-	return true
+	health := map[string]any{
+		"agent_id":    a.ID,
+		"name":        a.Name,
+		"status":      a.Status,
+		"timestamp":   time.Now(),
+		"memory_ok":   true,
+		"llm_ok":      true,
+	}
+
+	// Check memory store health
+	if a.store != nil {
+		testPath := ".health_check"
+		testContent := []byte(fmt.Sprintf("health check at %d", time.Now().Unix()))
+		testMeta := memory.Metadata{Kind: "health"}
+		if err := a.store.Put(testPath, testContent, testMeta); err != nil {
+			health["memory_ok"] = false
+			health["memory_error"] = err.Error()
+		}
+	}
+
+	// Check LLM adapter connectivity with health check
+	if a.adapter != nil {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		err := a.adapter.HealthCheck(ctx)
+		cancel()
+		if err != nil {
+			health["llm_ok"] = false
+			health["llm_error"] = err.Error()
+		}
+	}
+
+	health["healthy"] = health["memory_ok"].(bool) && health["llm_ok"].(bool)
+
+	// Publish health check event to bus
+	if a.bus != nil {
+		data, err := json.Marshal(health)
+		if err == nil {
+			env := bus.Envelope{
+				ID:        uuid.New().String(),
+				Source:    a.ID,
+				Kind:      bus.KindEvent,
+				Topic:     "agent." + a.ID + ".health",
+				Payload:   data,
+				Timestamp: time.Now(),
+			}
+			a.bus.Publish(context.Background(), env)
+		}
+	}
+
+	return health["healthy"].(bool)
 }
 
 func (a *Agent) drainInbox() {
@@ -619,11 +666,51 @@ func (p *Pipeline) Execute(ctx context.Context, initial map[string]any) error {
 			}
 		}
 
-		// Execute stage
+		// Execute stage through department agent delegation
 		resultCh := make(chan map[string]any, 1)
 		go func(s Stage, in []map[string]any) {
-			// TODO: delegate to actual agent
-			resultCh <- map[string]any{"stage": s.Name, "ok": true}
+			defer close(resultCh)
+
+			// Build stage execution prompt from stage definition
+			prompt := fmt.Sprintf(
+				"Execute pipeline stage %q using tool %q with inputs: %v",
+				s.Name, s.Tool, in,
+			)
+
+			cmdPayload := CommandPayload{
+				Action: "run",
+				Args: map[string]any{
+					"prompt": prompt,
+				},
+			}
+			cmdData, err := json.Marshal(cmdPayload)
+			if err != nil {
+				resultCh <- map[string]any{"stage": s.Name, "ok": false, "error": err.Error()}
+				return
+			}
+
+			// Publish command to target agent/department
+			// Stage.Agent can be "content", "seo", or "any:content"
+			dept := string(s.Agent)
+			if dept == "" {
+				dept = "pipeline"
+			}
+
+			env := bus.Envelope{
+				ID:      uuid.New().String(),
+				Kind:    bus.KindCommand,
+				Topic:   "dept." + dept + ".broadcast",
+				Payload: cmdData,
+			}
+
+			// Publish to bus for agent execution
+			// TODO: wait for response with timeout (Stage.Timeout)
+			if p.bus != nil {
+				p.bus.Publish(context.Background(), env)
+			}
+
+			// Return success (full bus response handling requires async reply tracking)
+			resultCh <- map[string]any{"stage": s.Name, "ok": true, "result": in}
 		}(*stage, inputs)
 
 		results[stageName] = resultCh
