@@ -91,7 +91,10 @@ func New(cfg *config.Config, b bus.Bus, sessionMgr *session.Manager, mcpMgr *mcp
 	s.mux.HandleFunc("/api/cost/summary", s.handleCostSummary)
 	s.mux.HandleFunc("/api/cost/daily", s.handleCostDaily)
 	s.mux.HandleFunc("/api/cost/budget", s.handleCostBudget)
+	s.mux.HandleFunc("/api/events", s.handleEventsAPI)
+	s.mux.HandleFunc("/api/events-html", s.handleEventsHTMLAPI)
 	s.mux.HandleFunc("/api/chat/stream", s.handleChatStream)
+	s.mux.HandleFunc("/api/chat/upload", s.handleFileUpload)
 
 	return s, nil
 }
@@ -642,6 +645,12 @@ func (s *Server) renderChat(w http.ResponseWriter) {
 <div class="chat-messages" id="chat-messages" style="flex:1;overflow-y:auto;padding:16px;min-height:400px;border-bottom:1px solid rgba(139,134,128,0.15)">
 <div class="chat-msg agent">I'm AgentForge. I am a capability-secured agent orchestration system. I can help you spawn agents, run pipelines, search memory, and audit your security posture. What would you like to do?</div>
 </div>
+<div id="chat-cost-display" class="chat-cost-display" style="padding:8px 12px;border-bottom:1px solid rgba(139,134,128,0.15);background:rgba(250,243,240,0.01);display:none">
+<div style="font-size:11px;color:var(--text-dim);display:flex;justify-content:space-between;gap:16px">
+  <span>Session Cost: <strong id="session-total-cost">$0.00</strong></span>
+  <span>Tokens: <strong id="session-token-count">0</strong> (in: <span id="session-input-tokens">0</span> | out: <span id="session-output-tokens">0</span>)</span>
+</div>
+</div>
 <div class="chat-input-bar" style="display:flex;gap:8px;padding:12px;background:rgba(250,243,240,0.02)">
 <input placeholder="Type a message... (Shift+Enter for new line)" id="chat-input" style="flex:1;border:1px solid rgba(139,134,128,0.2);background:rgba(250,243,240,0.03);color:var(--text-primary);padding:10px 12px;border-radius:6px;font-size:13px;resize:none;max-height:100px" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat()}">
 <label class="file-upload-btn" title="Attach file (images, documents, code)">
@@ -835,8 +844,10 @@ function handleFileUpload() {
   if (files.length === 0) return;
 
   var div = document.getElementById('chat-messages');
+  var formData = new FormData();
 
   for (var i = 0; i < files.length; i++) {
+    formData.append('files', files[i]);
     var file = files[i];
     var fileMsg = document.createElement('div');
     fileMsg.className = 'chat-msg user';
@@ -844,8 +855,22 @@ function handleFileUpload() {
     div.appendChild(fileMsg);
   }
 
-  // Add to actual message (for now, just list the files)
-  // TODO: Send files to backend with SSE support
+  fetch('/api/chat/upload', {
+    method: 'POST',
+    headers: {
+      'Authorization': 'Bearer ' + (localStorage.getItem('af_access_token') || '')
+    },
+    body: formData
+  }).then(function(resp) {
+    if (!resp.ok) {
+      console.error('File upload failed:', resp.status);
+    }
+    return resp.json();
+  }).then(function(data) {
+    console.log('Files uploaded:', data);
+  }).catch(function(err) {
+    console.error('Upload error:', err);
+  });
 
   input.value = '';
   div.scrollTop = div.scrollHeight;

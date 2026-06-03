@@ -114,31 +114,10 @@ func (s *Server) renderOverview(w http.ResponseWriter) {
 </div>`,
 		costModel, s.cfg.LLM.Model, inputTokens, cachedPct, outputTokens, dailyCost)
 
-	// Recent Events (pulled from bus/logs)
+	// Recent Events (pulled from /api/events with htmx polling)
 	fmt.Fprint(w, `<div class="panel" style="margin-top:12px">
 <div class="panel-header"><img src="/static/img/icons/activity-icon.png" width="16"> Recent Events</div>
-<div style="padding:4px 0">`)
-
-	// TODO: Integrate with actual event log from bus
-	// For now, show placeholder when no events available
-	events := []struct{ ts, kind, msg string }{}
-
-	// If we have a real log/event tracker, populate events from there
-	// events, _ := s.getRecentEvents(5)  // Fetch last 5 events from real source
-
-	if len(events) == 0 {
-		fmt.Fprint(w, `<div style="padding:8px;color:var(--text-dim);font-size:12px">No events yet. Events will appear here as agents run and pipelines execute.</div>`)
-	} else {
-		for _, ev := range events {
-			cls := "badge"
-			switch ev.kind {
-			case "agent": cls = "badge badge-magma"
-			case "security": cls = "badge badge-live"
-			case "pipeline": cls = "badge badge-idle"
-			case "memory": cls = "badge badge-idle"
-			}
-			fmt.Fprintf(w, `<div class="activity-item"><span class="activity-ts">%s</span><span class="%s" style="font-size:10px;padding:1px 6px">%s</span><span style="font-size:12px;color:var(--text-primary)">%s</span></div>`, ev.ts, cls, ev.kind, ev.msg)
-		}
-	}
-	fmt.Fprint(w, `</div></div>`)
+<div id="events-container" style="padding:4px 0" hx-get="/api/events-html" hx-trigger="load, every 3s" hx-swap="innerHTML">
+<div style="padding:8px;color:var(--text-dim);font-size:12px">Loading events...</div>
+</div></div>`)
 }

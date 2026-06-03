@@ -100,6 +100,9 @@
       case 'status':
         handleStatusEvent(d);
         break;
+      case 'cost_update':
+        handleCostUpdate(d);
+        break;
       case 'done':
         endStream(null);
         break;
@@ -204,6 +207,36 @@
       document.getElementById('chat-messages').insertBefore(
         status, document.getElementById('stream-output')
       );
+    }
+  }
+
+  function handleCostUpdate(d) {
+    var costDisplay = document.getElementById('chat-cost-display');
+    if (!costDisplay) return;
+
+    costDisplay.style.display = 'block';
+
+    if (d.total_cost !== undefined) {
+      var costEl = document.getElementById('session-total-cost');
+      if (costEl) {
+        costEl.textContent = '$' + d.total_cost.toFixed(4);
+      }
+    }
+
+    var totalTokens = (d.input_tokens || 0) + (d.output_tokens || 0) + (d.cached_tokens || 0);
+    var tokenEl = document.getElementById('session-token-count');
+    if (tokenEl) {
+      tokenEl.textContent = totalTokens;
+    }
+
+    var inputEl = document.getElementById('session-input-tokens');
+    if (inputEl && d.input_tokens !== undefined) {
+      inputEl.textContent = d.input_tokens;
+    }
+
+    var outputEl = document.getElementById('session-output-tokens');
+    if (outputEl && d.output_tokens !== undefined) {
+      outputEl.textContent = d.output_tokens;
     }
   }
 
