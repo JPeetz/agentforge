@@ -19,6 +19,7 @@ import (
 	"time"
 
 	"github.com/agentforge/agentforge/internal/security"
+	"github.com/google/shlex"
 )
 
 // ── Tool Interface ──────────────────────────────────────────────────────────
@@ -236,9 +237,35 @@ func (s *ShellTool) Execute(ctx context.Context, args map[string]any) (map[strin
 		return nil, fmt.Errorf("shell: missing 'command' argument")
 	}
 
+	// Parse command string as shell tokens (not a raw string for sh -c)
+	parts, err := shlex.Split(cmdStr)
+	if err != nil {
+		return nil, fmt.Errorf("shell: parse error: %w", err)
+	}
+	if len(parts) == 0 {
+		return nil, fmt.Errorf("shell: empty command")
+	}
+
+	// Enforce whitelist if configured
+	if len(s.AllowedCommands) > 0 {
+		found := false
+		for _, allowed := range s.AllowedCommands {
+			if parts[0] == allowed {
+				found = true
+				break
+			}
+		}
+		if !found {
+			return nil, fmt.Errorf("shell: command %q not allowed (whitelist: %v)", parts[0], s.AllowedCommands)
+		}
+	}
+
 	timeout := 30 * time.Second
 	if ts, ok := args["timeout"].(string); ok {
-		d, _ := time.ParseDuration(ts)
+		d, err := time.ParseDuration(ts)
+		if err != nil {
+			return nil, fmt.Errorf("shell: parse timeout: %w", err)
+		}
 		if d > 0 {
 			timeout = d
 		}
@@ -248,27 +275,44 @@ func (s *ShellTool) Execute(ctx context.Context, args map[string]any) (map[strin
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
-	cmd := exec.CommandContext(ctx, "sh", "-c", cmdStr)
+	// Use argv form (no shell interpretation) instead of sh -c
+	cmd := exec.CommandContext(ctx, parts[0], parts[1:]...)
 	if workdir != "" {
 		cmd.Dir = workdir
 	}
 
-	stdout, _ := cmd.StdoutPipe()
-	stderr, _ := cmd.StderrPipe()
+	// Check pipe errors explicitly
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		return nil, fmt.Errorf("shell: stdout pipe: %w", err)
+	}
+
+	stderr, err := cmd.StderrPipe()
+	if err != nil {
+		return nil, fmt.Errorf("shell: stderr pipe: %w", err)
+	}
 
 	if err := cmd.Start(); err != nil {
 		return nil, fmt.Errorf("shell: start: %w", err)
 	}
 
-	outBytes, _ := io.ReadAll(stdout)
-	errBytes, _ := io.ReadAll(stderr)
+	// Check I/O read errors explicitly
+	outBytes, err := io.ReadAll(stdout)
+	if err != nil {
+		return nil, fmt.Errorf("shell: read stdout: %w", err)
+	}
+
+	errBytes, err := io.ReadAll(stderr)
+	if err != nil {
+		return nil, fmt.Errorf("shell: read stderr: %w", err)
+	}
 
 	if err := cmd.Wait(); err != nil {
 		return map[string]any{
-			"stdout":   string(outBytes),
-			"stderr":   string(errBytes),
+			"stdout":    string(outBytes),
+			"stderr":    string(errBytes),
 			"exit_code": cmd.ProcessState.ExitCode(),
-			"error":    err.Error(),
+			"error":     err.Error(),
 		}, nil
 	}
 
