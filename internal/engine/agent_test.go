@@ -40,6 +40,38 @@ func (m *mockAdapter) Chat(_ context.Context, req llm.Request) (llm.Response, er
 		Usage: llm.Usage{PromptTokens: 10, CompletionTokens: 20, TotalTokens: 30},
 	}, nil
 }
+func (m *mockAdapter) StreamChat(_ context.Context, req llm.Request) (<-chan llm.StreamChunk, error) {
+	// Return a channel that emits the mock response as StreamChunk objects
+	out := make(chan llm.StreamChunk, 10)
+	go func() {
+		defer close(out)
+		// Emit content chunk if configured
+		if m.response != "" {
+			out <- llm.StreamChunk{
+				Content: m.response,
+				Role:    "assistant",
+			}
+		}
+		// Emit tool calls if configured
+		if len(m.toolCalls) > 0 {
+			out <- llm.StreamChunk{
+				ToolCalls: m.toolCalls,
+			}
+		}
+		// Final chunk with metadata
+		out <- llm.StreamChunk{
+			Done:   true,
+			Model:  req.Model,
+			Finish: "stop",
+			Usage: llm.Usage{
+				PromptTokens:     10,
+				CompletionTokens: 20,
+				TotalTokens:      30,
+			},
+		}
+	}()
+	return out, nil
+}
 func (m *mockAdapter) HealthCheck(_ context.Context) error { return nil }
 func (m *mockAdapter) ContextWindow() int { return 128000 }
 
