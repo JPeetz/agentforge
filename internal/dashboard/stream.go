@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/agentforge/agentforge/internal/cost"
 	"github.com/agentforge/agentforge/internal/llm"
 	"github.com/agentforge/agentforge/internal/sse"
 )
@@ -46,13 +47,13 @@ func (s *Server) handleChatStream(w http.ResponseWriter, r *http.Request) {
 
 	go func() {
 		defer s.sseHub.Disconnect(client)
-		s.streamChat(r.Context(), client, req)
+		s.streamChat(r.Context(), client, req, s.costTracker)
 	}()
 
 	<-client.Quit()
 }
 
-func (s *Server) streamChat(ctx context.Context, client *sse.Client, req streamChatRequest) {
+func (s *Server) streamChat(ctx context.Context, client *sse.Client, req streamChatRequest, tracker *cost.Tracker) {
 	if s.adapter == nil {
 		s.sseHub.SendToClient(client, sse.NewErrorEvent("No LLM adapter configured"))
 		return
@@ -71,14 +72,14 @@ func (s *Server) streamChat(ctx context.Context, client *sse.Client, req streamC
 	ch, err := s.adapter.StreamChat(ctx, llmReq)
 	if err != nil {
 		if errors.Is(err, llm.ErrStreamingNotSupported) {
-			s.nonStreamingChat(ctx, client, llmReq)
+			s.nonStreamingChat(ctx, client, llmReq, tracker)
 			return
 		}
 		s.sseHub.SendToClient(client, sse.NewErrorEvent(fmt.Sprintf("Stream error: %v", err)))
 		return
 	}
 
-	_, _, _, usage, drainErr := s.drainStream(ctx, client, ch)
+	_, _, _, usage, drainErr := s.drainStream(ctx, client, ch, req.Model, tracker)
 	if drainErr != nil {
 		s.sseHub.SendToClient(client, sse.NewErrorEvent(drainErr.Error()))
 		return
@@ -95,7 +96,7 @@ func (s *Server) streamChat(ctx context.Context, client *sse.Client, req streamC
 	s.sseHub.SendToClient(client, sse.NewDoneEvent(req.Model, u))
 }
 
-func (s *Server) drainStream(ctx context.Context, client *sse.Client, ch <-chan llm.StreamChunk) (string, []llm.ToolCall, string, llm.Usage, error) {
+func (s *Server) drainStream(ctx context.Context, client *sse.Client, ch <-chan llm.StreamChunk, model string, tracker *cost.Tracker) (string, []llm.ToolCall, string, llm.Usage, error) {
 	var content strings.Builder
 	var toolCalls []llm.ToolCall
 	var finish string
@@ -127,6 +128,10 @@ func (s *Server) drainStream(ctx context.Context, client *sse.Client, ch <-chan 
 			}
 			if chunk.Usage.TotalTokens > 0 {
 				usage = chunk.Usage
+				// Record cost when we have usage data
+				if tracker != nil {
+					tracker.RecordWithCached(model, usage, 0, client.ID)
+				}
 			}
 			if chunk.Done {
 				return content.String(), toolCalls, finish, usage, nil
@@ -135,7 +140,7 @@ func (s *Server) drainStream(ctx context.Context, client *sse.Client, ch <-chan 
 	}
 }
 
-func (s *Server) nonStreamingChat(ctx context.Context, client *sse.Client, req llm.Request) {
+func (s *Server) nonStreamingChat(ctx context.Context, client *sse.Client, req llm.Request, tracker *cost.Tracker) {
 	s.sseHub.SendToClient(client, sse.NewStatusEvent("", "streaming", "Fallback to batch mode"))
 
 	resp, err := s.adapter.Chat(ctx, req)
@@ -149,6 +154,11 @@ func (s *Server) nonStreamingChat(ctx context.Context, client *sse.Client, req l
 	}
 
 	s.sseHub.SendToClient(client, sse.NewChunkEvent(resp.Choices[0].Message.Content))
+
+	// Record cost for non-streaming response
+	if tracker != nil && resp.Usage.TotalTokens > 0 {
+		tracker.RecordWithCached(resp.Model, resp.Usage, 0, client.ID)
+	}
 
 	u := &sse.Usage{}
 	if resp.Usage.TotalTokens > 0 {

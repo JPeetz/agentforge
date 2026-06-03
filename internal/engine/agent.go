@@ -92,6 +92,7 @@ func NewAgent(ctx context.Context, cfg AgentConfig, sec *security.Enforcer, b bu
 	if a.cfg.HeartbeatInterval == 0 {
 		a.cfg.HeartbeatInterval = 30 * time.Second
 	}
+	a.heartbeat = time.NewTimer(a.cfg.HeartbeatInterval)
 
 	// Derive a capability for this agent
 	rootCap := sec.Issue(
