@@ -389,7 +389,10 @@ func (h *HTTPTool) Execute(ctx context.Context, args map[string]any) (map[string
 	}
 	defer resp.Body.Close()
 
-	respBody, _ := io.ReadAll(io.LimitReader(resp.Body, 1<<20)) // max 1MB
+	respBody, err := io.ReadAll(io.LimitReader(resp.Body, 1<<20)) // max 1MB
+	if err != nil {
+		return nil, fmt.Errorf("http: read response: %w", err)
+	}
 
 	return map[string]any{
 		"status":     resp.StatusCode,
@@ -498,8 +501,16 @@ func (m *MCPClientTool) callHTTP(ctx context.Context, cfg MCPServerConfig, metho
 func (m *MCPClientTool) callStdio(ctx context.Context, cfg MCPServerConfig, method string, params map[string]any) (map[string]any, error) {
 	// MCP stdio: spawn the command and communicate via stdin/stdout JSON-RPC
 	cmd := exec.CommandContext(ctx, cfg.Command, cfg.Args...)
-	stdin, _ := cmd.StdinPipe()
-	stdout, _ := cmd.StdoutPipe()
+
+	stdin, err := cmd.StdinPipe()
+	if err != nil {
+		return nil, fmt.Errorf("mcp stdio stdin pipe: %w", err)
+	}
+
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		return nil, fmt.Errorf("mcp stdio stdout pipe: %w", err)
+	}
 
 	if err := cmd.Start(); err != nil {
 		return nil, fmt.Errorf("mcp stdio start: %w", err)

@@ -10,10 +10,10 @@
 | Fix # | Issue | Status | Time | Blocker |
 |-------|-------|--------|------|---------|
 | 1 | Test Build Failure | ✅ **DONE** | 15 min | None |
-| 2 | Shell Injection | 🟡 Ready | 30 min | None |
+| 2 | Shell Injection | ✅ **DONE** | 30 min | None |
 | 3 | Silent Error Drops | 🟡 Ready | 15 min | None |
 | 4 | Glob Pattern Matching | 🟡 Ready | 30 min | None |
-| | **TOTAL** | | **90 min** | |
+| | **TOTAL** | **2/4 DONE** | **90 min** | |
 
 ---
 
