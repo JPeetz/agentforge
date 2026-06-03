@@ -121,7 +121,11 @@ func NewAgent(ctx context.Context, cfg AgentConfig, sec *security.Enforcer, b bu
 		return nil, fmt.Errorf("subscribe inbox: %w", err)
 	}
 
-	deptSub, _ := b.Subscribe("dept."+a.Department+".broadcast", bus.DefaultFilter)
+	deptSub, err := b.Subscribe("dept."+a.Department+".broadcast", bus.DefaultFilter)
+	if err != nil {
+		cancel()
+		return nil, fmt.Errorf("subscribe dept broadcast: %w", err)
+	}
 
 	// Forward bus messages to agent's inbox channel
 	go a.forwardBusMessages(ctx, inboxSub, deptSub)
@@ -190,9 +194,9 @@ func (a *Agent) handleCommand(ctx context.Context, env bus.Envelope) {
 
 func (a *Agent) runTask(ctx context.Context, env bus.Envelope, args map[string]any) {
 	// Extract the prompt from command args
-	prompt, _ := args["prompt"].(string)
-	if prompt == "" {
-		a.replyError(ctx, env, fmt.Errorf("runTask: missing 'prompt' argument"))
+	prompt, ok := args["prompt"].(string)
+	if !ok || prompt == "" {
+		a.replyError(ctx, env, fmt.Errorf("runTask: missing or invalid 'prompt' argument"))
 		return
 	}
 
@@ -280,7 +284,11 @@ func (a *Agent) runTask(ctx context.Context, env bus.Envelope, args map[string]a
 
 				result, execErr := a.registry.Execute(ctx, a.enforcer, a.Capability, tc.Name, toolArgs)
 
-				toolResultBytes, _ := json.Marshal(result)
+				toolResultBytes, err := json.Marshal(result)
+				if err != nil {
+					a.replyError(ctx, env, fmt.Errorf("marshal tool result for %s: %w", tc.Name, err))
+					return
+				}
 				messages = append(messages, llm.Message{
 					Role:    "tool",
 					Content: string(toolResultBytes),
@@ -320,14 +328,20 @@ func (a *Agent) runTask(ctx context.Context, env bus.Envelope, args map[string]a
 			Tags:    []string{"llm", "result"},
 		}
 		memPath := fmt.Sprintf("agents/%s/results/%s.json", a.ID, time.Now().Format("20060102-150405"))
-		data, _ := json.MarshalIndent(resultData, "", "  ")
-		if err := a.store.Put(memPath, data, meta); err != nil {
-			fmt.Printf("agent %s: memory write failed: %v\n", a.ID[:8], err)
+		data, err := json.MarshalIndent(resultData, "", "  ")
+		if err != nil {
+			fmt.Printf("agent %s: marshal result for memory: %v\n", a.ID[:8], err)
+		} else {
+			if err := a.store.Put(memPath, data, meta); err != nil {
+				fmt.Printf("agent %s: memory write failed: %v\n", a.ID[:8], err)
+			}
 		}
 
 		logLine := fmt.Sprintf("## [%s] Agent %s (%s)\n- Prompt: %s\n- Response: %s\n- Tools used: %d\n\n",
 			time.Now().Format(time.RFC3339), a.Name, a.ID[:8], prompt, finalContent, len(functionResults))
-		_ = a.store.Append("daily/agent-log.md", []byte(logLine))
+		if err := a.store.Append("daily/agent-log.md", []byte(logLine)); err != nil {
+			fmt.Printf("agent %s: append to log failed: %v\n", a.ID[:8], err)
+		}
 	}
 
 	a.reply(ctx, env, bus.KindResponse, resultData)
@@ -352,7 +366,11 @@ func (a *Agent) pong(ctx context.Context, env bus.Envelope) {
 }
 
 func (a *Agent) reply(ctx context.Context, orig bus.Envelope, kind bus.MessageKind, payload any) {
-	data, _ := json.Marshal(payload)
+	data, err := json.Marshal(payload)
+	if err != nil {
+		a.replyError(ctx, orig, fmt.Errorf("marshal reply: %w", err))
+		return
+	}
 	env := bus.Envelope{
 		ID:        orig.ID,
 		Source:    a.ID,
@@ -498,8 +516,16 @@ func (d *Department) Spawn(ctx context.Context, sec *security.Enforcer, name, de
 	a.heartbeat = time.NewTimer(cfg.HeartbeatInterval)
 
 	// Subscribe to personal inbox and department broadcast
-	inboxSub, _ := d.bus.Subscribe("agent."+a.ID+".inbox", bus.DefaultFilter)
-	deptSub, _ := d.bus.Subscribe("dept."+a.Department+".broadcast", bus.DefaultFilter)
+	inboxSub, err := d.bus.Subscribe("agent."+a.ID+".inbox", bus.DefaultFilter)
+	if err != nil {
+		cancel()
+		return nil, fmt.Errorf("subscribe agent inbox: %w", err)
+	}
+	deptSub, err := d.bus.Subscribe("dept."+a.Department+".broadcast", bus.DefaultFilter)
+	if err != nil {
+		cancel()
+		return nil, fmt.Errorf("subscribe dept broadcast: %w", err)
+	}
 	go a.forwardBusMessages(ctx, inboxSub, deptSub)
 
 	go a.run(ctx)

@@ -165,8 +165,15 @@ func (a *Agent) RunStream(ctx context.Context, prompt, model string, temp float6
 	if a.store != nil {
 		meta := memory.Metadata{AgentID: a.ID, Kind: "agent-state", Tags: []string{"llm", "result", "stream"}}
 		memPath := fmt.Sprintf("agents/%s/results/%s.json", a.ID, time.Now().Format("20060102-150405"))
-		data, _ := json.MarshalIndent(resultData, "", "  ")
-		_ = a.store.Put(memPath, data, meta)
+		data, err := json.MarshalIndent(resultData, "", "  ")
+		if err != nil {
+			// Log but don't fail the stream on marshal error
+			fmt.Printf("agent %s: marshal stream result: %v\n", a.ID[:8], err)
+		} else {
+			if err := a.store.Put(memPath, data, meta); err != nil {
+				fmt.Printf("agent %s: store stream result: %v\n", a.ID[:8], err)
+			}
+		}
 	}
 
 	cb(StreamEvent{
@@ -238,9 +245,18 @@ func (a *Agent) processToolResult(ctx context.Context, tc llm.ToolCall, cb Strea
 		} else {
 			*functionResults = append(*functionResults, result)
 			cb(StreamEvent{Kind: "tool_result", Tool: tc.Name, Content: fmt.Sprintf("%s done", tc.Name)})
-		}
 
-		toolResultBytes, _ := json.Marshal(result)
-		*messages = append(*messages, llm.Message{Role: "tool", Content: string(toolResultBytes), Name: tc.Name})
+			toolResultBytes, err := json.Marshal(result)
+			if err != nil {
+				// If marshaling fails, send error to LLM
+				*messages = append(*messages, llm.Message{
+					Role:    "tool",
+					Content: fmt.Sprintf(`{"error": "marshal tool result: %s"}`, err.Error()),
+					Name:    tc.Name,
+				})
+			} else {
+				*messages = append(*messages, llm.Message{Role: "tool", Content: string(toolResultBytes), Name: tc.Name})
+			}
+		}
 	}
 }
