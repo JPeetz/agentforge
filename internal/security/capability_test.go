@@ -2,6 +2,7 @@ package security
 
 import (
 	"context"
+	"strings"
 	"testing"
 	"time"
 )
@@ -425,4 +426,182 @@ func TestOperationAllowed_AllOperations(t *testing.T) {
 	}
 
 	t.Log("Operation matching verification passed")
+}
+
+// ── Capability Derivation Tests ──────────────────────────────────────────────
+
+func TestDerive_ValidSubset(t *testing.T) {
+	enforcer := NewEnforcer("test-secret")
+
+	parentCap := &Capability{
+		ID:          "parent-1",
+		Issuer:      "test",
+		Subject:     "parent-agent",
+		Permissions: []Permission{PermRead, PermWrite, PermExec},
+		Resources: []ResourceRule{
+			{
+				Path:        "/home/user/*",
+				Operations:  []Permission{PermRead, PermWrite},
+			},
+		},
+		TokenBudget: 100000,
+		Timeout:     1 * time.Hour,
+		ExpiresAt:   time.Now().Add(1 * time.Hour),
+	}
+
+	// Derive with restrictions - reduce permissions
+	derived, err := enforcer.Derive(parentCap, "child-agent",
+		RestrictPermissions([]Permission{PermRead}), // Only read permission
+	)
+
+	if err != nil {
+		t.Fatalf("Valid derivation failed: %v", err)
+	}
+
+	if len(derived.Permissions) != 1 || derived.Permissions[0] != PermRead {
+		t.Error("Derived permission not properly restricted")
+	}
+
+	if derived.ParentID != parentCap.ID {
+		t.Error("Parent ID not set correctly")
+	}
+
+	t.Log("Valid derivation accepted")
+}
+
+func TestDerive_RejectsInvalidPermissions(t *testing.T) {
+	enforcer := NewEnforcer("test-secret")
+
+	parentCap := &Capability{
+		ID:          "parent-2",
+		Issuer:      "test",
+		Subject:     "parent-agent",
+		Permissions: []Permission{PermRead, PermWrite}, // No exec
+		Resources:   []ResourceRule{},
+		TokenBudget: 100000,
+		Timeout:     1 * time.Hour,
+		ExpiresAt:   time.Now().Add(1 * time.Hour),
+	}
+
+	// Try to derive with exec permission (not in parent)
+	derived, err := enforcer.Derive(parentCap, "child-agent",
+		RestrictPermissions([]Permission{PermRead, PermExec}), // PermExec not allowed!
+	)
+
+	if err == nil {
+		t.Fatal("Should have rejected derivation with non-parent permission")
+	}
+
+	if derived != nil {
+		t.Error("Should not return capability on error")
+	}
+
+	if !strings.Contains(err.Error(), "not in parent") {
+		t.Errorf("Expected 'not in parent' error, got: %v", err)
+	}
+
+	t.Log("Invalid permissions correctly rejected")
+}
+
+func TestDerive_RejectsTokenBudgetIncrease(t *testing.T) {
+	enforcer := NewEnforcer("test-secret")
+
+	parentCap := &Capability{
+		ID:          "parent-3",
+		Issuer:      "test",
+		Subject:     "parent-agent",
+		Permissions: []Permission{PermRead},
+		Resources:   []ResourceRule{},
+		TokenBudget: 1000, // Limited budget
+		Timeout:     1 * time.Hour,
+		ExpiresAt:   time.Now().Add(1 * time.Hour),
+	}
+
+	// Try to increase token budget
+	derived, err := enforcer.Derive(parentCap, "child-agent",
+		func(c *Capability) {
+			c.TokenBudget = 5000 // Increase budget - not allowed!
+		},
+	)
+
+	if err == nil {
+		t.Fatal("Should have rejected token budget increase")
+	}
+
+	if derived != nil {
+		t.Error("Should not return capability on error")
+	}
+
+	if !strings.Contains(err.Error(), "token budget") {
+		t.Errorf("Expected 'token budget' error, got: %v", err)
+	}
+
+	t.Log("Token budget increase correctly rejected")
+}
+
+func TestDerive_RejectsTimeoutIncrease(t *testing.T) {
+	enforcer := NewEnforcer("test-secret")
+
+	parentCap := &Capability{
+		ID:          "parent-4",
+		Issuer:      "test",
+		Subject:     "parent-agent",
+		Permissions: []Permission{PermRead},
+		Resources:   []ResourceRule{},
+		TokenBudget: 10000,
+		Timeout:     1 * time.Hour,
+		ExpiresAt:   time.Now().Add(1 * time.Hour),
+	}
+
+	// Try to increase timeout
+	derived, err := enforcer.Derive(parentCap, "child-agent",
+		func(c *Capability) {
+			c.Timeout = 2 * time.Hour // Increase timeout - not allowed!
+		},
+	)
+
+	if err == nil {
+		t.Fatal("Should have rejected timeout increase")
+	}
+
+	if derived != nil {
+		t.Error("Should not return capability on error")
+	}
+
+	if !strings.Contains(err.Error(), "timeout") {
+		t.Errorf("Expected 'timeout' error, got: %v", err)
+	}
+
+	t.Log("Timeout increase correctly rejected")
+}
+
+func TestDerive_PrivilegeEscalationPrevented(t *testing.T) {
+	// Test that a malicious caller can't escalate privileges through derivation
+	enforcer := NewEnforcer("test-secret")
+
+	parentCap := &Capability{
+		ID:          "parent-5",
+		Issuer:      "test",
+		Subject:     "parent-agent",
+		Permissions: []Permission{PermRead}, // Only read
+		Resources:   []ResourceRule{},
+		TokenBudget: 10000,
+		Timeout:     1 * time.Hour,
+		ExpiresAt:   time.Now().Add(1 * time.Hour),
+	}
+
+	// Attempt to escalate: add PermExec, increase budget, increase timeout
+	_, err := enforcer.Derive(parentCap, "evil-child",
+		func(c *Capability) {
+			c.Permissions = []Permission{PermRead, PermWrite, PermExec} // Escalate
+			c.TokenBudget = 999999                                      // Increase
+			c.Timeout = 10 * time.Hour                                  // Increase
+		},
+	)
+
+	if err == nil {
+		t.Fatal("Privilege escalation should have been blocked")
+	}
+
+	t.Logf("Privilege escalation blocked: %v", err)
 }

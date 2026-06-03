@@ -110,10 +110,45 @@ func (e *Enforcer) Derive(parent *Capability, subject string, restrictions ...Re
 		r(cap)
 	}
 
+	// Validate that derived capability is a proper subset of parent
+	if err := e.validateSubsetConstraint(parent, cap); err != nil {
+		return nil, err
+	}
+
 	if err := e.Sign(cap); err != nil {
 		return nil, fmt.Errorf("sign capability: %w", err)
 	}
 	return cap, nil
+}
+
+// validateSubsetConstraint ensures the derived capability is a semantic subset of the parent.
+// This prevents privilege escalation in delegation chains.
+func (e *Enforcer) validateSubsetConstraint(parent, derived *Capability) error {
+	// Validate permissions are a subset
+	for _, perm := range derived.Permissions {
+		found := false
+		for _, parentPerm := range parent.Permissions {
+			if perm == parentPerm {
+				found = true
+				break
+			}
+		}
+		if !found {
+			return fmt.Errorf("derive: permission %q not in parent permissions", perm)
+		}
+	}
+
+	// Validate token budget not increased
+	if derived.TokenBudget > parent.TokenBudget {
+		return fmt.Errorf("derive: token budget %d exceeds parent budget %d", derived.TokenBudget, parent.TokenBudget)
+	}
+
+	// Validate timeout not increased
+	if derived.Timeout > parent.Timeout {
+		return fmt.Errorf("derive: timeout %v exceeds parent timeout %v", derived.Timeout, parent.Timeout)
+	}
+
+	return nil
 }
 
 // Issue creates a new root capability for an agent.
