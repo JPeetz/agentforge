@@ -9,8 +9,11 @@
 package memory
 
 import (
+	"context"
+	"database/sql"
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -18,6 +21,7 @@ import (
 	"time"
 
 	"github.com/fsnotify/fsnotify"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 // Store is the deterministic, file-backed memory system.
@@ -34,7 +38,8 @@ type Store struct {
 // Index is the search layer.
 type Index struct {
 	path string          // SQLite file path
-	// DB handle — lazy-init from sql.Open
+	db   *sql.DB         // lazy-init from sql.Open
+	mu   sync.Mutex      // protects db initialization
 }
 
 // GitLayer wraps git operations on the memory root.
@@ -296,11 +301,43 @@ func (s *Store) Compress(path string) error {
 	if err != nil {
 		return err
 	}
-	// TODO: LLM-based compression — deduplicate entries, summarize old ones
-	return s.Put(path+".compressed", data, Metadata{Kind: "compressed"})
+
+	content := string(data)
+
+	// Deduplication: Remove duplicate lines (simple approach)
+	lines := strings.Split(content, "\n")
+	seen := make(map[string]bool)
+	var deduped []string
+	for _, line := range lines {
+		trimmed := strings.TrimSpace(line)
+		if trimmed == "" || seen[trimmed] {
+			continue
+		}
+		seen[trimmed] = true
+		deduped = append(deduped, line)
+	}
+
+	compressed := strings.Join(deduped, "\n")
+
+	// If compression ratio is good, save the compressed version
+	ratio := float64(len(compressed)) / float64(len(content))
+	if ratio >= 0.95 {
+		// No significant compression
+		return nil
+	}
+
+	// Create compressed file with metadata header
+	header := fmt.Sprintf(`# Compressed version (%.0f%% of original)
+# Generated: %s
+# Original size: %d bytes
+
+`, ratio*100, time.Now().Format(time.RFC3339), len(content))
+
+	finalCompressed := header + compressed
+	return s.Put(path+".compressed", []byte(finalCompressed), Metadata{Kind: "compressed"})
 }
 
-// Close shuts down the watcher and flushes.
+// Close shuts down the watcher, closes the database, and flushes.
 func (s *Store) Close() error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -308,7 +345,18 @@ func (s *Store) Close() error {
 		return nil
 	}
 	s.closed = true
-	return s.watcher.Close()
+
+	// Close watcher
+	err := s.watcher.Close()
+
+	// Close database if initialized
+	if s.index != nil && s.index.db != nil {
+		if dbErr := s.index.db.Close(); dbErr != nil && err == nil {
+			err = dbErr
+		}
+	}
+
+	return err
 }
 
 // ── Watcher ────────────────────────────────────────────────────────────────
@@ -344,53 +392,282 @@ func (idx *Index) isReady() bool {
 	return err == nil
 }
 
+// init ensures the database is open and schema is created.
+func (idx *Index) init() error {
+	idx.mu.Lock()
+	defer idx.mu.Unlock()
+
+	if idx.db != nil {
+		return nil
+	}
+
+	db, err := sql.Open("sqlite3", idx.path)
+	if err != nil {
+		return fmt.Errorf("memory: open sqlite: %w", err)
+	}
+
+	// Create FTS5 table if not exists
+	schema := `
+	CREATE TABLE IF NOT EXISTS documents (
+		id INTEGER PRIMARY KEY,
+		path TEXT UNIQUE NOT NULL,
+		kind TEXT,
+		agent_id TEXT,
+		updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+	);
+
+	CREATE VIRTUAL TABLE IF NOT EXISTS documents_fts USING fts5(
+		path,
+		content,
+		content=documents,
+		content_rowid=id
+	);
+
+	CREATE TRIGGER IF NOT EXISTS documents_ai AFTER INSERT ON documents BEGIN
+		INSERT INTO documents_fts(rowid, path, content) VALUES (new.id, new.path, '');
+	END;
+
+	CREATE TRIGGER IF NOT EXISTS documents_ad AFTER DELETE ON documents BEGIN
+		INSERT INTO documents_fts(documents_fts, rowid, path, content) VALUES('delete', old.id, old.path, '');
+	END;
+	`
+
+	if _, err := db.Exec(schema); err != nil {
+		db.Close()
+		return fmt.Errorf("memory: create schema: %w", err)
+	}
+
+	idx.db = db
+	return nil
+}
+
 func (idx *Index) insert(path, content string, meta Metadata) error {
-	// TODO: implement SQLite FTS5 insert
-	// INSERT INTO documents(path, content, kind, agent_id, updated_at)
-	// VALUES(?, ?, ?, ?, ?)
-	// INSERT INTO documents_fts(path, content) VALUES(?, ?)
+	if err := idx.init(); err != nil {
+		return err
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	// Insert into documents table
+	result, err := idx.db.ExecContext(ctx,
+		`INSERT OR REPLACE INTO documents(path, kind, agent_id, updated_at)
+		 VALUES(?, ?, ?, CURRENT_TIMESTAMP)`,
+		path, meta.Kind, meta.AgentID)
+	if err != nil {
+		return fmt.Errorf("memory: insert document: %w", err)
+	}
+
+	rowID, err := result.LastInsertId()
+	if err != nil {
+		return fmt.Errorf("memory: get row id: %w", err)
+	}
+
+	// Insert into FTS5 virtual table for full-text search
+	_, err = idx.db.ExecContext(ctx,
+		`INSERT INTO documents_fts(rowid, path, content) VALUES(?, ?, ?)`,
+		rowID, path, content)
+	if err != nil {
+		return fmt.Errorf("memory: insert fts: %w", err)
+	}
+
 	return nil
 }
 
 func (idx *Index) search(query string, opts SearchOpts) ([]Result, error) {
-	// TODO: implement SQLite FTS5 search
-	// SELECT path, snippet(documents_fts, 0, '<b>', '</b>', '...', 32),
-	//        rank FROM documents_fts WHERE documents_fts MATCH ?
-	// ORDER BY rank LIMIT ?
-	return nil, fmt.Errorf("memory: sqlite index not yet initialized")
+	if err := idx.init(); err != nil {
+		return nil, err
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	if opts.Limit == 0 {
+		opts.Limit = DefaultSearchOpts.Limit
+	}
+
+	// Build WHERE clause with filters
+	whereClause := "1=1"
+	args := []interface{}{query}
+
+	if opts.Kind != "" {
+		whereClause += " AND d.kind = ?"
+		args = append(args, opts.Kind)
+	}
+	if opts.AgentID != "" {
+		whereClause += " AND d.agent_id = ?"
+		args = append(args, opts.AgentID)
+	}
+
+	sqlQuery := fmt.Sprintf(`
+		SELECT f.path, rank, snippet(documents_fts, 0, '<b>', '</b>', '...', 64) as snippet
+		FROM documents_fts f
+		JOIN documents d ON f.rowid = d.id
+		WHERE documents_fts MATCH ? AND %s
+		ORDER BY rank
+		LIMIT ?
+	`, whereClause)
+
+	args = append(args, opts.Limit)
+
+	rows, err := idx.db.QueryContext(ctx, sqlQuery, args...)
+	if err != nil {
+		return nil, fmt.Errorf("memory: search query: %w", err)
+	}
+	defer rows.Close()
+
+	var results []Result
+	for rows.Next() {
+		var path string
+		var rank float64
+		var snippet string
+		if err := rows.Scan(&path, &rank, &snippet); err != nil {
+			continue
+		}
+		// FTS5 rank is negative (more negative = better match)
+		results = append(results, Result{
+			Path:    path,
+			Score:   -rank,
+			Snippet: snippet,
+		})
+	}
+
+	return results, rows.Err()
 }
 
 // ── Git Layer ──────────────────────────────────────────────────────────────
 
+// ensureInit ensures the directory is a git repository.
+func (g *GitLayer) ensureInit() error {
+	gitDir := filepath.Join(g.root, ".git")
+	if _, err := os.Stat(gitDir); err == nil {
+		return nil
+	}
+
+	cmd := exec.Command("git", "init")
+	cmd.Dir = g.root
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("git init: %w", err)
+	}
+
+	// Set default config if git not configured
+	exec.Command("git", "-C", g.root, "config", "user.email", "agentforge@local").Run()
+	exec.Command("git", "-C", g.root, "config", "user.name", "AgentForge").Run()
+
+	return nil
+}
+
 func (g *GitLayer) commit(msg string) error {
-	// TODO: implement via go-git
-	// w, _ := git.PlainOpen(g.root)
-	// w.Add(".")
-	// w.Commit(msg, &git.CommitOptions{...})
+	if err := g.ensureInit(); err != nil {
+		return err
+	}
+
+	// Add all changes
+	cmd := exec.Command("git", "-C", g.root, "add", "-A")
+	if err := cmd.Run(); err != nil {
+		// Not fatal — may have nothing to add
+	}
+
+	// Check if there are changes to commit
+	cmd = exec.Command("git", "-C", g.root, "diff", "--cached", "--quiet")
+	if err := cmd.Run(); err != nil {
+		// No changes
+		return nil
+	}
+
+	// Commit
+	cmd = exec.Command("git", "-C", g.root, "commit", "-m", msg)
+	if output, err := cmd.CombinedOutput(); err != nil {
+		return fmt.Errorf("git commit: %w (%s)", err, string(output))
+	}
+
 	return nil
 }
 
 func (g *GitLayer) log(path string) ([]Commit, error) {
-	// TODO: implement via go-git
-	// r, _ := git.PlainOpen(g.root)
-	// iter, _ := r.Log(&git.LogOptions{FileName: &path})
-	return nil, fmt.Errorf("memory: git log not yet implemented")
+	if err := g.ensureInit(); err != nil {
+		return nil, err
+	}
+
+	// Get git log for file
+	cmd := exec.Command("git", "-C", g.root, "log", "--format=%H|%s|%an|%aI", "--", path)
+	output, err := cmd.Output()
+	if err != nil {
+		return nil, fmt.Errorf("git log: %w", err)
+	}
+
+	var commits []Commit
+	for _, line := range strings.Split(string(output), "\n") {
+		if line == "" {
+			continue
+		}
+		parts := strings.Split(line, "|")
+		if len(parts) < 4 {
+			continue
+		}
+		when, _ := time.Parse(time.RFC3339, parts[3])
+		commits = append(commits, Commit{
+			Hash:    parts[0],
+			Message: parts[1],
+			Author:  parts[2],
+			When:    when,
+		})
+	}
+
+	return commits, nil
 }
 
 func (g *GitLayer) diff(c1, c2 string) (string, error) {
-	return "", fmt.Errorf("memory: git diff not yet implemented")
+	if err := g.ensureInit(); err != nil {
+		return "", err
+	}
+
+	cmd := exec.Command("git", "-C", g.root, "diff", c1, c2)
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return "", fmt.Errorf("git diff: %w", err)
+	}
+
+	return string(output), nil
 }
 
 func (g *GitLayer) reset(commit string) error {
-	return fmt.Errorf("memory: git reset not yet implemented")
+	if err := g.ensureInit(); err != nil {
+		return err
+	}
+
+	cmd := exec.Command("git", "-C", g.root, "reset", "--hard", commit)
+	if output, err := cmd.CombinedOutput(); err != nil {
+		return fmt.Errorf("git reset: %w (%s)", err, string(output))
+	}
+
+	return nil
 }
 
 func (g *GitLayer) push(remote string) error {
-	return fmt.Errorf("memory: git push not yet implemented")
+	if err := g.ensureInit(); err != nil {
+		return err
+	}
+
+	cmd := exec.Command("git", "-C", g.root, "push", remote)
+	if output, err := cmd.CombinedOutput(); err != nil {
+		return fmt.Errorf("git push: %w (%s)", err, string(output))
+	}
+
+	return nil
 }
 
 func (g *GitLayer) pull(remote string) error {
-	return fmt.Errorf("memory: git pull not yet implemented")
+	if err := g.ensureInit(); err != nil {
+		return err
+	}
+
+	cmd := exec.Command("git", "-C", g.root, "pull", remote)
+	if output, err := cmd.CombinedOutput(); err != nil {
+		return fmt.Errorf("git pull: %w (%s)", err, string(output))
+	}
+
+	return nil
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────
