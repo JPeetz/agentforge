@@ -9,6 +9,7 @@ import (
 	"crypto/subtle"
 	"errors"
 	"fmt"
+	"path/filepath"
 	"time"
 
 	"github.com/google/uuid"
@@ -217,17 +218,44 @@ func (e *Enforcer) UpdateTokenBudget(cap *Capability, tokens int64) error {
 
 func (e *Enforcer) resourceAllowed(cap *Capability, resource string, op Operation) bool {
 	for _, r := range cap.Resources {
-		// TODO: implement glob pattern match (path.Match / net.ParseCIDR)
-		if r.Path != "" && r.Path == resource {
-			for _, p := range r.Operations {
-				if p == PermRead && op == OpRead {
-					return true
-				}
-				if p == PermWrite && op == OpWrite {
-					return true
-				}
-				// etc.
+		if r.Path == "" {
+			continue
+		}
+
+		// Try exact match first (fast path)
+		if r.Path == resource {
+			if e.operationAllowed(r.Operations, op) {
+				return true
 			}
+			continue
+		}
+
+		// Try glob pattern match (e.g., /home/user/*, *.log, etc.)
+		match, err := filepath.Match(r.Path, resource)
+		if err != nil {
+			// Invalid glob pattern in capability — skip it
+			continue
+		}
+		if match {
+			if e.operationAllowed(r.Operations, op) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// operationAllowed checks if the operation is in the permission list.
+func (e *Enforcer) operationAllowed(perms []Permission, op Operation) bool {
+	for _, p := range perms {
+		if p == PermRead && op == OpRead {
+			return true
+		}
+		if p == PermWrite && op == OpWrite {
+			return true
+		}
+		if p == PermExec && op == OpExec {
+			return true
 		}
 	}
 	return false
