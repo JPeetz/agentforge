@@ -242,6 +242,21 @@ func (m *Manager) NewSession(agentID string) *Session {
 	return s
 }
 
+// History returns a copy of the current user/assistant turns for an agent.
+// Skips system/compaction turns. Safe to call from any goroutine.
+func (m *Manager) History(agentID string) []Turn {
+	s := m.GetOrCreate(agentID)
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	var out []Turn
+	for _, t := range s.Turns {
+		if t.Role == "user" || t.Role == "assistant" {
+			out = append(out, t)
+		}
+	}
+	return out
+}
+
 // Stats returns compacted count and token usage for an agent session.
 func (m *Manager) Stats(agentID string) (compacted int, totalTokens int, turnCount int) {
 	m.mu.RLock()

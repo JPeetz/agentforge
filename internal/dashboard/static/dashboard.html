@@ -212,18 +212,15 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
       <a class="nav-item" data-page="skills" hx-get="/api/pages/skills" hx-target="#content" hx-trigger="click">
         <img src="/static/img/icons/nav-skills.png" alt=""> Skills
       </a>
-      
+
       <a class="nav-item" data-page="tools" hx-get="/api/pages/tools" hx-target="#content" hx-trigger="click">
         <img src="/static/img/icons/tools-icon.png" alt=""> Tools
         <span class="badge" id="tool-count">19</span>
       </a>
 
-      
+
       <a class="nav-item" data-page="skills-marketplace" hx-get="/api/pages/skills-marketplace" hx-target="#content" hx-trigger="click">
         <img src="/static/img/icons/nav-skills.png" alt=""> Skills MP
-      </a>
-      <a class="nav-item" data-page="pipeline-editor" hx-get="/api/pages/pipeline-editor" hx-target="#content" hx-trigger="click">
-        <img src="/static/img/icons/nav-pipelines.png" alt=""> Pipeline Editor
       </a>
       <a class="nav-item" data-page="agent-profiles" hx-get="/api/pages/agent-profiles" hx-target="#content" hx-trigger="click">
         <img src="/static/img/icons/nav-agents.png" alt=""> Agent Profiles
@@ -389,5 +386,6 @@ setInterval(() => {
 </div>
 </div>
 
+<script src="/static/js/chat-sse.js"></script>
 </body>
 </html>

@@ -1,0 +1,293 @@
+{
+  "coding": [
+    {
+      "title": "tallesborges/agentic-system-prompts: A curated collection ... - GitHub",
+      "url": "https://github.com/tallesborges/agentic-system-prompts",
+      "snippet": "This collection provides insights into: Prompt Engineering Patterns - How production systems structure AI instructions; Tool Design - Common patterns in AI ..."
+    },
+    {
+      "title": "x1xhlol/system-prompts-and-models-of-ai-tools: FULL ... - GitHub",
+      "url": "https://github.com/x1xhlol/system-prompts-and-models-of-ai-tools",
+      "snippet": "FULL Augment Code, Claude Code, Cluely, CodeBuddy, Comet, Cursor, Devin AI, Junie, Kiro, Leap.new, Lovable, Manus, NotionAI, Orchids.app, Perplexity, Poke, ..."
+    },
+    {
+      "title": "mitsuhiko/agent-prompts: Holds prompts for agentic loops - GitHub",
+      "url": "https://github.com/mitsuhiko/agent-prompts",
+      "snippet": "A collection of specialized AI agent prompts designed for software development and research workflows. This repository contains comprehensive prompt systems ..."
+    },
+    {
+      "title": "Crafting Effective Prompts for Agentic AI Systems: Patterns ... - GitHub",
+      "url": "https://github.com/dontriskit/awesome-ai-system-prompts",
+      "snippet": "Curated collection of system prompts for top AI tools. Perfect for AI agent builders and prompt engineers. Incuding: ChatGPT, Claude ..."
+    },
+    {
+      "title": "Reviewing leaked prompts from popular coding agents to ... - GitHub",
+      "url": "https://github.com/cline/cline/discussions/3022",
+      "snippet": "Reviewing leaked prompts from popular coding agents to improve coding #3022. NimaBakhtiyari started this conversation in Feature Requests."
+    },
+    {
+      "title": "AI Coding Agent Prompts for MATLAB - GitHub",
+      "url": "https://github.com/matlab/prompts",
+      "snippet": "Curated collection of AI prompts for MATLAB development - enhance your workflow with MATLAB Copilot, GitHub Copilot, Claude, Cursor, and other AI coding ..."
+    },
+    {
+      "title": "Leveraging GitHub's AI Coding Agent: From Planning to Feature",
+      "url": "https://github.com/orgs/community/discussions/163572",
+      "snippet": "In this post, I'll walk you through an exciting journey of using GitHub's AI Coding Agent to implement a complete feature in our trivia game."
+    },
+    {
+      "title": "heilcheng/awesome-agent-skills: Tutorials, Guides and ... - GitHub",
+      "url": "https://github.com/heilcheng/awesome-agent-skills",
+      "snippet": "This is a community-curated list of simple text files that teach AI assistants (like Claude, Copilot, or Codex) how to do new things on demand, without ..."
+    },
+    {
+      "title": "piyushrajyadav/awesome-ai-dev-prompts - GitHub",
+      "url": "https://github.com/piyushrajyadav/awesome-ai-dev-prompts",
+      "snippet": "One prompt. Expert-level AI coding. Copy a prompt, paste it into your AI tool, and your assistant becomes a top 1% specialist engineer \u2014 instantly."
+    },
+    {
+      "title": "instructa/ai-prompts: Curated AI Prompts for Cursor Rules ... - GitHub",
+      "url": "https://github.com/instructa/ai-prompts",
+      "snippet": "Instructa AI Prompts is an open-source repository dedicated to collecting and sharing AI prompts, best practices, and curated rules for developers."
+    },
+    {
+      "title": "Piebald-AI/claude-code-system-prompts: All parts of ...",
+      "url": "https://github.com/Piebald-AI/claude-code-system-prompts",
+      "snippet": "This repository contains an up-to-date list of all Claude Code's various system prompts and their associated token counts as of Claude Code v2.1.142 (May\u00a0...Read more"
+    },
+    {
+      "title": "agent-prompt-claude-guide-agent.md",
+      "url": "https://github.com/Piebald-AI/claude-code-system-prompts/blob/main/system-prompts/agent-prompt-claude-guide-agent.md",
+      "snippet": "Claude Agent SDK: A framework for building custom AI agents based on Claude Code technology. Available for Node.js/TypeScript and Python. Claude API: The Claude\u00a0...Read more"
+    },
+    {
+      "title": "VoltAgent/awesome-claude-code-subagents",
+      "url": "https://github.com/VoltAgent/awesome-claude-code-subagents",
+      "snippet": "A collection of 100+ specialized Claude Code subagents covering a wide range of development use cases - VoltAgent/awesome-claude-code-subagents."
+    },
+    {
+      "title": "claude-code-prompts",
+      "url": "https://github.com/topics/claude-code-prompts",
+      "snippet": "Independently authored prompt templates for AI coding agents \u2014 system prompts, tool prompts, agent delegation, memory management, and multi-agent coordination.Read more"
+    },
+    {
+      "title": "repowise-dev/claude-code-prompts: Independently ...",
+      "url": "https://github.com/repowise-dev/claude-code-prompts",
+      "snippet": "3 days ago \u2014 Independently written prompt templates for building AI coding agents, inspired by patterns observed in Claude Code codebase. System prompts,\u00a0...Read more"
+    },
+    {
+      "title": "langgptai/awesome-claude-prompts",
+      "url": "https://github.com/langgptai/awesome-claude-prompts",
+      "snippet": "In this repository, you will find a variety of prompts that can be used with Claude. We encourage you to add your own prompts to the list, and to use Claude to\u00a0...Read more"
+    },
+    {
+      "title": "45 Claude Code Tips: From Basics to Advanced",
+      "url": "https://github.com/ykdojo/claude-code-tips",
+      "snippet": "Dec 1, 2025 \u2014 Here are my tips for getting the most out of Claude Code, including a custom status line script, cutting the system prompt in half,\u00a0...Read more"
+    },
+    {
+      "title": "CLAUDE.md - Gentleman-Programming/agent-teams-lite",
+      "url": "https://github.com/Gentleman-Programming/agent-teams-lite/blob/main/examples/claude-code/CLAUDE.md",
+      "snippet": "Mar 26, 2026 \u2014 ALL sub-agent launch prompts that involve reading, writing, or reviewing code MUST include pre-resolved compact rules from the skill registry.Read more"
+    },
+    {
+      "title": "FlorianBruniaux/claude-code-ultimate-guide",
+      "url": "https://github.com/FlorianBruniaux/claude-code-ultimate-guide",
+      "snippet": "3 days ago \u2014 A tremendous feat of documentation, this guide covers Claude Code from beginner to power user, with production-ready templates for Claude\u00a0..."
+    },
+    {
+      "title": "Claude-Code System Prompt",
+      "url": "https://gist.github.com/chigkim/1f37bb2be98d97c952fd79cbb3efb1c6",
+      "snippet": "Jan 15, 2026 \u2014 You are Claude Code, Anthropic's official CLI for Claude. You are an interactive CLI tool that helps users with software engineering tasks.Read more"
+    }
+  ],
+  "research": [
+    {
+      "title": "mitsuhiko/agent-prompts: Holds prompts for agentic loops - GitHub",
+      "url": "https://github.com/mitsuhiko/agent-prompts",
+      "snippet": "A collection of specialized AI agent prompts designed for software development and research workflows. This repository contains comprehensive prompt systems ..."
+    },
+    {
+      "title": "Crafting Effective Prompts for Agentic AI Systems: Patterns ... - GitHub",
+      "url": "https://github.com/dontriskit/awesome-ai-system-prompts",
+      "snippet": "Curated collection of system prompts for top AI tools. Perfect for AI agent builders and prompt engineers. Incuding: ChatGPT, Claude ..."
+    },
+    {
+      "title": "x1xhlol/system-prompts-and-models-of-ai-tools: FULL ... - GitHub",
+      "url": "https://github.com/x1xhlol/system-prompts-and-models-of-ai-tools",
+      "snippet": "FULL Augment Code, Claude Code, Cluely, CodeBuddy, Comet, Cursor, Devin AI, Junie, Kiro, Leap.new, Lovable, Manus, NotionAI, Orchids.app, Perplexity, Poke, ..."
+    },
+    {
+      "title": "jwadow/agentic-prompts: A curated collection of prompts ... - GitHub",
+      "url": "https://github.com/jwadow/agentic-prompts",
+      "snippet": "This collection contains ready-to-use templates for defining agent personas, delegating tasks, and structuring interactions with various AI tools. Available ..."
+    },
+    {
+      "title": "dair-ai/Prompt-Engineering-Guide - GitHub",
+      "url": "https://github.com/dair-ai/prompt-engineering-guide",
+      "snippet": "The courses are meant to compliment this guide and provide a more hands-on approach to learning about prompt engineering, context engineering, and AI Agents."
+    },
+    {
+      "title": "useful-ai-prompts/AI-AGENT-GUIDE.md at main - GitHub",
+      "url": "https://github.com/aj-geddes/useful-ai-prompts/blob/main/AI-AGENT-GUIDE.md",
+      "snippet": "Technical specifications for AI agents, assistants, and automation systems to programmatically access and utilize the Useful AI Prompts library. Library ..."
+    },
+    {
+      "title": "VoltAgent/awesome-ai-agent-papers - GitHub",
+      "url": "https://github.com/VoltAgent/awesome-ai-agent-papers",
+      "snippet": "A curated collection of AI agent research papers released in 2026, covering agent engineering, memory, evaluation, workflows, and autonomous systems."
+    },
+    {
+      "title": "deep-research-agent \u00b7 GitHub Topics",
+      "url": "https://github.com/topics/deep-research-agent?l=python&o=asc&s=stars",
+      "snippet": "Deep Research Agent is an AI-powered research assistant that enhances online research with depth and accuracy, leveraging Google's Gemini API, ..."
+    },
+    {
+      "title": "maxgberry/Research-Prompts - GitHub",
+      "url": "https://github.com/maxgberry/Research-Prompts",
+      "snippet": "Zero-Shot Prompting: Start from scratch without examples, encouraging agents to generate innovative solutions. \u00b7 Few-Shot Prompting: Provide a few examples to ..."
+    },
+    {
+      "title": "aj-geddes/useful-ai-prompts - GitHub",
+      "url": "https://github.com/aj-geddes/useful-ai-prompts",
+      "snippet": "A curated collection of useful AI prompts for various tasks and use cases - aj-geddes/useful-ai-prompts."
+    },
+    {
+      "title": "luo-junyu/Awesome-Agent-Papers",
+      "url": "https://github.com/luo-junyu/awesome-agent-papers",
+      "snippet": "This repository contains a comprehensive collection of research papers on Large Language Model (LLM) agents. We organize papers across key categories\u00a0...Read more"
+    },
+    {
+      "title": "llm-prompts \u00b7 GitHub Topics",
+      "url": "https://github.com/topics/llm-prompts",
+      "snippet": "Independently authored prompt templates for AI coding agents \u2014 system prompts, tool prompts, agent delegation, memory management, and multi-agent coordination.Read more"
+    },
+    {
+      "title": "zjunlp/LLMAgentPapers: Must-read Papers on LLM Agents.",
+      "url": "https://github.com/zjunlp/LLMAgentPapers",
+      "snippet": "We sincerely invite you to dive into these collections of papers and resources, each offering a distinct journey of exploration and discovery.Read more"
+    },
+    {
+      "title": "Agent Laboratory: Using LLM Agents as Research Assistants",
+      "url": "https://github.com/SamuelSchmidgall/AgentLaboratory",
+      "snippet": "Agent Laboratory consists of three primary phases that systematically guide the research process: (1) Literature Review, (2) Experimentation, and (3) Report\u00a0...Read more"
+    },
+    {
+      "title": "Chapter 14: Automated Deep Research Agent",
+      "url": "https://github.com/datawhalechina/hello-agents/blob/main/docs/chapter14/Chapter14-Automated-Deep-Research-Agent.md",
+      "snippet": "Key Design Points: The prompt includes task title, intent, query and other context to help the Agent understand the task, explicitly requires output to include\u00a0...Read more"
+    },
+    {
+      "title": "ai-research-assistant",
+      "url": "https://github.com/topics/ai-research-assistant?o=desc&s=stars",
+      "snippet": "Accelerate research with SynapseFlow, an AI assistant utilizing 66 agents for swift literature reviews, citation analysis, and hypothesis generation.Read more"
+    },
+    {
+      "title": "AGI-Edgerunners/LLM-Agents-Papers",
+      "url": "https://github.com/AGI-Edgerunners/LLM-Agents-Papers",
+      "snippet": "A repo lists papers related to LLM based agent. Includes Recommendation For more comprehensive reading, we also recommend other paper lists.Read more"
+    },
+    {
+      "title": "GitHub - gregoryg/AIPIHKAL: AI (LLM) Prompts I Have ...",
+      "url": "https://github.com/gregoryg/AIPIHKAL",
+      "snippet": "As with many of our prompts, this prompt illustrates one-shot learning. This simply means: give the LLM one or more sample user questions, along with a good\u00a0...Read more"
+    },
+    {
+      "title": "A curated list of awesome LLM agents frameworks.",
+      "url": "https://github.com/kaushikb11/awesome-llm-agents",
+      "snippet": "5 days ago \u2014 A curated list of awesome LLM frameworks and agent development tools. If you have a suggestion, feel free to open an issue or pull request.Read more"
+    }
+  ],
+  "trading": [
+    {
+      "title": "AI-Trader: 100% Fully-Automated Agent-Native Trading - GitHub",
+      "url": "https://github.com/HKUDS/AI-Trader",
+      "snippet": "Any AI agent joins the AI-Trader platform in seconds -- Simply send this message to your agent. Read https://ai4trade.ai/SKILL.md and register."
+    },
+    {
+      "title": "chainstacklabs/web3-ai-trading-agent - GitHub",
+      "url": "https://github.com/chainstacklabs/web3-ai-trading-agent",
+      "snippet": "This chapter introduces your first AI-powered trading agent. The stateless agent combines local language models with real-time market data to make autonomous ..."
+    },
+    {
+      "title": "ai-trading-agent/prompt.ts at master \u00b7 endless-sky-team/ai-trading ...",
+      "url": "https://github.com/endless-sky-team/ai-trading-agent/blob/master/prompt.ts",
+      "snippet": "You are an expert trader. You were given $1000 dollars to trade with. You are trading on the crypto market. You are given the following information:."
+    },
+    {
+      "title": "MrFadiAi/ai-agents-for-trading - GitHub",
+      "url": "https://github.com/MrFadiAi/ai-agents-for-trading",
+      "snippet": "AI agents might help address common trading challenges: Emotional reactions; Ego-driven decisions; Inconsistent execution; Fatigue effects; Impatience; Fear & ..."
+    },
+    {
+      "title": "ru4871SG/n8n-ai-trading-agent - GitHub",
+      "url": "https://github.com/ru4871SG/n8n-ai-trading-agent",
+      "snippet": "This project demonstrates how to create an AI agent workflow using n8n that can analyze different historical price actions, and make decision whether to ..."
+    },
+    {
+      "title": "500-AI-Agents-Projects - UseCase - GitHub",
+      "url": "https://github.com/ashishpatel26/500-AI-Agents-Projects",
+      "snippet": "A curated collection of AI agent use cases across industries, showcasing practical applications and linking to open-source projects for implementation."
+    },
+    {
+      "title": "GitHub - AnandChowdhary/priced-in: Autonomous AI stock trading ...",
+      "url": "https://github.com/AnandChowdhary/priced-in",
+      "snippet": "Agent Source Code - The complete trading agent implementation; System Prompt - Instructions given to the AI agent; Trading Log - Complete log ..."
+    },
+    {
+      "title": "A Collection of AI's Prompts for optimal context - GitHub",
+      "url": "https://github.com/marc-aurele-besner/prompts",
+      "snippet": "Prompt: Design a professional email signature banner for \"Sarah Thompson\", a real estate agent. Include her photo, contact information, and company logo."
+    },
+    {
+      "title": "Vibe-Trading: Your Personal Trading Agent - GitHub",
+      "url": "https://github.com/HKUDS/Vibe-Trading",
+      "snippet": "Vibe-Trading is an open-source research workspace for turning finance questions into runnable analysis. It connects natural-language prompts to ..."
+    },
+    {
+      "title": "TradingAgents: Multi-Agents LLM Financial Trading Framework",
+      "url": "https://github.com/tauricresearch/tradingagents",
+      "snippet": "Composes reports from the analysts and researchers to make informed trading decisions. It determines the timing and magnitude of trades based on ..."
+    },
+    {
+      "title": "EthanAlgoX/LLM-TradeBot: A multi-agent AI trading system ...",
+      "url": "https://github.com/EthanAlgoX/LLM-TradeBot",
+      "snippet": "Feb 7, 2026 \u2014 This is an automated trading bot that trades cryptocurrency futures on Binance; It uses AI (LLM) and machine learning to make trading decisions\u00a0...Read more"
+    },
+    {
+      "title": "AI Trading Bot \u2014 LLM Agent with Sentiment Analysis",
+      "url": "https://github.com/fsaavedra0003/Agentic-AI-Trading-Bot-with-LLM-reasoning-sentiment-analysis",
+      "snippet": "LLM Layer & Prompts; Decision Agent (Tooling); Prediction Models / Backtesting; Execution; Dashboard & Monitoring. Example Prompts & Response Schema; Risk\u00a0...Read more"
+    },
+    {
+      "title": "FinMem: A Performance-Enhanced LLM Trading Agent ...",
+      "url": "https://github.com/pipiku915/finmem-llm-stocktrading",
+      "snippet": "We first compare FinMem with various algorithmic agents on a scalable real-world financial dataset, underscoring its leading trading performance in stocks and\u00a0...Read more"
+    },
+    {
+      "title": "LLM Trading Agent Security - everything-claude-code",
+      "url": "https://github.com/affaan-m/everything-claude-code/blob/main/skills/llm-trading-agent-security/SKILL.md",
+      "snippet": "Security patterns for autonomous trading agents with wallet or transaction authority. Covers prompt injection, spend limits, pre-send simulation, circuit\u00a0...Read more"
+    },
+    {
+      "title": "GitHub - ksadov/manifold-llm-bot: Configurable trading ...",
+      "url": "https://github.com/ksadov/manifold-llm-bot",
+      "snippet": "This agent is compatible with most LLM backends and comes with customizable prompts and scripts for backtesting on historical Manifold data. You can read my\u00a0...Read more"
+    },
+    {
+      "title": "lumibot/docs/AI_TRADING_AGENTS.md at dev",
+      "url": "https://github.com/Lumiwealth/lumibot/blob/dev/docs/AI_TRADING_AGENTS.md",
+      "snippet": "Mar 30, 2026 \u2014 If you are looking for an agentic backtesting framework, an LLM trading bot backtest solution, or a way to backtest AI-driven trading\u00a0...Read more"
+    },
+    {
+      "title": "A Multi-Agents LLM Financial Trading ...",
+      "url": "https://github.com/TradingGoose/TradingGoose.github.io",
+      "snippet": "An AI workflow platform for technical + LLM trading built for analytics, research, charting, monitoring, and workflow automation.Read more"
+    },
+    {
+      "title": "endless-sky-team/ai-trading-agent: llm ...",
+      "url": "https://github.com/endless-sky-team/ai-trading-agent",
+      "snippet": "Apr 30, 2026 \u2014 This agent is useful when you want a repeatable, observable loop between market data, an LLM, and a small set of exchange actions\u2014without\u00a0...Read more"
+    }
+  ]
+}

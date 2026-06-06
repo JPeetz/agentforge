@@ -6,13 +6,16 @@ import (
 	"embed"
 	"encoding/json"
 	"fmt"
+	"html"
 	"io"
 	"io/fs"
 	"log/slog"
 	"net/http"
+	"net/url"
 	"os"
 	"runtime"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/agentforge/agentforge/internal/auth"
@@ -30,41 +33,53 @@ import (
 //go:embed static
 var staticFS embed.FS
 
-type Server struct {
-	cfg          *config.Config
-	store        *config.PersistedStore
-	bus          bus.Bus
-	sessionMgr   *session.Manager
-	mcpMgr       *mcp.Manager
-	mcpClientMgr *mcpclient.ClientManager
-	chanMgr      *channel.Manager
-	costTracker  *cost.Tracker
-	authStore    *auth.Store
-	authManager  *auth.Manager
-	sseHub       *sse.Hub
-	adapter      llm.Adapter
-	mux          *http.ServeMux
-	log          *slog.Logger
-	started      time.Time
+type ProviderInfo struct {
+	Name          string `json:"name"`
+	Available     bool   `json:"available"`
+	Authenticated bool   `json:"authenticated"`
+	Model         string `json:"model"`
 }
 
-func New(cfg *config.Config, b bus.Bus, sessionMgr *session.Manager, mcpMgr *mcp.Manager, mcpClientMgr *mcpclient.ClientManager, chanMgr *channel.Manager, costTracker *cost.Tracker, authStore *auth.Store, authManager *auth.Manager, hub *sse.Hub, adapter llm.Adapter) (*Server, error) {
+type Server struct {
+	cfg                *config.Config
+	store              *config.PersistedStore
+	bus                bus.Bus
+	sessionMgr         *session.Manager
+	mcpMgr             *mcp.Manager
+	mcpClientMgr       *mcpclient.ClientManager
+	chanMgr            *channel.Manager
+	costTracker        *cost.Tracker
+	authStore          *auth.Store
+	authManager        *auth.Manager
+	sseHub             *sse.Hub
+	adapter            llm.Adapter
+	adapterMu          sync.RWMutex
+	rebuildAdapter     func(*config.Config) llm.Adapter
+	availableProviders map[string]ProviderInfo
+	mux                *http.ServeMux
+	log                *slog.Logger
+	started            time.Time
+}
+
+func New(cfg *config.Config, b bus.Bus, sessionMgr *session.Manager, mcpMgr *mcp.Manager, mcpClientMgr *mcpclient.ClientManager, chanMgr *channel.Manager, costTracker *cost.Tracker, authStore *auth.Store, authManager *auth.Manager, hub *sse.Hub, adapter llm.Adapter, rebuildAdapter func(*config.Config) llm.Adapter, availableProviders map[string]ProviderInfo) (*Server, error) {
 	s := &Server{
-		cfg:          cfg,
-		store:        config.NewStore(cfg),
-		bus:          b,
-		sessionMgr:   sessionMgr,
-		mcpMgr:       mcpMgr,
-		mcpClientMgr: mcpClientMgr,
-		chanMgr:      chanMgr,
-		costTracker:  costTracker,
-		authStore:    authStore,
-		authManager:  authManager,
-		sseHub:       hub,
-		adapter:      adapter,
-		mux:          http.NewServeMux(),
-		log:          slog.New(slog.NewJSONHandler(os.Stdout, nil)),
-		started:      time.Now(),
+		cfg:                cfg,
+		store:              config.NewStore(cfg),
+		bus:                b,
+		sessionMgr:         sessionMgr,
+		mcpMgr:             mcpMgr,
+		mcpClientMgr:       mcpClientMgr,
+		chanMgr:            chanMgr,
+		costTracker:        costTracker,
+		authStore:          authStore,
+		authManager:        authManager,
+		availableProviders: availableProviders,
+		sseHub:             hub,
+		adapter:            adapter,
+		rebuildAdapter:     rebuildAdapter,
+		mux:                http.NewServeMux(),
+		log:                slog.New(slog.NewJSONHandler(os.Stdout, nil)),
+		started:            time.Now(),
 	}
 
 	staticSub, err := fs.Sub(staticFS, "static")
@@ -93,6 +108,8 @@ func New(cfg *config.Config, b bus.Bus, sessionMgr *session.Manager, mcpMgr *mcp
 	s.mux.HandleFunc("/api/cost/budget", s.handleCostBudget)
 	s.mux.HandleFunc("/api/events", s.handleEventsAPI)
 	s.mux.HandleFunc("/api/events-html", s.handleEventsHTMLAPI)
+	s.mux.HandleFunc("/api/providers/available", s.handleProvidersAPI)
+	s.mux.HandleFunc("/api/providers/models", s.handleProviderModels)
 	s.mux.HandleFunc("/api/chat/stream", s.handleChatStream)
 	s.mux.HandleFunc("/api/chat/upload", s.handleFileUpload)
 
@@ -114,13 +131,13 @@ func (s *Server) handlePagePartials(w http.ResponseWriter, r *http.Request) {
 	case "memory":
 		s.renderMemory(w)
 	case "pipelines":
-		s.renderPipelines(w)
+		s.renderPipelineManager(w)
 	case "skills":
 		s.renderSkills(w)
 	case "security":
 		s.renderSecurity(w)
 	case "mcp":
-		s.renderMCPServers(w)
+		s.renderMCPServersManager(w)
 	case "logs":
 		s.renderLogs(w)
 	case "settings":
@@ -129,10 +146,8 @@ func (s *Server) handlePagePartials(w http.ResponseWriter, r *http.Request) {
 		s.renderTools(w)
 	case "skills-marketplace":
 		s.renderSkillsMarketplace(w)
-	case "pipeline-editor":
-		s.renderPipelineEditor(w)
 	case "agent-profiles":
-		s.renderAgentProfiles(w)
+		s.renderAgentProfilesManager(w)
 	case "channels":
 		s.renderChannels(w)
 	case "chat":
@@ -253,36 +268,159 @@ func (s *Server) renderMemory(w http.ResponseWriter) {
 
 // ── Pipelines ────────────────────────────────────────────────────────────────
 
-func (s *Server) renderPipelines(w http.ResponseWriter) {
-	fmt.Fprint(w, `<div class="panel">
-<div class="panel-header"><img src="/static/img/icons/nav-pipelines.png"> Pipelines <span style="font-weight:400;font-size:12px;color:var(--text-dim);margin-left:8px">DAG orchestration</span></div>
-<div class="pipeline-grid">`)
-	for i, d := range s.cfg.Pipelines.Definitions {
-		statusCls := "badge-live"
-		statusTxt := "Active"
-		if !d.Enabled {
-			statusCls = "badge-idle"
-			statusTxt = "Paused"
-		}
-		stages := len(d.Stages)
-		trig := d.Trigger.Type
-		if trig == "cron" {
-			trig = "⏰ " + d.Trigger.CronExpr
-		}
-		fmt.Fprintf(w, `<div class="pipeline-card">
-<div class="pipeline-card-header"><span>%s</span><span class="badge %s">%s</span></div>
-<div style="font-size:12px;color:var(--text-dim);margin:8px 0">%s | Trigger: %s</div>
-<div style="display:flex;gap:6px;flex-wrap:wrap">`, d.Name, statusCls, statusTxt, fmt.Sprintf("%d stages", stages), trig)
-		for j, st := range d.Stages {
-			fmt.Fprintf(w, `<div style="font-size:11px;padding:4px 10px;border-radius:6px;background:rgba(255,107,44,0.08);color:var(--af-magma)">%d. %s</div>`, j+1, st.Name)
-		}
-		fmt.Fprint(w, `</div></div>`)
-		_ = i
-	}
+func (s *Server) renderPipelineManager(w http.ResponseWriter) {
+	pipelinesJSON, _ := json.Marshal(s.cfg.Pipelines.Definitions)
+
+	fmt.Fprint(w, `<div style="display:grid;grid-template-columns:1fr 2fr;gap:20px;height:calc(100vh - 200px)">
+<!-- Left pane: Pipeline list -->
+<div class="panel" style="overflow-y:auto">
+<div class="panel-header"><img src="/static/img/icons/nav-pipelines.png"> Pipelines</div>
+<div id="pipeline-list" style="display:flex;flex-direction:column;gap:8px">`)
+
 	if len(s.cfg.Pipelines.Definitions) == 0 {
-		fmt.Fprint(w, `<div style="color:var(--text-dim);padding:30px;text-align:center">No pipelines defined. Create one via Settings → Agents or the Pipeline Editor.</div>`)
+		fmt.Fprint(w, `<div style="color:var(--text-dim);font-size:12px;padding:12px;text-align:center">No pipelines yet</div>`)
+	} else {
+		for _, d := range s.cfg.Pipelines.Definitions {
+			statusCls := "badge-live"
+			if !d.Enabled {
+				statusCls = "badge-idle"
+			}
+			fmt.Fprintf(w, `<div class="pipeline-list-item" onclick='selectPipeline(this, %q)' style="padding:12px;border:1px solid rgba(139,134,128,0.15);border-radius:8px;cursor:pointer;transition:all 0.2s;background:rgba(250,243,240,0.02)">
+<div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+<div style="flex:1">
+<strong style="display:block;margin-bottom:4px">%s</strong>
+<span style="font-size:11px;color:var(--text-dim)">%d stages • %s</span>
+</div>
+<span class="badge %s" style="font-size:10px">%s</span>
+</div>
+</div>`, d.Name, d.Name, len(d.Stages), d.Trigger.Type, statusCls, map[bool]string{true: "Active", false: "Paused"}[d.Enabled])
+		}
 	}
-	fmt.Fprint(w, `</div></div>`)
+
+	fmt.Fprint(w, `</div>
+<button class="btn btn-primary" style="margin-top:16px;width:100%" onclick="createPipeline()">+ New Pipeline</button>
+</div>
+
+<!-- Right pane: Pipeline editor -->
+<div class="panel" style="overflow-y:auto;display:none" id="editor-pane">
+<div class="panel-header">Pipeline Editor</div>
+<div id="editor-content" style="padding:16px">
+<div style="color:var(--text-dim);text-align:center">Select a pipeline to edit</div>
+</div>
+</div>
+
+<script>
+let currentPipeline = null;
+let pipelines = `+string(pipelinesJSON)+`;
+
+function selectPipeline(elem, name) {
+  currentPipeline = pipelines.find(p => p.name === name);
+  if(!currentPipeline) return;
+
+  document.querySelectorAll('.pipeline-list-item').forEach(e => e.style.borderColor='rgba(139,134,128,0.15)');
+  elem.style.borderColor = 'var(--af-magma)';
+
+  let editor = document.getElementById('editor-pane');
+  editor.style.display = 'block';
+  renderEditor();
+}
+
+function renderEditor() {
+  if(!currentPipeline) return;
+  let trig = currentPipeline.trigger || {};
+  let stages = currentPipeline.stages || [];
+
+  let stagesHTML = stages.length === 0
+    ? '<div style="color:var(--text-dim);font-size:12px;padding:12px">No stages yet</div>'
+    : stages.map((s,i) => '<div style="padding:8px;border-left:3px solid var(--af-magma);background:rgba(255,107,44,0.05);margin-bottom:8px"><strong>'+html.EscapeString(s.name)+'</strong><br><span style="font-size:11px;color:var(--text-dim)">Agent: '+html.EscapeString(s.agent)+' • Tool: '+html.EscapeString(s.tool)+'</span><button style="font-size:10px;padding:2px 6px;margin-top:4px;background:rgba(255,107,44,0.1);border:none;color:var(--af-magma);border-radius:4px;cursor:pointer" onclick="removeStage('+i+')">Remove</button></div>').join('');
+
+  let cronExpr = trig.type === 'cron' ? (trig.cronExpr || '') : '';
+
+  let html = '<form id="pipeline-form" onsubmit="savePipeline(event)" style="display:flex;flex-direction:column;gap:12px">' +
+    '<div><label style="display:block;font-size:12px;color:var(--text-dim);margin-bottom:4px">Name</label><input type="text" id="pipeline-name" value="' + html.EscapeString(currentPipeline.name || '') + '" style="width:100%;padding:8px;border:1px solid rgba(139,134,128,0.2);border-radius:6px;background:rgba(250,243,240,0.03);color:var(--text-primary)" required></div>' +
+    '<div><label style="display:block;font-size:12px;color:var(--text-dim);margin-bottom:4px">Description</label><input type="text" id="pipeline-desc" value="' + html.EscapeString(currentPipeline.description || '') + '" style="width:100%;padding:8px;border:1px solid rgba(139,134,128,0.2);border-radius:6px;background:rgba(250,243,240,0.03);color:var(--text-primary)"></div>' +
+    '<div><label style="display:block;font-size:12px;color:var(--text-dim);margin-bottom:4px">Trigger Type</label><select id="pipeline-trigger" onchange="updateTriggerUI()" style="width:100%;padding:8px;border:1px solid rgba(139,134,128,0.2);border-radius:6px;background:rgba(250,243,240,0.03);color:var(--text-primary)"><option value="manual"' + (trig.type === 'manual' ? ' selected' : '') + '>Manual</option><option value="cron"' + (trig.type === 'cron' ? ' selected' : '') + '>Cron Schedule</option><option value="event"' + (trig.type === 'event' ? ' selected' : '') + '>Event</option></select></div>' +
+    '<div id="trigger-ui"></div>' +
+    '<div style="border-top:1px solid rgba(139,134,128,0.1);padding-top:12px"><div style="font-size:12px;color:var(--text-dim);margin-bottom:8px"><strong>Stages</strong></div>' + stagesHTML + '<button type="button" style="font-size:12px;padding:8px 12px;background:rgba(255,107,44,0.1);border:1px solid rgba(255,107,44,0.3);color:var(--af-magma);border-radius:6px;cursor:pointer" onclick="addStage()">+ Add Stage</button></div>' +
+    '<div style="display:flex;gap:8px"><button type="submit" class="btn btn-primary" style="flex:1">Save Pipeline</button><button type="button" style="flex:1;padding:8px;border:1px solid rgba(139,134,128,0.2);background:rgba(250,243,240,0.03);color:var(--text-primary);border-radius:6px;cursor:pointer" onclick="cancelEdit()">Cancel</button></div>' +
+    '</form>';
+
+  document.getElementById('editor-content').innerHTML = html;
+  updateTriggerUI();
+}
+
+const html = { EscapeString(text) {
+  if(!text) return '';
+  let map = {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'};
+  return text.replace(/[&<>"']/g, m => map[m]);
+}};
+
+function updateTriggerUI() {
+  let trig = document.getElementById('pipeline-trigger').value;
+  let trigUI = document.getElementById('trigger-ui');
+  if(trig === 'cron') {
+    let cronExpr = (currentPipeline.trigger || {}).cronExpr || '';
+    trigUI.innerHTML = '<input type="text" id="cron-expr" placeholder="0 9 * * *" value="' + html.EscapeString(cronExpr) + '" style="width:100%;padding:8px;border:1px solid rgba(139,134,128,0.2);border-radius:6px;background:rgba(250,243,240,0.03);color:var(--text-primary)">';
+  } else {
+    trigUI.innerHTML = '';
+  }
+}
+
+function addStage() {
+  let name = prompt('Stage name:'); if(!name) return;
+  let agent = prompt('Agent name:'); if(!agent) agent = 'content';
+  let tool = prompt('Tool name:'); if(!tool) tool = 'web-search';
+  currentPipeline.stages = currentPipeline.stages || [];
+  currentPipeline.stages.push({name, agent, tool, timeout: '300s', retry: 0, onFailure: 'skip'});
+  renderEditor();
+}
+
+function removeStage(i) {
+  if(currentPipeline.stages) {
+    currentPipeline.stages.splice(i, 1);
+    renderEditor();
+  }
+}
+
+function savePipeline(e) {
+  e.preventDefault();
+  if(!currentPipeline) return;
+
+  currentPipeline.name = document.getElementById('pipeline-name').value;
+  currentPipeline.description = document.getElementById('pipeline-desc').value;
+  currentPipeline.trigger.type = document.getElementById('pipeline-trigger').value;
+  if(currentPipeline.trigger.type === 'cron') {
+    currentPipeline.trigger.cronExpr = document.getElementById('cron-expr').value;
+  }
+
+  let cfg = JSON.stringify(pipelines);
+  fetch('/api/config/save', {method:'POST',body:new URLSearchParams({'pipelines.definitions':cfg})})
+    .then(r => r.json()).then(d => {
+      if(d.ok) {
+        showToast('Pipeline saved. Restart daemon to apply.', 'success');
+        setTimeout(() => location.reload(), 1200);
+      } else {
+        showToast('Error: ' + d.error, 'error');
+      }
+    }).catch(e => showToast('Error: ' + e, 'error'));
+}
+
+function createPipeline() {
+  currentPipeline = {name:'', description:'', enabled:true, trigger:{type:'manual'}, stages:[]};
+  pipelines.push(currentPipeline);
+
+  document.getElementById('pipeline-list').innerHTML = '<div style="color:var(--text-dim);font-size:12px;padding:12px;text-align:center">Creating...</div>';
+  document.getElementById('editor-pane').style.display = 'block';
+  renderEditor();
+}
+
+function cancelEdit() {
+  currentPipeline = null;
+  document.getElementById('editor-pane').style.display = 'none';
+  document.getElementById('editor-content').innerHTML = '<div style="color:var(--text-dim);text-align:center">Select a pipeline to edit</div>';
+}
+</script>
+</div>`)
 }
 
 // ── Skills ───────────────────────────────────────────────────────────────────
@@ -405,123 +543,270 @@ func (s *Server) renderSettings(w http.ResponseWriter) {
 
 	// General
 	fmt.Fprint(w, `<div class="settings-tab-content" id="tab-general"><div class="panel">`)
-	settingRow(w, "Daemon Host", cfg.Daemon.Host, "Network interface to bind")
-	settingRow(w, "Daemon Port", fmt.Sprintf("%d", cfg.Daemon.Port), "HTTP port for dashboard + API")
-	settingRow(w, "MCP Port", fmt.Sprintf("%d", cfg.MCPPort), "First MCP server port (convenience)")
-	settingBool(w, "MCP Enabled", cfg.MCP.Enabled, "Enable MCP servers for tool discovery")
-	settingRow(w, "Log Level", cfg.Logging.Level, "debug, info, warn, or error")
-	settingRow(w, "Log Format", cfg.Logging.Format, "json or text output format")
+	settingRow(w, "Daemon Host", cfg.Daemon.Host, "Network interface to bind", "daemon.host")
+	settingRow(w, "Daemon Port", fmt.Sprintf("%d", cfg.Daemon.Port), "HTTP port for dashboard + API", "daemon.port")
+	settingRow(w, "MCP Port", fmt.Sprintf("%d", cfg.MCPPort), "First MCP server port (convenience)", "mcp.port")
+	settingBool(w, "MCP Enabled", cfg.MCP.Enabled, "Enable MCP servers for tool discovery", "mcp.enabled")
+	settingRow(w, "Log Level", cfg.Logging.Level, "debug, info, warn, or error", "logging.level")
+	settingRow(w, "Log Format", cfg.Logging.Format, "json or text output format", "logging.format")
 	fmt.Fprint(w, `<div style="margin-top:16px"><button class="btn btn-primary" onclick="saveSettings()">Save Changes</button></div></div></div>`)
 
 	// LLM tab
 	fmt.Fprint(w, `<div class="settings-tab-content" style="display:none" id="tab-llm"><div class="panel">`)
-	settingRow(w, "Provider", cfg.LLM.Provider, "openai, anthropic, openrouter, ollama, or custom")
-	settingRow(w, "Model", cfg.LLM.Model, "Primary model identifier")
-	settingSecret(w, "API Key", cfg.LLM.APIKey, "Set via AGENTFORGE_LLM_APIKEY env var (recommended)")
-	settingRow(w, "Base URL", cfg.LLM.BaseURL, "Custom API endpoint")
-	settingRow(w, "Timeout", cfg.LLM.Timeout.String(), "Max wait time per request")
-	settingRow(w, "Temperature", fmt.Sprintf("%.1f", cfg.LLM.Temperature), "0.0 (deterministic) to 2.0 (creative)")
-	settingRow(w, "Max Tokens", fmt.Sprintf("%d", cfg.LLM.MaxTokens), "Output token limit")
-	settingRow(w, "Top-P", fmt.Sprintf("%.2f", cfg.LLM.TopP), "Nucleus sampling threshold")
-	settingRow(w, "Freq Penalty", fmt.Sprintf("%.2f", cfg.LLM.FrequencyPenalty), "Repetition penalty (-2.0 to 2.0)")
-	settingRow(w, "Presence Penalty", fmt.Sprintf("%.2f", cfg.LLM.PresencePenalty), "Topic diversity (-2.0 to 2.0)")
-	settingBool(w, "Streaming", cfg.LLM.Streaming, "Stream tokens as they're generated")
-	settingRow(w, "Retry Count", fmt.Sprintf("%d", cfg.LLM.RetryCount), "Max retries on failure")
-	settingRow(w, "Retry Delay", cfg.LLM.RetryDelay.String(), "Backoff between retries")
-	settingRow(w, "Proxy", cfg.LLM.Proxy, "HTTP proxy (SOCKS5 supported)")
-	settingRow(w, "Max Concurrency", fmt.Sprintf("%d", cfg.LLM.MaxConcurrency), "Parallel LLM requests")
+
+	// Provider with datalist
+	fmt.Fprint(w, `<div class="setting-row"><div><div class="setting-label">Provider</div><div class="setting-desc">openai, anthropic, openrouter, ollama, claude-cli, gemini-cli, or custom</div></div><input type="text" class="setting-input" list="llm-provider-list" data-config-key="llm.provider" value="`+html.EscapeString(cfg.LLM.Provider)+`" onchange="updateLLMModel()"><datalist id="llm-provider-list"><option value="openai"><option value="anthropic"><option value="openrouter"><option value="ollama"><option value="claude-cli"><option value="gemini-cli"></datalist></div>`)
+
+	// Model with auto-update and datalist
+	fmt.Fprint(w, `<div class="setting-row"><div><div class="setting-label">Model</div><div class="setting-desc">Select or type a model name (list auto-populates from selected provider)</div></div><input type="text" class="setting-input" id="llm-model" list="llm-model-list" data-config-key="llm.model" value="`+html.EscapeString(cfg.LLM.Model)+`"><datalist id="llm-model-list"></datalist></div>`)
+	settingSecret(w, "API Key", cfg.LLM.APIKey, "Set via AGENTFORGE_LLM_APIKEY env var (recommended)", "llm.apiKey")
+	settingRow(w, "Base URL", cfg.LLM.BaseURL, "Custom API endpoint", "llm.baseUrl")
+	settingRow(w, "Timeout", cfg.LLM.Timeout.String(), "Max wait time per request", "llm.timeout")
+	settingRow(w, "Temperature", fmt.Sprintf("%.1f", cfg.LLM.Temperature), "0.0 (deterministic) to 2.0 (creative)", "llm.temperature")
+	settingRow(w, "Max Tokens", fmt.Sprintf("%d", cfg.LLM.MaxTokens), "Output token limit", "llm.maxTokens")
+	settingRow(w, "Top-P", fmt.Sprintf("%.2f", cfg.LLM.TopP), "Nucleus sampling threshold", "llm.topP")
+	settingRow(w, "Freq Penalty", fmt.Sprintf("%.2f", cfg.LLM.FrequencyPenalty), "Repetition penalty (-2.0 to 2.0)", "llm.frequencyPenalty")
+	settingRow(w, "Presence Penalty", fmt.Sprintf("%.2f", cfg.LLM.PresencePenalty), "Topic diversity (-2.0 to 2.0)", "llm.presencePenalty")
+	settingBool(w, "Streaming", cfg.LLM.Streaming, "Stream tokens as they're generated", "llm.streaming")
+	settingRow(w, "Retry Count", fmt.Sprintf("%d", cfg.LLM.RetryCount), "Max retries on failure", "llm.retryCount")
+	settingRow(w, "Retry Delay", cfg.LLM.RetryDelay.String(), "Backoff between retries", "llm.retryDelay")
+	settingRow(w, "Proxy", cfg.LLM.Proxy, "HTTP proxy (SOCKS5 supported)", "llm.proxy")
+	settingRow(w, "Max Concurrency", fmt.Sprintf("%d", cfg.LLM.MaxConcurrency), "Parallel LLM requests", "llm.maxConcurrency")
 	if len(cfg.LLM.Fallbacks) > 0 {
 		for i, fb := range cfg.LLM.Fallbacks {
-			settingRow(w, fmt.Sprintf("Fallback %d Provider / Model", i+1), fmt.Sprintf("%s / %s", fb.Provider, fb.Model), "Provider routing, in order")
+			settingRow(w, fmt.Sprintf("Fallback %d Provider / Model", i+1), fmt.Sprintf("%s / %s", fb.Provider, fb.Model), "Provider routing, in order", fmt.Sprintf("llm.fallbacks.%d", i))
 		}
 	}
 	fmt.Fprint(w, `<div style="margin-top:16px"><button class="btn btn-primary" onclick="saveSettings()">Save Changes</button></div></div></div>`)
 
-	// Providers tab (new)
-	fmt.Fprint(w, `<div class="settings-tab-content" style="display:none" id="tab-providers"><div class="panel">`)
-	provMap := map[string]config.ProviderConfig{
-		"OpenAI": cfg.Providers.OpenAI, "Anthropic": cfg.Providers.Anthropic,
-		"OpenRouter": cfg.Providers.OpenRouter, "Google": cfg.Providers.Google,
-		"DeepSeek": cfg.Providers.DeepSeek, "Ollama": cfg.Providers.Ollama,
-		"Groq": cfg.Providers.Groq, "Mistral": cfg.Providers.Mistral,
-		"Cohere": cfg.Providers.Cohere,
+	// Providers tab
+	claudeDetected := false
+	if _, ok := s.availableProviders["claude-cli"]; ok {
+		claudeDetected = true
 	}
-	for name, pc := range provMap {
-		settingBool(w, name+" Enabled", pc.Enabled, "Enable "+name+" provider")
-		if pc.Enabled {
-			settingSecret(w, name+" API Key", pc.APIKey, "API key for "+name)
-			settingRow(w, name+" Base URL", pc.BaseURL, "Override default endpoint")
-			settingRow(w, name+" Default Model", pc.Model, "Default model for "+name)
+	geminiDetected := false
+	if _, ok := s.availableProviders["gemini-cli"]; ok {
+		geminiDetected = true
+	}
+	detectedBadge := func(ok bool) string {
+		if ok {
+			return `<span style="color:#16a766;font-size:11px;padding:2px 8px;border-radius:10px;background:rgba(22,167,102,0.15)">✓ detected</span>`
 		}
+		return `<span style="color:#888;font-size:11px;padding:2px 8px;border-radius:10px;background:rgba(139,134,128,0.15)">not installed</span>`
 	}
+
+	fmt.Fprint(w, `<div class="settings-tab-content" style="display:none" id="tab-providers"><div class="panel">`)
+	fmt.Fprint(w, `<div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-dim);margin-bottom:12px">CLI Providers</div>`)
+
+	// providerCard renders a titled card containing arbitrary content
+	provCard := func(title, badge, content string) {
+		fmt.Fprintf(w, `<div style="border:1px solid rgba(139,134,128,0.2);border-radius:10px;padding:16px;margin-bottom:12px;background:rgba(250,243,240,0.02)">
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">%s%s</div>%s</div>`, title, badge, content)
+	}
+
+	claudeModelOpts := modelOptions(cfg.Providers.ClaudeCLI.Model, []string{
+		"claude-opus-4-7", "claude-sonnet-4-6", "claude-haiku-4-5-20251001", "claude-opus-4", "claude-sonnet-4-5",
+	})
+	claudeEnabledCheck := ""
+	if cfg.Providers.ClaudeCLI.Enabled {
+		claudeEnabledCheck = " checked"
+	}
+	provCard(
+		fmt.Sprintf(`<label class="af-toggle-label" title="Enable Claude CLI"><input type="checkbox" class="af-toggle-input" data-config-key="providers.claudeCli.enabled"%s><span class="af-toggle-slider"></span></label><strong style="font-size:14px">Claude CLI</strong>`, claudeEnabledCheck),
+		detectedBadge(claudeDetected),
+		fmt.Sprintf(`<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+  <div><div style="font-size:11px;color:var(--text-dim);margin-bottom:4px">Executable path</div>
+  <input class="setting-input" data-config-key="providers.claudeCli.cliPath" value="%s" placeholder="claude" style="width:100%%"></div>
+  <div><div style="font-size:11px;color:var(--text-dim);margin-bottom:4px">Model</div>
+  <input class="setting-input" list="claude-cli-models" data-config-key="providers.claudeCli.model" value="%s" placeholder="claude-sonnet-4-6" style="width:100%%">
+  <datalist id="claude-cli-models">%s</datalist></div>
+</div>`,
+			html.EscapeString(cfg.Providers.ClaudeCLI.CLIPath),
+			html.EscapeString(cfg.Providers.ClaudeCLI.Model),
+			claudeModelOpts),
+	)
+
+	geminiModelOpts := modelOptions(cfg.Providers.GeminiCLI.Model, []string{
+		"gemini-2.5-pro", "gemini-2.0-flash", "gemini-2.0-flash-lite", "gemini-1.5-pro", "gemini-1.5-flash",
+	})
+	geminiEnabledCheck := ""
+	if cfg.Providers.GeminiCLI.Enabled {
+		geminiEnabledCheck = " checked"
+	}
+	provCard(
+		fmt.Sprintf(`<label class="af-toggle-label" title="Enable Gemini CLI"><input type="checkbox" class="af-toggle-input" data-config-key="providers.geminiCli.enabled"%s><span class="af-toggle-slider"></span></label><strong style="font-size:14px">Gemini CLI</strong>`, geminiEnabledCheck),
+		detectedBadge(geminiDetected),
+		fmt.Sprintf(`<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+  <div><div style="font-size:11px;color:var(--text-dim);margin-bottom:4px">Executable path</div>
+  <input class="setting-input" data-config-key="providers.geminiCli.cliPath" value="%s" placeholder="gemini" style="width:100%%"></div>
+  <div><div style="font-size:11px;color:var(--text-dim);margin-bottom:4px">Model</div>
+  <input class="setting-input" list="gemini-cli-models" data-config-key="providers.geminiCli.model" value="%s" placeholder="gemini-2.5-pro" style="width:100%%">
+  <datalist id="gemini-cli-models">%s</datalist></div>
+</div>`,
+			html.EscapeString(cfg.Providers.GeminiCLI.CLIPath),
+			html.EscapeString(cfg.Providers.GeminiCLI.Model),
+			geminiModelOpts),
+	)
+
+	// API Providers — fields always visible so users can configure before/after enabling
+	fmt.Fprint(w, `<div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-dim);margin-bottom:12px;border-top:1px solid rgba(139,134,128,0.1);padding-top:16px">API Providers</div>`)
+
+	type apiProvEntry struct {
+		name       string
+		display    string
+		pc         config.ProviderConfig
+		defaultURL string
+		models     []string
+		noAPIKey   bool
+	}
+	apiProvList := []apiProvEntry{
+		{"openai", "OpenAI", cfg.Providers.OpenAI,
+			"https://api.openai.com/v1",
+			[]string{"gpt-4o", "gpt-4o-mini", "gpt-4-turbo", "o1", "o1-mini", "o3-mini", "o4-mini"},
+			false},
+		{"anthropic", "Anthropic", cfg.Providers.Anthropic,
+			"https://api.anthropic.com",
+			[]string{"claude-opus-4-7", "claude-sonnet-4-6", "claude-haiku-4-5-20251001", "claude-opus-4", "claude-sonnet-4-5"},
+			false},
+		{"openrouter", "OpenRouter", cfg.Providers.OpenRouter,
+			"https://openrouter.ai/api/v1",
+			[]string{"openai/gpt-4o", "anthropic/claude-opus-4", "anthropic/claude-sonnet-4-6", "meta-llama/llama-3.3-70b-instruct", "google/gemini-2.5-pro", "deepseek/deepseek-r1"},
+			false},
+		{"google", "Google (Gemini API)", cfg.Providers.Google,
+			"https://generativelanguage.googleapis.com/v1beta",
+			[]string{"gemini-2.5-pro", "gemini-2.0-flash", "gemini-2.0-flash-lite", "gemini-1.5-pro", "gemini-1.5-flash"},
+			false},
+		{"groq", "Groq", cfg.Providers.Groq,
+			"https://api.groq.com/openai/v1",
+			[]string{"llama-3.3-70b-versatile", "llama-3.1-8b-instant", "mixtral-8x7b-32768", "gemma2-9b-it", "deepseek-r1-distill-llama-70b"},
+			false},
+		{"deepseek", "DeepSeek", cfg.Providers.DeepSeek,
+			"https://api.deepseek.com/v1",
+			[]string{"deepseek-chat", "deepseek-coder", "deepseek-reasoner"},
+			false},
+		{"mistral", "Mistral", cfg.Providers.Mistral,
+			"https://api.mistral.ai/v1",
+			[]string{"mistral-large-latest", "mistral-medium-latest", "mistral-small-latest", "codestral-latest", "open-mistral-nemo"},
+			false},
+		{"cohere", "Cohere", cfg.Providers.Cohere,
+			"https://api.cohere.ai/v1",
+			[]string{"command-r-plus", "command-r", "command", "command-light"},
+			false},
+		{"ollama", "Ollama (local)", cfg.Providers.Ollama,
+			"http://localhost:11434",
+			[]string{"llama3", "llama3.2", "mistral", "codellama", "qwen2.5", "phi3", "deepseek-r1"},
+			true},
+	}
+
+	for _, pe := range apiProvList {
+		pfx := "providers." + pe.name
+		enabledCheck := ""
+		if pe.pc.Enabled {
+			enabledCheck = " checked"
+		}
+		modelListID := "models-" + pe.name
+		modelOpts := modelOptions(pe.pc.Model, pe.models)
+
+		keyField := ""
+		if !pe.noAPIKey {
+			keyPlaceholder := "enter API key"
+			if pe.pc.APIKey != "" {
+				keyPlaceholder = config.MaskAPIKey(pe.pc.APIKey) + "  (blank = keep existing)"
+			}
+			keyField = fmt.Sprintf(`<div><div style="font-size:11px;color:var(--text-dim);margin-bottom:4px">API Key</div>
+  <input class="setting-input" type="password" data-config-key="%s.apiKey" value="" placeholder="%s" style="width:100%%"></div>`,
+				pfx, html.EscapeString(keyPlaceholder))
+		} else {
+			keyField = `<div style="font-size:11px;color:var(--text-dim);padding-top:16px">No API key required — connects to local Ollama instance.</div>`
+		}
+
+		content := fmt.Sprintf(`<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+  %s
+  <div><div style="font-size:11px;color:var(--text-dim);margin-bottom:4px">Gateway URL</div>
+  <input class="setting-input" data-config-key="%s.baseUrl" value="%s" placeholder="%s" style="width:100%%"></div>
+  <div><div style="font-size:11px;color:var(--text-dim);margin-bottom:4px">Model</div>
+  <input class="setting-input" list="%s" data-config-key="%s.model" value="%s" placeholder="%s" style="width:100%%">
+  <datalist id="%s">%s</datalist></div>
+</div>`,
+			keyField,
+			pfx, html.EscapeString(pe.pc.BaseURL), html.EscapeString(pe.defaultURL),
+			modelListID, pfx, html.EscapeString(pe.pc.Model),
+			func() string { if len(pe.models) > 0 { return pe.models[0] }; return "" }(),
+			modelListID, modelOpts)
+
+		titleHTML := fmt.Sprintf(`<label class="af-toggle-label" title="Enable %s"><input type="checkbox" class="af-toggle-input" data-config-key="%s.enabled"%s><span class="af-toggle-slider"></span></label><strong style="font-size:14px">%s</strong>`,
+			pe.display, pfx, enabledCheck, pe.display)
+		provCard(titleHTML, "", content)
+	}
+
 	fmt.Fprint(w, `<div style="margin-top:16px"><button class="btn btn-primary" onclick="saveSettings()">Save Changes</button></div></div></div>`)
 
 	// Memory
 	fmt.Fprint(w, `<div class="settings-tab-content" style="display:none" id="tab-memory"><div class="panel">`)
-	settingRow(w, "Memory Root", cfg.Memory.Root, "MeMex Zero RAG storage path")
-	settingBool(w, "Auto-Commit", cfg.Memory.AutoCommit, "Auto git-commit memory on change")
-	settingRow(w, "Commit Interval", cfg.Memory.CommitInterval.String(), "Max interval between auto-commits")
-	settingBool(w, "Index Enabled", cfg.Memory.IndexEnabled, "FTS5 full-text search index")
-	settingRow(w, "Compress Interval", cfg.Memory.CompressInterval.String(), "Compression interval")
-	settingRow(w, "Max Daily Size", cfg.Memory.MaxDailySize, "Soft cap per daily log")
+	settingRow(w, "Memory Root", cfg.Memory.Root, "MeMex Zero RAG storage path", "memory.root")
+	settingBool(w, "Auto-Commit", cfg.Memory.AutoCommit, "Auto git-commit memory on change", "memory.autoCommit")
+	settingRow(w, "Commit Interval", cfg.Memory.CommitInterval.String(), "Max interval between auto-commits", "memory.commitInterval")
+	settingBool(w, "Index Enabled", cfg.Memory.IndexEnabled, "FTS5 full-text search index", "memory.indexEnabled")
+	settingRow(w, "Compress Interval", cfg.Memory.CompressInterval.String(), "Compression interval", "memory.compressInterval")
+	settingRow(w, "Max Daily Size", cfg.Memory.MaxDailySize, "Soft cap per daily log", "memory.maxDailySize")
 	fmt.Fprint(w, `<div style="margin-top:16px"><button class="btn btn-primary" onclick="saveSettings()">Save Changes</button></div></div></div>`)
 
 	// Security
 	fmt.Fprint(w, `<div class="settings-tab-content" style="display:none" id="tab-security"><div class="panel">`)
-	settingRow(w, "Default Token Budget", fmt.Sprintf("%d", cfg.Security.DefaultTokenBudget), "Max tokens per agent session")
-	settingRow(w, "Default Timeout", cfg.Security.DefaultTimeout.String(), "Max agent session duration")
-	settingBool(w, "Enforce On Spawn", cfg.Security.EnforceOnSpawn, "Validate capability at agent creation")
-	settingBool(w, "Enforce On Tool Call", cfg.Security.EnforceOnToolCall, "Validate capability per tool invocation")
-	settingBool(w, "Audit Enabled", cfg.Security.AuditEnabled, "Write capability checks to audit log")
-	settingBool(w, "Allow FileSystem", cfg.Security.AllowFileSystem, "Allow agents filesystem access")
-	settingBool(w, "Allow Network", cfg.Security.AllowNetwork, "Allow agents HTTP access")
-	settingBool(w, "Allow Shell", cfg.Security.AllowShell, "Allow agents shell execution")
-	settingBool(w, "Allow Browser", cfg.Security.AllowBrowser, "Allow agents browser access")
-	settingRow(w, "Sandbox Mode", cfg.Security.SandboxMode, "non-main, all, or none")
+	settingRow(w, "Default Token Budget", fmt.Sprintf("%d", cfg.Security.DefaultTokenBudget), "Max tokens per agent session", "security.defaultTokenBudget")
+	settingRow(w, "Default Timeout", cfg.Security.DefaultTimeout.String(), "Max agent session duration", "security.defaultTimeout")
+	settingBool(w, "Enforce On Spawn", cfg.Security.EnforceOnSpawn, "Validate capability at agent creation", "security.enforceOnSpawn")
+	settingBool(w, "Enforce On Tool Call", cfg.Security.EnforceOnToolCall, "Validate capability per tool invocation", "security.enforceOnToolCall")
+	settingBool(w, "Audit Enabled", cfg.Security.AuditEnabled, "Write capability checks to audit log", "security.auditEnabled")
+	settingBool(w, "Allow FileSystem", cfg.Security.AllowFileSystem, "Allow agents filesystem access", "security.allowFileSystem")
+	settingBool(w, "Allow Network", cfg.Security.AllowNetwork, "Allow agents HTTP access", "security.allowNetwork")
+	settingBool(w, "Allow Shell", cfg.Security.AllowShell, "Allow agents shell execution", "security.allowShell")
+	settingBool(w, "Allow Browser", cfg.Security.AllowBrowser, "Allow agents browser access", "security.allowBrowser")
+	settingRow(w, "Sandbox Mode", cfg.Security.SandboxMode, "non-main, all, or none", "security.sandboxMode")
 	fmt.Fprint(w, `<div style="margin-top:16px"><button class="btn btn-primary" onclick="saveSettings()">Save Changes</button></div></div></div>`)
 
 	// Workers
 	fmt.Fprint(w, `<div class="settings-tab-content" style="display:none" id="tab-workers"><div class="panel">`)
-	settingRow(w, "Content Max Agents", fmt.Sprintf("%d", cfg.Workers.ContentMaxAgents), "Content department pool size")
-	settingRow(w, "SEO Max Agents", fmt.Sprintf("%d", cfg.Workers.SEOMaxAgents), "SEO department pool size")
-	settingRow(w, "Social Max Agents", fmt.Sprintf("%d", cfg.Workers.SocialMaxAgents), "Social department pool size")
-	settingRow(w, "Default Max Agents", fmt.Sprintf("%d", cfg.Workers.DefaultMaxAgents), "Default pool size for new departments")
-	settingRow(w, "Heartbeat Interval", cfg.Workers.HeartbeatInterval.String(), "Heartbeat frequency")
+	settingRow(w, "Content Max Agents", fmt.Sprintf("%d", cfg.Workers.ContentMaxAgents), "Content department pool size", "workers.contentMaxAgents")
+	settingRow(w, "SEO Max Agents", fmt.Sprintf("%d", cfg.Workers.SEOMaxAgents), "SEO department pool size", "workers.seoMaxAgents")
+	settingRow(w, "Social Max Agents", fmt.Sprintf("%d", cfg.Workers.SocialMaxAgents), "Social department pool size", "workers.socialMaxAgents")
+	settingRow(w, "Default Max Agents", fmt.Sprintf("%d", cfg.Workers.DefaultMaxAgents), "Default pool size for new departments", "workers.defaultMaxAgents")
+	settingRow(w, "Heartbeat Interval", cfg.Workers.HeartbeatInterval.String(), "Heartbeat frequency", "workers.heartbeatInterval")
 	fmt.Fprint(w, `<div style="margin-top:16px"><button class="btn btn-primary" onclick="saveSettings()">Save Changes</button></div></div></div>`)
 
 	// Channels (expanded)
 	fmt.Fprint(w, `<div class="settings-tab-content" style="display:none" id="tab-channels"><div class="panel">`)
-	renderChannelSection(w, "Telegram", cfg.Channels.Telegram.Enabled, func() {
-		settingSecret(w, "Bot Token", cfg.Channels.Telegram.BotToken, "Telegram Bot API token")
-		settingRow(w, "Webhook URL", cfg.Channels.Telegram.WebhookURL, "Inbound webhook endpoint")
-		settingRow(w, "Poll Interval", cfg.Channels.Telegram.PollInterval.String(), "Long-poll interval")
-		settingRow(w, "Max File Size", cfg.Channels.Telegram.MaxFileSize, "Max upload size")
+	renderChannelSection(w, "Telegram", "telegram", cfg.Channels.Telegram.Enabled, func() {
+		settingSecret(w, "Bot Token", cfg.Channels.Telegram.BotToken, "Telegram Bot API token", "channels.telegram.botToken")
+		settingRow(w, "Webhook URL", cfg.Channels.Telegram.WebhookURL, "Inbound webhook endpoint", "channels.telegram.webhookUrl")
+		settingRow(w, "Poll Interval", cfg.Channels.Telegram.PollInterval.String(), "Long-poll interval", "channels.telegram.pollInterval")
+		settingRow(w, "Max File Size", cfg.Channels.Telegram.MaxFileSize, "Max upload size", "channels.telegram.maxFileSize")
 		fmt.Fprintf(w, `<button class="btn" style="border:1px solid var(--af-magma);color:var(--af-magma);margin-top:8px;font-size:12px" onclick="testChannel('telegram')">🧪 Test Connection</button>`)
 	})
-	renderChannelSection(w, "Discord", cfg.Channels.Discord.Enabled, func() {
-		settingSecret(w, "Bot Token", cfg.Channels.Discord.BotToken, "Discord bot token")
-		settingRow(w, "Application ID", cfg.Channels.Discord.ApplicationID, "Discord app ID")
-		settingRow(w, "Guild ID", cfg.Channels.Discord.GuildID, "Server ID")
+	renderChannelSection(w, "Discord", "discord", cfg.Channels.Discord.Enabled, func() {
+		settingSecret(w, "Bot Token", cfg.Channels.Discord.BotToken, "Discord bot token", "channels.discord.botToken")
+		settingRow(w, "Application ID", cfg.Channels.Discord.ApplicationID, "Discord app ID", "channels.discord.applicationId")
+		settingRow(w, "Guild ID", cfg.Channels.Discord.GuildID, "Server ID", "channels.discord.guildId")
 		fmt.Fprintf(w, `<button class="btn" style="border:1px solid var(--af-magma);color:var(--af-magma);margin-top:8px;font-size:12px" onclick="testChannel('discord')">🧪 Test Connection</button>`)
 	})
-	renderChannelSection(w, "Signal", cfg.Channels.Signal.Enabled, func() {
-		settingRow(w, "Phone Number", cfg.Channels.Signal.PhoneNumber, "Registered Signal number")
-		settingRow(w, "signal-cli Path", cfg.Channels.Signal.SignalCLIPath, "Path to signal-cli binary")
+	renderChannelSection(w, "Signal", "signal", cfg.Channels.Signal.Enabled, func() {
+		settingRow(w, "Phone Number", cfg.Channels.Signal.PhoneNumber, "Registered Signal number", "channels.signal.phoneNumber")
+		settingRow(w, "signal-cli Path", cfg.Channels.Signal.SignalCLIPath, "Path to signal-cli binary", "channels.signal.signalCliPath")
 	})
-	renderChannelSection(w, "WhatsApp", cfg.Channels.WhatsApp.Enabled, func() {
-		settingSecret(w, "API Key", cfg.Channels.WhatsApp.APIKey, "WhatsApp Cloud API key")
-		settingRow(w, "Phone Number ID", cfg.Channels.WhatsApp.PhoneNumberID, "WhatsApp phone ID")
-		settingRow(w, "Business ID", cfg.Channels.WhatsApp.BusinessID, "WhatsApp business account ID")
+	renderChannelSection(w, "WhatsApp", "whatsApp", cfg.Channels.WhatsApp.Enabled, func() {
+		settingSecret(w, "API Key", cfg.Channels.WhatsApp.APIKey, "WhatsApp Cloud API key", "channels.whatsApp.apiKey")
+		settingRow(w, "Phone Number ID", cfg.Channels.WhatsApp.PhoneNumberID, "WhatsApp phone ID", "channels.whatsApp.phoneNumberId")
+		settingRow(w, "Business ID", cfg.Channels.WhatsApp.BusinessID, "WhatsApp business account ID", "channels.whatsApp.businessId")
 	})
-	renderChannelSection(w, "Email (SMTP)", cfg.Channels.Email.Enabled, func() {
-		settingRow(w, "SMTP Host", cfg.Channels.Email.SMTPHost, "SMTP server address")
-		settingRow(w, "SMTP Port", fmt.Sprintf("%d", cfg.Channels.Email.SMTPPort), "SMTP port")
-		settingRow(w, "Username", cfg.Channels.Email.Username, "SMTP username")
-		settingSecret(w, "Password", cfg.Channels.Email.Password, "SMTP password")
-		settingRow(w, "From Address", cfg.Channels.Email.FromAddress, "Sender email")
+	renderChannelSection(w, "Email (SMTP)", "email", cfg.Channels.Email.Enabled, func() {
+		settingRow(w, "SMTP Host", cfg.Channels.Email.SMTPHost, "SMTP server address", "channels.email.smtpHost")
+		settingRow(w, "SMTP Port", fmt.Sprintf("%d", cfg.Channels.Email.SMTPPort), "SMTP port", "channels.email.smtpPort")
+		settingRow(w, "Username", cfg.Channels.Email.Username, "SMTP username", "channels.email.username")
+		settingSecret(w, "Password", cfg.Channels.Email.Password, "SMTP password", "channels.email.password")
+		settingRow(w, "From Address", cfg.Channels.Email.FromAddress, "Sender email", "channels.email.fromAddress")
 	})
-	renderChannelSection(w, "Slack", cfg.Channels.Slack.Enabled, func() {
-		settingSecret(w, "Bot Token", cfg.Channels.Slack.BotToken, "Slack bot token")
+	renderChannelSection(w, "Slack", "slack", cfg.Channels.Slack.Enabled, func() {
+		settingSecret(w, "Bot Token", cfg.Channels.Slack.BotToken, "Slack bot token", "channels.slack.botToken")
 	})
 	fmt.Fprint(w, `<div style="margin-top:16px"><button class="btn btn-primary" onclick="saveSettings()">Save Changes</button></div>
 <script>
@@ -535,32 +820,32 @@ function testChannel(ch) {
 
 	// Tools
 	fmt.Fprint(w, `<div class="settings-tab-content" style="display:none" id="tab-tools"><div class="panel">`)
-	settingBool(w, "Web Search", cfg.Tools.WebSearch, "Allow internet search")
-	settingBool(w, "Web Fetch", cfg.Tools.WebFetch, "Allow URL content fetching")
-	settingBool(w, "Image Generation", cfg.Tools.ImageGen, "Allow AI image generation")
-	settingBool(w, "Image Analysis", cfg.Tools.ImageAnalyze, "Allow image analysis/vision")
-	settingBool(w, "Video Generation", cfg.Tools.VideoGen, "Allow AI video generation")
-	settingBool(w, "Audio Generation", cfg.Tools.AudioGen, "Allow AI audio/music generation")
-	settingBool(w, "Browser", cfg.Tools.Browser, "Allow headless browser")
-	settingBool(w, "Code Execution", cfg.Tools.CodeExec, "Allow sandboxed code execution")
-	settingBool(w, "Git Operations", cfg.Tools.GitOps, "Allow git read/write")
-	settingBool(w, "Cron Scheduling", cfg.Tools.Cron, "Allow cron job management")
-	settingBool(w, "Notion", cfg.Tools.Notion, "Allow Notion API access")
-	settingBool(w, "Calendar", cfg.Tools.Calendar, "Allow calendar access")
-	settingBool(w, "Weather", cfg.Tools.Weather, "Allow weather queries")
-	settingBool(w, "MCP Discovery", cfg.Tools.MCPDiscovery, "Auto-discover MCP tools")
-	settingBool(w, "Diagram Generation", cfg.Tools.DiagramGen, "Allow diagram generation")
+	settingBool(w, "Web Search", cfg.Tools.WebSearch, "Allow internet search", "tools.webSearch")
+	settingBool(w, "Web Fetch", cfg.Tools.WebFetch, "Allow URL content fetching", "tools.webFetch")
+	settingBool(w, "Image Generation", cfg.Tools.ImageGen, "Allow AI image generation", "tools.imageGen")
+	settingBool(w, "Image Analysis", cfg.Tools.ImageAnalyze, "Allow image analysis/vision", "tools.imageAnalyze")
+	settingBool(w, "Video Generation", cfg.Tools.VideoGen, "Allow AI video generation", "tools.videoGen")
+	settingBool(w, "Audio Generation", cfg.Tools.AudioGen, "Allow AI audio/music generation", "tools.audioGen")
+	settingBool(w, "Browser", cfg.Tools.Browser, "Allow headless browser", "tools.browser")
+	settingBool(w, "Code Execution", cfg.Tools.CodeExec, "Allow sandboxed code execution", "tools.codeExec")
+	settingBool(w, "Git Operations", cfg.Tools.GitOps, "Allow git read/write", "tools.gitOps")
+	settingBool(w, "Cron Scheduling", cfg.Tools.Cron, "Allow cron job management", "tools.cron")
+	settingBool(w, "Notion", cfg.Tools.Notion, "Allow Notion API access", "tools.notion")
+	settingBool(w, "Calendar", cfg.Tools.Calendar, "Allow calendar access", "tools.calendar")
+	settingBool(w, "Weather", cfg.Tools.Weather, "Allow weather queries", "tools.weather")
+	settingBool(w, "MCP Discovery", cfg.Tools.MCPDiscovery, "Auto-discover MCP tools", "tools.mcpDiscovery")
+	settingBool(w, "Diagram Generation", cfg.Tools.DiagramGen, "Allow diagram generation", "tools.diagramGen")
 	fmt.Fprint(w, `<div style="margin-top:16px"><button class="btn btn-primary" onclick="saveSettings()">Save Changes</button></div></div></div>`)
 
 	// UI
 	fmt.Fprint(w, `<div class="settings-tab-content" style="display:none" id="tab-ui"><div class="panel">`)
-	settingRow(w, "Theme", cfg.UI.Theme, "volcanic-glass, dark, light")
-	settingBool(w, "Sidebar Collapsed", cfg.UI.SidebarCollapsed, "Start with sidebar collapsed")
-	settingRow(w, "Auto-Refresh (sec)", fmt.Sprintf("%d", cfg.UI.AutoRefreshSecs), "Dashboard refresh interval")
-	settingBool(w, "Animations", cfg.UI.ShowAnimations, "Show UI animations")
+	settingRow(w, "Theme", cfg.UI.Theme, "volcanic-glass, dark, light", "ui.theme")
+	settingBool(w, "Sidebar Collapsed", cfg.UI.SidebarCollapsed, "Start with sidebar collapsed", "ui.sidebarCollapsed")
+	settingRow(w, "Auto-Refresh (sec)", fmt.Sprintf("%d", cfg.UI.AutoRefreshSecs), "Dashboard refresh interval", "ui.autoRefreshSecs")
+	settingBool(w, "Animations", cfg.UI.ShowAnimations, "Show UI animations", "ui.showAnimations")
 	fmt.Fprint(w, `<div style="margin-top:16px"><button class="btn btn-primary" onclick="saveSettings()">Save Changes</button></div></div></div>`)
 
-	// Save JS
+	// Save JS — runs when HTMX injects this content (inline scripts execute immediately)
 	fmt.Fprint(w, `<script>
 function switchSettingsTab(e, name) {
   e.target.closest(".tabs").querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
@@ -568,45 +853,158 @@ function switchSettingsTab(e, name) {
   document.querySelectorAll(".settings-tab-content").forEach(c => c.style.display = "none");
   document.getElementById("tab-" + name).style.display = "block";
 }
+
 function saveSettings() {
   var patch = {};
-  document.querySelectorAll(".settings-tab-content:not([style*='none']) .setting-input:not([type='password'])").forEach(function(el) {
-    var key = el.getAttribute("data-config-key") || el.closest(".setting-row").querySelector(".setting-label").textContent;
-    patch[key] = el.value;
+  var activeTab = document.querySelector(".settings-tab-content:not([style*='none'])");
+  if (!activeTab) return;
+
+  // Text inputs (not password, not radio)
+  activeTab.querySelectorAll(".setting-input:not([type='password']):not([type='radio'])").forEach(function(el) {
+    var key = el.getAttribute("data-config-key");
+    if (key) patch[key] = el.value;
   });
-  document.querySelectorAll(".settings-tab-content:not([style*='none']) .af-toggle-input").forEach(function(el) {
-    patch[el.getAttribute("data-config-key")] = el.checked ? "true" : "false";
+
+  // Password fields — only send if the user typed a new value (blank = keep existing)
+  activeTab.querySelectorAll("input[type='password'][data-config-key]").forEach(function(el) {
+    var key = el.getAttribute("data-config-key");
+    if (key && el.value.trim() !== '') patch[key] = el.value.trim();
   });
+
+  // Toggle checkboxes
+  activeTab.querySelectorAll(".af-toggle-input").forEach(function(el) {
+    var key = el.getAttribute("data-config-key");
+    if (key) patch[key] = el.checked ? "true" : "false";
+  });
+
+  // Radio buttons — only the checked one
+  activeTab.querySelectorAll("input[type='radio'][data-config-key]:checked").forEach(function(el) {
+    patch[el.getAttribute("data-config-key")] = el.value;
+  });
+
   var formData = new URLSearchParams(patch);
   fetch("/api/config/save", { method: "POST", body: formData })
     .then(r => r.json())
     .then(data => {
-      showToast(data.ok ? "Settings saved. Restart daemon to apply." : ("Error: " + data.error), data.ok ? "success" : "error");
+      if (!data.ok) {
+        showToast("Error: " + (data.error || "unknown"), "error");
+      } else if (data.reloaded) {
+        showToast("Provider reloaded: " + data.provider, "success");
+      } else {
+        showToast("Settings saved", "success");
+      }
     })
     .catch(e => showToast("Network error: " + e.message, "error"));
 }
+
+function highlightProvider(name) {
+  ['claude-cli','gemini-cli'].forEach(function(p) {
+    var card = document.querySelector('input[value="' + p + '"][name="llm-provider"]');
+    if (!card) return;
+    var label = card.closest('label');
+    if (!label) return;
+    label.style.borderColor = (p === name) ? 'rgba(255,107,44,0.6)' : 'rgba(139,134,128,0.2)';
+  });
+}
+
+function loadCLIModels(provider, selectId, currentModel) {
+  var sel = document.getElementById(selectId);
+  if (!sel) return;
+  fetch('/api/providers/models?provider=' + encodeURIComponent(provider))
+    .then(r => r.json())
+    .then(data => {
+      var models = data.models || [];
+      sel.innerHTML = '';
+      // Ensure currentModel is present even if not in list
+      var allModels = models.includes(currentModel) ? models : (currentModel ? [currentModel].concat(models) : models);
+      allModels.forEach(function(m) {
+        var opt = document.createElement('option');
+        opt.value = m;
+        opt.textContent = m;
+        if (m === currentModel) opt.selected = true;
+        sel.appendChild(opt);
+      });
+    })
+    .catch(function() {});
+}
+
+function updateLLMModel() {
+  var providerInput = document.querySelector('#tab-llm input[list="llm-provider-list"]');
+  var modelInput = document.getElementById('llm-model');
+  var modelList = document.getElementById('llm-model-list');
+  if (!providerInput || !modelInput) return;
+  var provider = providerInput.value.trim();
+  if (!provider) return;
+  fetch('/api/providers/models?provider=' + encodeURIComponent(provider))
+    .then(r => r.json())
+    .then(data => {
+      if (!modelList) return;
+      modelList.innerHTML = '';
+      (data.models || []).forEach(function(m) {
+        var opt = document.createElement('option');
+        opt.value = m;
+        modelList.appendChild(opt);
+      });
+      if (!modelInput.value && data.models && data.models.length > 0) {
+        modelInput.value = data.models[0];
+      }
+    })
+    .catch(function() {});
+}
+
+// Init — runs immediately when HTMX injects this content (no DOMContentLoaded needed)
+(function() {
+  var claudeModel = (document.getElementById('claude-cli-model-select') || {value:''}).value;
+  var geminiModel = (document.getElementById('gemini-cli-model-select') || {value:''}).value;
+  loadCLIModels('claude-cli', 'claude-cli-model-select', claudeModel);
+  loadCLIModels('gemini-cli', 'gemini-cli-model-select', geminiModel);
+  // Populate LLM tab model datalist for current provider
+  var provInput = document.querySelector('#tab-llm input[list="llm-provider-list"]');
+  if (provInput && provInput.value) updateLLMModel();
+})();
 </script>`)
 }
 
-func renderChannelSection(w http.ResponseWriter, name string, enabled bool, render func()) {
+func renderChannelSection(w http.ResponseWriter, name, yamlName string, enabled bool, render func()) {
+	yamlKey := "channels." + yamlName + ".enabled"
 	fmt.Fprintf(w, `<div style="margin-bottom:16px;padding:12px;border:1px solid rgba(139,134,128,0.15);border-radius:10px;background:rgba(250,243,240,0.02)"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><strong style="font-size:14px;color:var(--text-primary)">%s</strong></div>`, name)
-	settingBool(w, name+" Enabled", enabled, "Enable "+name+" channel")
+	settingBool(w, name+" Enabled", enabled, "Enable "+name+" channel", yamlKey)
 	render()
 	fmt.Fprint(w, `</div>`)
 }
 
 // ── Setting Helpers ──────────────────────────────────────────────────────────
 
-func settingRow(w http.ResponseWriter, label, value, desc string) {
-	fmt.Fprintf(w, `<div class="setting-row"><div><div class="setting-label">%s</div><div class="setting-desc">%s</div></div><input class="setting-input" data-config-key="%s" value="%s"></div>`, label, desc, toCamelKey(label), value)
+// modelOptions renders <option> elements for a datalist; current is pre-selected first if not in list.
+func modelOptions(current string, models []string) string {
+	seen := map[string]bool{}
+	var b strings.Builder
+	write := func(m string) {
+		if seen[m] || m == "" {
+			return
+		}
+		seen[m] = true
+		fmt.Fprintf(&b, `<option value="%s">`, html.EscapeString(m))
+	}
+	if current != "" {
+		write(current)
+	}
+	for _, m := range models {
+		write(m)
+	}
+	return b.String()
 }
 
-func settingBool(w http.ResponseWriter, label string, current bool, desc string) {
+func settingRow(w http.ResponseWriter, label, value, desc, configKey string) {
+	fmt.Fprintf(w, `<div class="setting-row"><div><div class="setting-label">%s</div><div class="setting-desc">%s</div></div><input class="setting-input" data-config-key="%s" value="%s"></div>`, label, desc, configKey, html.EscapeString(value))
+}
+
+func settingBool(w http.ResponseWriter, label string, current bool, desc, configKey string) {
 	checked := ""
 	if current {
 		checked = " checked"
 	}
-	fmt.Fprintf(w, `<div class="setting-row"><div><div class="setting-label">%s</div><div class="setting-desc">%s</div></div><label class="af-toggle-label"><input type="checkbox" class="af-toggle-input" data-config-key="%s"%s onchange="this.closest('.setting-row').querySelector('.toggle-status').textContent=this.checked?'Enabled':'Disabled'"><span class="af-toggle-slider"></span><span class="toggle-status" style="margin-left:10px;font-size:12px;color:var(--text-dim)">%s</span></label></div>`, label, desc, toCamelKey(label), checked, boolLabel(current))
+	fmt.Fprintf(w, `<div class="setting-row"><div><div class="setting-label">%s</div><div class="setting-desc">%s</div></div><label class="af-toggle-label"><input type="checkbox" class="af-toggle-input" data-config-key="%s"%s onchange="this.closest('.setting-row').querySelector('.toggle-status').textContent=this.checked?'Enabled':'Disabled'"><span class="af-toggle-slider"></span><span class="toggle-status" style="margin-left:10px;font-size:12px;color:var(--text-dim)">%s</span></label></div>`, label, desc, configKey, checked, boolLabel(current))
 }
 
 func boolLabel(b bool) string {
@@ -616,35 +1014,36 @@ func boolLabel(b bool) string {
 	return "Disabled"
 }
 
-func toCamelKey(label string) string {
-	parts := strings.Fields(strings.ToLower(label))
-	if len(parts) == 0 {
-		return label
-	}
-	result := parts[0]
-	for i := 1; i < len(parts); i++ {
-		result += strings.Title(parts[i])
-	}
-	return result
-}
-
-func settingSecret(w http.ResponseWriter, label, current, desc string) {
-	display := current
+func settingSecret(w http.ResponseWriter, label, current, desc, configKey string) {
+	placeholder := "enter to set"
 	if current != "" {
-		display = config.MaskAPIKey(current)
-	} else {
-		display = "(not set)"
+		placeholder = config.MaskAPIKey(current) + "  (blank = keep existing)"
 	}
-	fmt.Fprintf(w, `<div class="setting-row"><div><div class="setting-label">%s</div><div class="setting-desc">%s</div></div><input class="setting-input" type="password" data-config-key="%s" value="%s"></div>`, label, desc, toCamelKey(label), display)
+	fmt.Fprintf(w, `<div class="setting-row"><div><div class="setting-label">%s</div><div class="setting-desc">%s</div></div><input class="setting-input" type="password" data-config-key="%s" value="" placeholder="%s"></div>`, label, desc, configKey, html.EscapeString(placeholder))
 }
 
 // ── Chat partial ─────────────────────────────────────────────────────────────
 
 func (s *Server) renderChat(w http.ResponseWriter) {
+	history := s.sessionMgr.History("agentforge")
+
 	fmt.Fprint(w, `<div class="panel chat-panel" style="flex:1;display:flex;flex-direction:column">
-<div class="chat-messages" id="chat-messages" style="flex:1;overflow-y:auto;padding:16px;min-height:400px;border-bottom:1px solid rgba(139,134,128,0.15)">
-<div class="chat-msg agent">I'm AgentForge. I am a capability-secured agent orchestration system. I can help you spawn agents, run pipelines, search memory, and audit your security posture. What would you like to do?</div>
-</div>
+<div class="chat-messages" id="chat-messages" style="flex:1;overflow-y:auto;padding:16px;min-height:400px;border-bottom:1px solid rgba(139,134,128,0.15)">`)
+
+	if len(history) == 0 {
+		fmt.Fprint(w, `<div class="chat-msg agent">I'm AgentForge. I am a capability-secured agent orchestration system. I can help you spawn agents, run pipelines, search memory, and audit your security posture. What would you like to do?</div>`)
+	} else {
+		for _, t := range history {
+			switch t.Role {
+			case "user":
+				fmt.Fprintf(w, `<div class="chat-msg user">%s</div>`, html.EscapeString(t.Content))
+			case "assistant":
+				fmt.Fprintf(w, `<div class="chat-msg agent chat-history-msg" data-raw="%s"></div>`, html.EscapeString(t.Content))
+			}
+		}
+	}
+
+	fmt.Fprint(w, `</div>
 <div id="chat-cost-display" class="chat-cost-display" style="padding:8px 12px;border-bottom:1px solid rgba(139,134,128,0.15);background:rgba(250,243,240,0.01);display:none">
 <div style="font-size:11px;color:var(--text-dim);display:flex;justify-content:space-between;gap:16px">
   <span>Session Cost: <strong id="session-total-cost">$0.00</strong></span>
@@ -655,11 +1054,24 @@ func (s *Server) renderChat(w http.ResponseWriter) {
 <input placeholder="Type a message... (Shift+Enter for new line)" id="chat-input" style="flex:1;border:1px solid rgba(139,134,128,0.2);background:rgba(250,243,240,0.03);color:var(--text-primary);padding:10px 12px;border-radius:6px;font-size:13px;resize:none;max-height:100px" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat()}">
 <label class="file-upload-btn" title="Attach file (images, documents, code)">
   <input type="file" id="chat-file-input" multiple style="display:none" accept="image/*,.pdf,.doc,.docx,.txt,.js,.py,.go,.sql,.json" onchange="handleFileUpload()">
-  <img src="/static/img/icons/paperclip.png" width="18" alt="Attach">
+  <img src="/static/img/icons/chat-attach.png" width="18" alt="Attach">
 </label>
 <button class="btn btn-primary" id="send-btn" onclick="sendChat()" style="white-space:nowrap"><img src="/static/img/icons/chat-send.png"> Send</button>
 </div>
 </div>
+<script>(function(){
+  // Reset streaming state — partial reload means user navigated back;
+  // any in-flight stream is gone, so unlock the send button unconditionally.
+  if (window.agChatReset) window.agChatReset();
+  // Apply markdown rendering to history messages
+  if (window.agChatRenderHistory) {
+    document.querySelectorAll('.chat-history-msg').forEach(function(el) {
+      window.agChatRenderHistory(el);
+    });
+  }
+  var msgs = document.getElementById('chat-messages');
+  if (msgs) msgs.scrollTop = msgs.scrollHeight;
+})();</script>
 
 <style>
 .chat-messages {
@@ -877,7 +1289,7 @@ function handleFileUpload() {
 }
 
 function escapeHtml(s) {
-  return s.replace(/&/g, '&amp;')
+  return String(s).replace(/&/g, '&amp;')
           .replace(/</g, '&lt;')
           .replace(/>/g, '&gt;')
           .replace(/"/g, '&quot;');
@@ -1011,93 +1423,270 @@ function installSkill(name) {
 <style>.skill-card{background:rgba(250,243,240,0.03);border:1px solid rgba(139,134,128,0.15);border-radius:10px;padding:16px;transition:all 0.2s}.skill-card:hover{border-color:var(--af-magma)}.skill-card-placeholder{padding:40px;text-align:center;color:var(--text-dim)}</style>`)
 }
 
-// ── Pipeline Editor Partial ──────────────────────────────────────────────────
 
-func (s *Server) renderPipelineEditor(w http.ResponseWriter) {
-	fmt.Fprint(w, `<div class="panel">
-<div class="panel-header"><img src="/static/img/icons/nav-pipelines.png"> Pipeline Editor <span style="font-weight:400;font-size:12px;color:var(--text-dim);margin-left:8px">DAG orchestration</span></div>
-<div style="display:flex;gap:16px;margin-bottom:16px">
-  <select id="pipeline-select" onchange="loadPipeline()" style="border:1px solid rgba(139,134,128,0.2);background:rgba(250,243,240,0.03);color:var(--text-primary);padding:10px 14px;border-radius:8px;font-size:14px;min-width:200px">
-    <option value="">-- Select Pipeline --</option>`)
-	for _, d := range s.cfg.Pipelines.Definitions {
-		act := ""
-		if d.Enabled {
-			act = " • Active"
+// ── Agent Profiles Manager ──────────────────────────────────────────────────
+
+func countEnabledAgents(agents []config.AgentProfile) int {
+	count := 0
+	for _, a := range agents {
+		if a.Enabled {
+			count++
 		}
-		fmt.Fprintf(w, `<option value="%s">%s%s</option>`, d.Name, d.Name, act)
 	}
-	fmt.Fprint(w, `</select>
-  <button class="btn btn-primary" onclick="addPipeline()">+ New Pipeline</button>
-</div>
-<div id="pipeline-detail" style="background:rgba(250,243,240,0.02);border:1px solid rgba(139,134,128,0.1);border-radius:10px;padding:20px;min-height:300px">
-  <div style="color:var(--text-dim);text-align:center;padding:40px">Select a pipeline to edit its stages, triggers, and dependencies.</div>
-</div>
-<script>
-function loadPipeline() {
-  var sel = document.getElementById("pipeline-select").value;
-  if(!sel) { document.getElementById("pipeline-detail").innerHTML='<div style="color:var(--text-dim);text-align:center;padding:40px">Select a pipeline to edit its stages, triggers, and dependencies.</div>'; return; }
-  fetch("/api/config/save", {method:"POST",body:new URLSearchParams({"pipelines.definitions":sel})}).then(r=>r.json());
-}
-function addPipeline() {
-  var n = prompt("Pipeline name:"); if(!n) return;
-  var ds = prompt("Description:"); if(!ds) ds = n;
-  var conf = JSON.stringify([{name:n,enabled:true,description:ds,trigger:{type:"manual"},stages:[]}]);
-  fetch("/api/config/save", {method:"POST",body:new URLSearchParams({"pipelines.definitions":conf})})
-    .then(r=>r.json()).then(d=>{
-      if(d.ok){showToast("Pipeline '"+n+"' saved. Restart daemon to apply.","success");setTimeout(()=>location.reload(),1200)}
-      else showToast("Error: "+d.error,"error");
-    }).catch(e=>showToast("Error: "+e,"error"));
-}
-</script>
-</div>`)
+	return count
 }
 
-// ── Agent Profiles Partial ───────────────────────────────────────────────────
-
-func (s *Server) renderAgentProfiles(w http.ResponseWriter) {
-	fmt.Fprint(w, `<div class="panel">
-<div class="panel-header"><img src="/static/img/icons/nav-agents.png"> Agent Profiles <span style="font-weight:400;font-size:12px;color:var(--text-dim);margin-left:8px">per-agent model, tools & capability</span></div>
-<table class="data-table">
-<thead><tr><th>Agent</th><th>Department</th><th>Provider / Model</th><th>Tools</th><th>FileSystem</th><th>Network</th><th>Shell</th><th>Spawn</th><th></th></tr></thead>
-<tbody>`)
-	for _, ap := range s.cfg.Agents.Profiles {
-		enabledCls := "badge-idle"
-		enabledTxt := "Paused"
-		if ap.Enabled {
-			enabledCls = "badge-live"
-			enabledTxt = "Active"
+func countDisabledAgents(agents []config.AgentProfile) int {
+	count := 0
+	for _, a := range agents {
+		if !a.Enabled {
+			count++
 		}
-		tick := func(b bool) string {
-			if b {
-				return `<span style="color:#22C55E">✓</span>`
+	}
+	return count
+}
+
+func (s *Server) renderAgentProfilesManager(w http.ResponseWriter) {
+	agentsJSON, _ := json.Marshal(s.cfg.Agents.Profiles)
+	activeCount := countEnabledAgents(s.cfg.Agents.Profiles)
+	disabledCount := countDisabledAgents(s.cfg.Agents.Profiles)
+
+	fmt.Fprint(w, `<div style="display:flex;flex-direction:column;gap:16px;height:calc(100vh - 200px);overflow-y:auto">
+<!-- Fleet Overview -->
+<div class="panel">
+<div class="panel-header"><img src="/static/img/icons/nav-agents.png"> Agent Fleet Overview</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px">
+<div style="padding:12px;border:1px solid rgba(139,134,128,0.1);border-radius:8px;background:rgba(250,243,240,0.02);text-align:center">
+<div style="font-size:28px;font-weight:700;color:var(--af-magma)">` + fmt.Sprintf("%d", len(s.cfg.Agents.Profiles)) + `</div>
+<div style="font-size:11px;color:var(--text-dim);margin-top:4px">Total Agents</div>
+</div>
+<div style="padding:12px;border:1px solid rgba(139,134,128,0.1);border-radius:8px;background:rgba(250,243,240,0.02);text-align:center">
+<div style="font-size:28px;font-weight:700;color:#10B981">` + fmt.Sprintf("%d", activeCount) + `</div>
+<div style="font-size:11px;color:var(--text-dim);margin-top:4px">Active</div>
+</div>
+<div style="padding:12px;border:1px solid rgba(139,134,128,0.1);border-radius:8px;background:rgba(250,243,240,0.02);text-align:center">
+<div style="font-size:28px;font-weight:700;color:#EF4444">` + fmt.Sprintf("%d", disabledCount) + `</div>
+<div style="font-size:11px;color:var(--text-dim);margin-top:4px">Paused</div>
+</div>
+</div>
+</div>
+
+<!-- Agent Fleet Grid -->
+<div class="panel">
+<div class="panel-header"><img src="/static/img/icons/nav-agents.png"> Fleet Agents <span style="font-weight:400;font-size:12px;color:var(--text-dim);margin-left:8px">click any agent to configure</span></div>
+<div id="agent-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px">`)
+
+	if len(s.cfg.Agents.Profiles) == 0 {
+		fmt.Fprint(w, `<div style="color:var(--text-dim);font-size:12px;padding:40px;text-align:center;grid-column:1/-1">No agents in fleet yet. Create one to get started.</div>`)
+	} else {
+		for _, ap := range s.cfg.Agents.Profiles {
+			statusCls := "badge-live"
+			statusTxt := "Active"
+			if !ap.Enabled {
+				statusCls = "badge-idle"
+				statusTxt = "Paused"
 			}
-			return `<span style="color:#EF4444">✗</span>`
+			fmt.Fprintf(w, `<div class="agent-card" onclick='selectAgent(this, %q)' style="padding:16px;border:1px solid rgba(139,134,128,0.15);border-radius:10px;cursor:pointer;transition:all 0.2s;background:rgba(250,243,240,0.02);display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;justify-content:space-between;align-items:start;gap:8px">
+<div style="flex:1">
+<div style="font-size:15px;font-weight:700;color:var(--text-primary)">%s</div>
+<div style="font-size:11px;color:var(--text-dim);margin-top:2px">%s</div>
+</div>
+<span class="badge %s" style="font-size:10px;padding:4px 8px">%s</span>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px;padding:8px;background:rgba(0,0,0,0.08);border-radius:6px">
+<div><span style="color:var(--text-dim);font-size:10px">Model</span><br><span style="font-family:var(--font-mono);font-size:11px">%s</span></div>
+<div><span style="color:var(--text-dim);font-size:10px">Tools</span><br><span style="font-family:var(--font-mono);font-size:11px">%d</span></div>
+</div>
+<div style="display:flex;gap:4px;flex-wrap:wrap">
+<span style="font-size:9px;padding:3px 6px;border-radius:4px;background:rgba(255,107,44,0.1);color:var(--af-magma)">%s</span>
+<span style="font-size:9px;padding:3px 6px;border-radius:4px;background:rgba(139,134,128,0.1);color:var(--text-dim)">%s</span>
+</div>
+<button class="btn" onclick="editAgentClick(event, %q)" style="width:100%;border:1px solid rgba(255,107,44,0.2);color:var(--af-magma);font-size:12px;padding:6px;border-radius:6px;cursor:pointer;background:transparent;font-weight:500">Configure</button>
+</div>`, ap.Name, ap.ID, statusCls, statusTxt, ap.Model, len(ap.Tools), ap.Department, ap.Provider, ap.Name)
 		}
-		fmt.Fprintf(w, `<tr data-agent-id="%s"><td><strong>%s</strong><br><span style="font-size:11px;color:var(--text-dim)">%s</span></td><td><span class="badge">%s</span></td><td style="font-family:var(--font-mono);font-size:12px">%s / %s</td><td>%d</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td><span class="badge %s">%s</span> <button class="btn" style="border:1px solid rgba(255,107,44,0.2);color:var(--af-magma);font-size:11px;padding:2px 8px" onclick="editAgent('%s')">Edit</button></td></tr>`,
-			ap.ID, ap.Name, ap.ID, ap.Department, ap.Provider, ap.Model,
-			len(ap.Tools),
-			tick(ap.Capability.AllowFileSystem), tick(ap.Capability.AllowNetwork),
-			tick(ap.Capability.AllowShell), tick(ap.Capability.AllowSpawn),
-			enabledCls, enabledTxt, ap.ID)
 	}
-	fmt.Fprint(w, `</tbody></table>
-<button class="btn btn-primary" style="margin-top:12px" onclick="editAgent('new')">+ Create Agent Profile</button>
+
+	fmt.Fprint(w, `</div>
+<button class="btn btn-primary" style="margin-top:8px" onclick="createAgent()">+ Add Agent to Fleet</button>
+</div>
+
+<!-- Agent editor modal (hidden by default) -->
+<div id="editor-pane" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:1000;overflow-y:auto;padding:20px">
+<div class="panel" style="max-width:600px;margin:40px auto">
+<div class="panel-header">Configure Agent</div>
+<div id="editor-content" style="padding:16px">
+<div style="color:var(--text-dim);text-align:center">Loading agent configuration...</div>
+</div>
+</div>
+</div>
+
 <script>
-function editAgent(id) {
-  if(id==='new') {
-    var nn = prompt("Agent Name:"); if(!nn) return;
-    var dd = prompt("Department (content/seo/social/security/devops/memory/orchestrator/monitor):"); if(!dd) dd="content";
-    var mm = prompt("Model (e.g. openai/gpt-4o):"); if(!mm) mm="openai/gpt-4o";
-    var parts = mm.split("/");
-    var cfg = JSON.stringify([{name:nn,department:dd,enabled:true,provider:parts[0],model:parts[1]||mm,temperature:0.7,maxTokens:4096,timeout:"300s",tools:[],skills:[],capability:{allowFileSystem:true,allowNetwork:true,allowShell:false,allowSpawn:false,tokenBudget:100000}});
-    fetch("/api/config/save", {method:"POST",body:new URLSearchParams({"agents.profiles":cfg})})
-      .then(r=>r.json()).then(d=>{
-        if(d.ok){showToast("Agent '"+nn+"' saved. Restart daemon to apply.","success");setTimeout(()=>location.reload(),1200)}
-        else showToast("Error: "+d.error,"error");
-      }).catch(e=>showToast("Error: "+e,"error"));
-    return;
+let currentAgent = null;
+let agents = ` + string(agentsJSON) + `;
+
+function selectAgent(elem, name) {
+  currentAgent = agents.find(a => a.name === name);
+  if(!currentAgent) return;
+
+  document.querySelectorAll('.agent-card').forEach(e => e.style.borderColor='rgba(139,134,128,0.15)');
+  elem.style.borderColor = 'var(--af-magma)';
+
+  document.getElementById('editor-pane').style.display = 'flex';
+  renderAgentEditor();
+}
+
+function editAgentClick(e, name) {
+  e.stopPropagation();
+  currentAgent = agents.find(a => a.name === name);
+  if(!currentAgent) return;
+  document.getElementById('editor-pane').style.display = 'flex';
+  renderAgentEditor();
+}
+
+function renderAgentEditor() {
+  if(!currentAgent) return;
+
+  let toolsHTML = (currentAgent.tools || []).length === 0
+    ? '<div style="color:var(--text-dim);font-size:12px;padding:12px">No tools configured</div>'
+    : (currentAgent.tools || []).map((t,i) => '<div style="display:inline-block;padding:4px 10px;border-radius:6px;background:rgba(255,107,44,0.1);color:var(--af-magma);font-size:11px;margin-right:6px;margin-bottom:6px">'+html.EscapeString(t)+'<button style="margin-left:6px;background:none;border:none;color:var(--af-magma);cursor:pointer;font-size:10px" onclick="removeTool('+i+')">×</button></div>').join('');
+
+  let html = '<form id="agent-form" onsubmit="saveAgent(event)" style="display:flex;flex-direction:column;gap:12px">' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">' +
+    '<div><label style="display:block;font-size:12px;color:var(--text-dim);margin-bottom:4px">Name</label><input type="text" id="agent-name" value="' + html.EscapeString(currentAgent.name || '') + '" style="width:100%;padding:8px;border:1px solid rgba(139,134,128,0.2);border-radius:6px;background:rgba(250,243,240,0.03);color:var(--text-primary)" required></div>' +
+    '<div><label style="display:block;font-size:12px;color:var(--text-dim);margin-bottom:4px">Department <span style="font-size:10px;font-weight:400">(custom or predefined)</span></label><input type="text" id="agent-dept" list="dept-suggestions" value="' + html.EscapeString(currentAgent.department || '') + '" style="width:100%;padding:8px;border:1px solid rgba(139,134,128,0.2);border-radius:6px;background:rgba(250,243,240,0.03);color:var(--text-primary)" placeholder="e.g. content, seo, custom-dept"><datalist id="dept-suggestions"><option value="content">content</option><option value="seo">seo</option><option value="social">social</option><option value="security">security</option><option value="devops">devops</option><option value="memory">memory</option><option value="orchestrator">orchestrator</option><option value="monitor">monitor</option></datalist></div>' +
+    '</div>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">' +
+    '<div><label style="display:block;font-size:12px;color:var(--text-dim);margin-bottom:4px">Provider</label><input type="text" id="agent-provider" list="provider-suggestions" value="' + html.EscapeString(currentAgent.provider || 'openai') + '" style="width:100%;padding:8px;border:1px solid rgba(139,134,128,0.2);border-radius:6px;background:rgba(250,243,240,0.03);color:var(--text-primary)" onchange="updateModelFromProvider()"><datalist id="provider-suggestions"><option value="openai">openai</option><option value="anthropic">anthropic</option><option value="ollama">ollama</option><option value="claude-cli">claude-cli</option><option value="gemini-cli">gemini-cli</option></datalist></div>' +
+    '<div><label style="display:block;font-size:12px;color:var(--text-dim);margin-bottom:4px">Model</label><input type="text" id="agent-model" list="agent-model-list" value="' + html.EscapeString(currentAgent.model || 'gpt-4o') + '" style="width:100%;padding:8px;border:1px solid rgba(139,134,128,0.2);border-radius:6px;background:rgba(250,243,240,0.03);color:var(--text-primary)"><datalist id="agent-model-list"></datalist></div>' +
+    '</div>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">' +
+    '<div><label style="display:block;font-size:12px;color:var(--text-dim);margin-bottom:4px">Temperature</label><input type="number" id="agent-temp" min="0" max="2" step="0.1" value="' + (currentAgent.temperature || 0.7) + '" style="width:100%;padding:8px;border:1px solid rgba(139,134,128,0.2);border-radius:6px;background:rgba(250,243,240,0.03);color:var(--text-primary)"></div>' +
+    '<div><label style="display:block;font-size:12px;color:var(--text-dim);margin-bottom:4px">Max Tokens</label><input type="number" id="agent-max-tokens" min="100" step="100" value="' + (currentAgent.maxTokens || 4096) + '" style="width:100%;padding:8px;border:1px solid rgba(139,134,128,0.2);border-radius:6px;background:rgba(250,243,240,0.03);color:var(--text-primary)"></div>' +
+    '</div>' +
+    '<div style="border-top:1px solid rgba(139,134,128,0.1);padding-top:12px"><label style="display:block;font-size:12px;color:var(--text-dim);margin-bottom:8px"><strong>Tools</strong></label><div style="margin-bottom:8px">' + toolsHTML + '</div><input type="text" id="tool-input" placeholder="Add tool (e.g. web-search)" style="width:100%;padding:8px;border:1px solid rgba(139,134,128,0.2);border-radius:6px;background:rgba(250,243,240,0.03);color:var(--text-primary);font-size:12px;margin-bottom:8px"><button type="button" style="font-size:12px;padding:6px 12px;background:rgba(255,107,44,0.1);border:1px solid rgba(255,107,44,0.3);color:var(--af-magma);border-radius:6px;cursor:pointer" onclick="addTool()">+ Add Tool</button></div>' +
+    '<div style="border-top:1px solid rgba(139,134,128,0.1);padding-top:12px"><div style="font-size:12px;color:var(--text-dim);margin-bottom:8px"><strong>Capabilities</strong></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">' +
+    '<label style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" id="cap-fs" ' + (currentAgent.capability?.allowFileSystem ? 'checked' : '') + ' style="cursor:pointer"><span style="font-size:12px">File System</span></label>' +
+    '<label style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" id="cap-net" ' + (currentAgent.capability?.allowNetwork ? 'checked' : '') + ' style="cursor:pointer"><span style="font-size:12px">Network</span></label>' +
+    '<label style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" id="cap-shell" ' + (currentAgent.capability?.allowShell ? 'checked' : '') + ' style="cursor:pointer"><span style="font-size:12px">Shell</span></label>' +
+    '<label style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" id="cap-spawn" ' + (currentAgent.capability?.allowSpawn ? 'checked' : '') + ' style="cursor:pointer"><span style="font-size:12px">Spawn</span></label>' +
+    '</div></div>' +
+    '<div style="display:flex;gap:8px"><button type="submit" class="btn btn-primary" style="flex:1">Save Agent</button><button type="button" style="flex:1;padding:8px;border:1px solid rgba(139,134,128,0.2);background:rgba(250,243,240,0.03);color:var(--text-primary);border-radius:6px;cursor:pointer" onclick="cancelEdit()">Cancel</button></div>' +
+    '</form>';
+
+  document.getElementById('editor-content').innerHTML = html;
+}
+
+function html.EscapeString(text) {
+  if(!text) return '';
+  let map = {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'};
+  return text.replace(/[&<>"']/g, m => map[m]);
+}
+
+function addTool() {
+  let tool = document.getElementById('tool-input').value;
+  if(!tool) return;
+  currentAgent.tools = currentAgent.tools || [];
+  if(!currentAgent.tools.includes(tool)) {
+    currentAgent.tools.push(tool);
+    document.getElementById('tool-input').value = '';
+    renderAgentEditor();
   }
-  showToast("Editing agent: " + id, "info");
+}
+
+function removeTool(i) {
+  if(currentAgent.tools) {
+    currentAgent.tools.splice(i, 1);
+    renderAgentEditor();
+  }
+}
+
+function updateModelFromProvider() {
+  const provider = document.getElementById('agent-provider').value;
+  const modelField = document.getElementById('agent-model');
+  const modelList = document.getElementById('agent-model-list');
+  if (!provider || !modelField) return;
+
+  fetch('/api/providers/models?provider=' + encodeURIComponent(provider))
+    .then(r => r.json())
+    .then(data => {
+      if (modelList) {
+        modelList.innerHTML = '';
+        (data.models || []).forEach(m => {
+          var opt = document.createElement('option');
+          opt.value = m;
+          modelList.appendChild(opt);
+        });
+      }
+      if (!modelField.value && data.models && data.models.length > 0) {
+        modelField.value = data.models[0];
+      }
+    })
+    .catch(() => {});
+}
+
+function saveAgent(e) {
+  e.preventDefault();
+  if(!currentAgent) return;
+
+  currentAgent.name = document.getElementById('agent-name').value;
+  currentAgent.department = document.getElementById('agent-dept').value;
+  currentAgent.provider = document.getElementById('agent-provider').value;
+  currentAgent.model = document.getElementById('agent-model').value;
+  currentAgent.temperature = parseFloat(document.getElementById('agent-temp').value);
+  currentAgent.maxTokens = parseInt(document.getElementById('agent-max-tokens').value);
+  currentAgent.capability = {
+    allowFileSystem: document.getElementById('cap-fs').checked,
+    allowNetwork: document.getElementById('cap-net').checked,
+    allowShell: document.getElementById('cap-shell').checked,
+    allowSpawn: document.getElementById('cap-spawn').checked,
+    tokenBudget: 1000000
+  };
+
+  let cfg = JSON.stringify(agents);
+  fetch('/api/config/save', {method:'POST',body:new URLSearchParams({'agents.profiles':cfg})})
+    .then(r => r.json()).then(d => {
+      if(d.ok) {
+        showToast('Agent saved. Restart daemon to apply.', 'success');
+        setTimeout(() => location.reload(), 1200);
+      } else {
+        showToast('Error: ' + d.error, 'error');
+      }
+    }).catch(e => showToast('Error: ' + e, 'error'));
+}
+
+function createAgent() {
+  currentAgent = {
+    id: 'agent-' + Date.now(),
+    name: 'New Agent',
+    enabled: true,
+    provider: 'openai',
+    model: 'gpt-4o',
+    department: 'content',
+    temperature: 0.7,
+    maxTokens: 4096,
+    timeout: '300s',
+    tools: [],
+    skills: [],
+    capability: {
+      allowFileSystem: true,
+      allowNetwork: true,
+      allowShell: false,
+      allowSpawn: false,
+      tokenBudget: 1000000
+    }
+  };
+  agents.push(currentAgent);
+
+  document.getElementById('agent-list').innerHTML = '<div style="color:var(--text-dim);font-size:12px;padding:12px;text-align:center">Creating...</div>';
+  document.getElementById('editor-pane').style.display = 'block';
+  renderAgentEditor();
+}
+
+function cancelEdit() {
+  currentAgent = null;
+  document.getElementById('editor-pane').style.display = 'none';
+  document.getElementById('editor-content').innerHTML = '<div style="color:var(--text-dim);text-align:center">Select an agent to edit</div>';
 }
 </script>
 </div>`)
@@ -1116,9 +1705,9 @@ func (s *Server) handleSkillsSearch(w http.ResponseWriter, r *http.Request) {
 
 	var endpoint string
 	if mode == "ai" {
-		endpoint = fmt.Sprintf("%s/skills/ai-search", s.cfg.Skills.MarketplaceURL)
+		endpoint = fmt.Sprintf("%s/skills/ai-search?q=%s", s.cfg.Skills.MarketplaceURL, url.QueryEscape(q))
 	} else {
-		endpoint = fmt.Sprintf("%s/skills/search?keyword=%s", s.cfg.Skills.MarketplaceURL, q)
+		endpoint = fmt.Sprintf("%s/skills/search?q=%s", s.cfg.Skills.MarketplaceURL, url.QueryEscape(q))
 	}
 
 	req, _ := http.NewRequestWithContext(r.Context(), "GET", endpoint, nil)
@@ -1139,9 +1728,18 @@ func (s *Server) handleSkillsSearch(w http.ResponseWriter, r *http.Request) {
 	io.Copy(buf, resp.Body)
 	bodyStr := buf.String()
 
-	// Try parse as JSON array; if not, wrap in mock results for demo
+	// Parse skillsmp response (with data.skills structure)
+	var skillsmpResp struct {
+		Success bool `json:"success"`
+		Data    struct {
+			Skills []map[string]any `json:"skills"`
+		} `json:"data"`
+	}
+
 	var raw []map[string]any
-	if err := json.Unmarshal([]byte(bodyStr), &raw); err != nil {
+	if err := json.Unmarshal([]byte(bodyStr), &skillsmpResp); err == nil && skillsmpResp.Success && len(skillsmpResp.Data.Skills) > 0 {
+		raw = skillsmpResp.Data.Skills
+	} else if err := json.Unmarshal([]byte(bodyStr), &raw); err != nil {
 		// Mock results for demo when SkillsMP key not configured
 		mock := []map[string]any{
 			{"name": "code-review", "version": "1.2.0", "description": "Automated code review with best-practice checks and security linting", "author": "AgentForge", "tags": []any{"code", "security", "ci-cd"}},
@@ -1167,7 +1765,13 @@ func (s *Server) handleSkillsSearch(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.Write([]byte(bodyStr))
+	// If we got real skills data, return just the array
+	if len(raw) > 0 {
+		data, _ := json.Marshal(raw)
+		w.Write(data)
+	} else {
+		w.Write([]byte(bodyStr))
+	}
 }
 
 func (s *Server) handleChannelTest(w http.ResponseWriter, r *http.Request) {
@@ -1302,14 +1906,53 @@ func (s *Server) handleConfigSave(w http.ResponseWriter, r *http.Request) {
 			patch[key] = vals[0]
 		}
 	}
+	// Auto-enable the named provider when llm.provider changes so the adapter
+	// can be rebuilt immediately. CLI providers are always enabled when selected.
+	// API providers are enabled only when an API key is also present in the save.
+	if newProvider, ok := patch["llm.provider"]; ok && newProvider != "" {
+		switch newProvider {
+		case "claude-cli":
+			patch["providers.claudeCli.enabled"] = "true"
+		case "gemini-cli":
+			patch["providers.geminiCli.enabled"] = "true"
+		case "ollama":
+			patch["providers.ollama.enabled"] = "true"
+		default:
+			keyField := "providers." + newProvider + ".apiKey"
+			if patch[keyField] != "" || patch["llm.apiKey"] != "" {
+				patch["providers."+newProvider+".enabled"] = "true"
+			}
+		}
+	}
 	if err := s.store.Update(patch); err != nil {
 		w.Header().Set("Content-Type", "application/json")
 		fmt.Fprintf(w, `{"ok":false,"error":"%s"}`, err.Error())
 		return
 	}
 	s.cfg = s.store.Cfg()
+
+	// Hot-reload adapter when LLM or provider config changes
+	adapterReloaded := false
+	for key := range patch {
+		if strings.HasPrefix(key, "llm.") || strings.HasPrefix(key, "providers.") {
+			if s.rebuildAdapter != nil {
+				newAdapter := s.rebuildAdapter(s.cfg)
+				s.adapterMu.Lock()
+				s.adapter = newAdapter
+				s.adapterMu.Unlock()
+				adapterReloaded = true
+			}
+			break
+		}
+	}
+
 	w.Header().Set("Content-Type", "application/json")
-	w.Write([]byte(`{"ok":true}`))
+	if adapterReloaded {
+		provider := s.cfg.LLM.Provider
+		w.Write([]byte(`{"ok":true,"reloaded":true,"provider":"` + provider + `"}`))
+	} else {
+		w.Write([]byte(`{"ok":true}`))
+	}
 }
 
 func (s *Server) handleConfigAPI(w http.ResponseWriter, r *http.Request) {
@@ -1321,72 +1964,149 @@ func (s *Server) handleConfigAPI(w http.ResponseWriter, r *http.Request) {
 
 // ── MCP Servers ──────────────────────────────────────────────────────────────
 
-func (s *Server) renderMCPServers(w http.ResponseWriter) {
-	fmt.Fprint(w, `<div class="panel">
-<div class="panel-header"><img src="/static/img/icons/nav-agents.png"> MCP Servers <span style="font-weight:400;font-size:12px;color:var(--text-dim);margin-left:8px">Model Context Protocol endpoints</span></div>
-<table class="data-table">
-<thead><tr><th>Server</th><th>Port</th><th>Transport</th><th>Status</th><th>Tools</th><th>Endpoint</th></tr></thead>
-<tbody>`)
+func (s *Server) renderMCPServersManager(w http.ResponseWriter) {
+	serversJSON, _ := json.Marshal(s.cfg.MCP.Servers)
 
-	if s.mcpMgr != nil {
-		servers := s.mcpMgr.List()
-		for _, srv := range servers {
-			statusCls := "badge-idle"
-			statusTxt := "Stopped"
-			if srv.Running {
-				statusCls = "badge-live"
-				statusTxt = "Running"
-			}
+	fmt.Fprint(w, `<div style="display:grid;grid-template-columns:1fr 2fr;gap:20px;height:calc(100vh - 200px)">
+<!-- Left pane: Server list -->
+<div class="panel" style="overflow-y:auto">
+<div class="panel-header"><img src="/static/img/icons/tools-icon.png"> MCP Servers</div>
+<div id="server-list" style="display:flex;flex-direction:column;gap:8px">`)
 
-			endpoint := "–"
-			switch srv.Transport {
-			case "http":
-				endpoint = fmt.Sprintf("http://localhost:%d", srv.Port)
-			case "stdio":
-				endpoint = "stdio (subprocess)"
-			}
-
-			filter := ""
-			if len(srv.ToolFilter) > 0 {
-				filter = fmt.Sprintf(" <span style=\"font-size:10px;color:var(--text-dim)\">(filtered: %d)</span>", len(srv.ToolFilter))
-			}
-
-			fmt.Fprintf(w, `<tr>
-<td><img src="/static/img/icons/tools-icon.png" width="14" style="vertical-align:middle;margin-right:6px;opacity:0.5"><strong>%s</strong></td>
-<td style="font-family:var(--font-mono);font-size:12px">%d</td>
-<td><span class="badge badge-magma">%s</span></td>
-<td><span class="badge %s">%s</span></td>
-<td>%d%s</td>
-<td style="font-family:var(--font-mono);font-size:11px;color:var(--text-dim)">%s</td></tr>`,
-				srv.Name, srv.Port, srv.Transport, statusCls, statusTxt, srv.ToolCount, filter, endpoint)
-		}
-
-		if len(servers) == 0 {
-			fmt.Fprint(w, `<tr><td colspan="6" style="text-align:center;padding:30px;color:var(--text-dim)">No MCP servers configured. Add servers in <code>~/.agentforge/agentforge.yaml</code> under <code>mcp.servers</code>.</td></tr>`)
-		}
+	if len(s.cfg.MCP.Servers) == 0 {
+		fmt.Fprint(w, `<div style="color:var(--text-dim);font-size:12px;padding:12px;text-align:center">No servers yet</div>`)
 	} else {
-		fmt.Fprint(w, `<tr><td colspan="6" style="text-align:center;padding:30px;color:var(--text-dim)">MCP Manager not available.</td></tr>`)
+		for _, srv := range s.cfg.MCP.Servers {
+			statusCls := "badge-live"
+			if !srv.Enabled {
+				statusCls = "badge-idle"
+			}
+			fmt.Fprintf(w, `<div class="mcp-list-item" onclick='selectMCPServer(this, %q)' style="padding:12px;border:1px solid rgba(139,134,128,0.15);border-radius:8px;cursor:pointer;transition:all 0.2s;background:rgba(250,243,240,0.02)">
+<div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+<div style="flex:1">
+<strong style="display:block;margin-bottom:4px">%s</strong>
+<span style="font-size:11px;color:var(--text-dim)">:%d • %s</span>
+</div>
+<span class="badge %s" style="font-size:10px">%s</span>
+</div>
+</div>`, srv.Name, srv.Name, srv.Port, srv.Transport, statusCls, map[bool]string{true: "Enabled", false: "Disabled"}[srv.Enabled])
+		}
 	}
 
-	fmt.Fprint(w, `</tbody></table>
-<div style="margin-top:16px;padding:12px;border:1px solid rgba(139,134,128,0.15);border-radius:10px;background:rgba(250,243,240,0.02)">
-<div style="font-size:13px;color:var(--text-primary);margin-bottom:8px"><strong>Configuration</strong></div>
-<div style="font-size:12px;color:var(--text-dim);font-family:var(--font-mono);line-height:1.6;padding:10px;background:rgba(0,0,0,0.15);border-radius:6px">
-<span style="color:var(--text-dim)"># ~/.agentforge/agentforge.yaml</span><br>
-<span style="color:#F59E0B">mcp:</span><br>
-<span style="color:#10B981">&nbsp;&nbsp;enabled:</span> <span style="color:#EF4444">true</span><br>
-<span style="color:#F59E0B">&nbsp;&nbsp;servers:</span><br>
-<span style="color:#EF4444">&nbsp;&nbsp;&nbsp;&nbsp;- name:</span> <span style="color:#10B981">default</span><br>
-<span style="color:#10B981">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;port:</span> <span style="color:#EF4444">9090</span><br>
-<span style="color:#10B981">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;enabled:</span> <span style="color:#EF4444">true</span><br>
-<span style="color:#10B981">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;transport:</span> <span style="color:#10B981">http</span><br>
-<span style="color:#EF4444">&nbsp;&nbsp;&nbsp;&nbsp;- name:</span> <span style="color:#10B981">skills-bridge</span><br>
-<span style="color:#10B981">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;port:</span> <span style="color:#EF4444">9091</span><br>
-<span style="color:#10B981">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;transport:</span> <span style="color:#10B981">stdio</span><br>
-<span style="color:#10B981">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;command:</span> <span style="color:#10B981">node</span><br>
-<span style="color:#10B981">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;args:</span> ["<span style="color:#10B981">mcp-serve</span>"]
+	fmt.Fprint(w, `</div>
+<button class="btn btn-primary" style="margin-top:16px;width:100%" onclick="createMCPServer()">+ New Server</button>
 </div>
-</div></div>`)
+
+<!-- Right pane: Server editor -->
+<div class="panel" style="overflow-y:auto;display:none" id="editor-pane">
+<div class="panel-header">MCP Server Editor</div>
+<div id="editor-content" style="padding:16px">
+<div style="color:var(--text-dim);text-align:center">Select a server to edit</div>
+</div>
+</div>
+
+<script>
+let currentServer = null;
+let servers = ` + string(serversJSON) + `;
+
+function selectMCPServer(elem, name) {
+  currentServer = servers.find(s => s.name === name);
+  if(!currentServer) return;
+
+  document.querySelectorAll('.mcp-list-item').forEach(e => e.style.borderColor='rgba(139,134,128,0.15)');
+  elem.style.borderColor = 'var(--af-magma)';
+
+  document.getElementById('editor-pane').style.display = 'block';
+  renderMCPEditor();
+}
+
+function renderMCPEditor() {
+  if(!currentServer) return;
+
+  let html = '<form id="mcp-form" onsubmit="saveMCPServer(event)" style="display:flex;flex-direction:column;gap:12px">' +
+    '<div><label style="display:block;font-size:12px;color:var(--text-dim);margin-bottom:4px">Server Name</label><input type="text" id="mcp-name" value="' + html.EscapeString(currentServer.name || '') + '" style="width:100%;padding:8px;border:1px solid rgba(139,134,128,0.2);border-radius:6px;background:rgba(250,243,240,0.03);color:var(--text-primary)" required></div>' +
+    '<div><label style="display:block;font-size:12px;color:var(--text-dim);margin-bottom:4px">Port</label><input type="number" id="mcp-port" min="1" max="65535" value="' + (currentServer.port || 9090) + '" style="width:100%;padding:8px;border:1px solid rgba(139,134,128,0.2);border-radius:6px;background:rgba(250,243,240,0.03);color:var(--text-primary)" required></div>' +
+    '<div><label style="display:block;font-size:12px;color:var(--text-dim);margin-bottom:4px">Transport</label><select id="mcp-transport" onchange="updateTransportUI()" style="width:100%;padding:8px;border:1px solid rgba(139,134,128,0.2);border-radius:6px;background:rgba(250,243,240,0.03);color:var(--text-primary)"><option value="http"' + (currentServer.transport === 'http' ? ' selected' : '') + '>HTTP</option><option value="stdio"' + (currentServer.transport === 'stdio' ? ' selected' : '') + '>Stdio (subprocess)</option></select></div>' +
+    '<div id="transport-fields"></div>' +
+    '<div style="border-top:1px solid rgba(139,134,128,0.1);padding-top:12px"><label style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" id="mcp-enabled" ' + (currentServer.enabled ? 'checked' : '') + ' style="cursor:pointer"><span style="font-size:12px">Enabled</span></label></div>' +
+    '<div style="display:flex;gap:8px"><button type="submit" class="btn btn-primary" style="flex:1">Save Server</button><button type="button" style="flex:1;padding:8px;border:1px solid rgba(139,134,128,0.2);background:rgba(250,243,240,0.03);color:var(--text-primary);border-radius:6px;cursor:pointer" onclick="cancelEdit()">Cancel</button></div>' +
+    '</form>';
+
+  document.getElementById('editor-content').innerHTML = html;
+  updateTransportUI();
+}
+
+function html.EscapeString(text) {
+  if(!text) return '';
+  let map = {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'};
+  return text.replace(/[&<>"']/g, m => map[m]);
+}
+
+function updateTransportUI() {
+  let transport = document.getElementById('mcp-transport').value;
+  let fieldsDiv = document.getElementById('transport-fields');
+
+  if(transport === 'http') {
+    fieldsDiv.innerHTML = '';
+  } else if(transport === 'stdio') {
+    let cmd = currentServer.command || '';
+    let args = (currentServer.args || []).join(' ');
+    fieldsDiv.innerHTML = '<div><label style="display:block;font-size:12px;color:var(--text-dim);margin-bottom:4px">Command</label><input type="text" id="mcp-command" value="' + html.EscapeString(cmd) + '" placeholder="e.g. node" style="width:100%;padding:8px;border:1px solid rgba(139,134,128,0.2);border-radius:6px;background:rgba(250,243,240,0.03);color:var(--text-primary)"></div>' +
+      '<div><label style="display:block;font-size:12px;color:var(--text-dim);margin-bottom:4px">Arguments (space-separated)</label><input type="text" id="mcp-args" value="' + html.EscapeString(args) + '" placeholder="e.g. mcp-serve script.js" style="width:100%;padding:8px;border:1px solid rgba(139,134,128,0.2);border-radius:6px;background:rgba(250,243,240,0.03);color:var(--text-primary)"></div>';
+  }
+}
+
+function saveMCPServer(e) {
+  e.preventDefault();
+  if(!currentServer) return;
+
+  currentServer.name = document.getElementById('mcp-name').value;
+  currentServer.port = parseInt(document.getElementById('mcp-port').value);
+  currentServer.transport = document.getElementById('mcp-transport').value;
+  currentServer.enabled = document.getElementById('mcp-enabled').checked;
+
+  if(currentServer.transport === 'stdio') {
+    currentServer.command = document.getElementById('mcp-command').value;
+    let argsStr = document.getElementById('mcp-args').value;
+    currentServer.args = argsStr ? argsStr.split(' ') : [];
+  } else {
+    delete currentServer.command;
+    delete currentServer.args;
+  }
+
+  let cfg = JSON.stringify(servers);
+  fetch('/api/config/save', {method:'POST',body:new URLSearchParams({'mcp.servers':cfg})})
+    .then(r => r.json()).then(d => {
+      if(d.ok) {
+        showToast('MCP Server saved. Restart daemon to apply.', 'success');
+        setTimeout(() => location.reload(), 1200);
+      } else {
+        showToast('Error: ' + d.error, 'error');
+      }
+    }).catch(e => showToast('Error: ' + e, 'error'));
+}
+
+function createMCPServer() {
+  currentServer = {
+    name: 'New Server',
+    enabled: true,
+    port: 9090,
+    transport: 'http'
+  };
+  servers.push(currentServer);
+
+  document.getElementById('server-list').innerHTML = '<div style="color:var(--text-dim);font-size:12px;padding:12px;text-align:center">Creating...</div>';
+  document.getElementById('editor-pane').style.display = 'block';
+  renderMCPEditor();
+}
+
+function cancelEdit() {
+  currentServer = null;
+  document.getElementById('editor-pane').style.display = 'none';
+  document.getElementById('editor-content').innerHTML = '<div style="color:var(--text-dim);text-align:center">Select a server to edit</div>';
+}
+</script>
+</div>`)
 }
 
 func (s *Server) handleMCPAPI(w http.ResponseWriter, r *http.Request) {

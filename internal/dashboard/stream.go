@@ -46,7 +46,6 @@ func (s *Server) handleChatStream(w http.ResponseWriter, r *http.Request) {
 	s.sseHub.Subscribe(client, "chat."+client.ID)
 
 	go func() {
-		defer s.sseHub.Disconnect(client)
 		s.streamChat(r.Context(), client, req, s.costTracker)
 	}()
 
@@ -54,22 +53,41 @@ func (s *Server) handleChatStream(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) streamChat(ctx context.Context, client *sse.Client, req streamChatRequest, tracker *cost.Tracker) {
-	if s.adapter == nil {
-		s.sseHub.SendToClient(client, sse.NewErrorEvent("No LLM adapter configured"))
+	s.adapterMu.RLock()
+	adapter := s.adapter
+	s.adapterMu.RUnlock()
+
+	if adapter == nil {
+		s.sseHub.SendToClient(client, sse.NewErrorEvent("No LLM provider configured. Go to Settings → LLM and set a provider."))
 		return
 	}
 
+	// Build message history from session (gives LLM real conversation context)
+	agentID := req.Agent
+	if agentID == "" {
+		agentID = "agentforge"
+	}
+	history := s.sessionMgr.History(agentID)
+	messages := make([]llm.Message, 0, len(history)+1)
+	for _, t := range history {
+		messages = append(messages, llm.Message{Role: t.Role, Content: t.Content})
+	}
+	messages = append(messages, llm.Message{Role: "user", Content: req.Prompt})
+
+	// Persist user turn before streaming
+	s.sessionMgr.AddTurn(agentID, "user", req.Prompt, 0) //nolint:errcheck
+
 	s.sseHub.SendToClient(client, sse.NewStatusEvent(req.Agent, "streaming",
-		"Processing with "+s.adapter.Provider()))
+		"Processing with "+adapter.Provider()))
 
 	llmReq := llm.Request{
 		Model:       req.Model,
-		Messages:    []llm.Message{{Role: "user", Content: req.Prompt}},
+		Messages:    messages,
 		MaxTokens:   4096,
 		Temperature: req.Temperature,
 	}
 
-	ch, err := s.adapter.StreamChat(ctx, llmReq)
+	ch, err := adapter.StreamChat(ctx, llmReq)
 	if err != nil {
 		if errors.Is(err, llm.ErrStreamingNotSupported) {
 			s.nonStreamingChat(ctx, client, llmReq, tracker)
@@ -79,10 +97,15 @@ func (s *Server) streamChat(ctx context.Context, client *sse.Client, req streamC
 		return
 	}
 
-	_, _, _, usage, drainErr := s.drainStream(ctx, client, ch, req.Model, tracker)
+	content, _, _, usage, drainErr := s.drainStream(ctx, client, ch, req.Model, tracker)
 	if drainErr != nil {
 		s.sseHub.SendToClient(client, sse.NewErrorEvent(drainErr.Error()))
 		return
+	}
+
+	// Persist assistant response
+	if content != "" {
+		s.sessionMgr.AddTurn(agentID, "assistant", content, usage.CompletionTokens) //nolint:errcheck
 	}
 
 	u := &sse.Usage{}
@@ -158,7 +181,11 @@ func (s *Server) drainStream(ctx context.Context, client *sse.Client, ch <-chan 
 func (s *Server) nonStreamingChat(ctx context.Context, client *sse.Client, req llm.Request, tracker *cost.Tracker) {
 	s.sseHub.SendToClient(client, sse.NewStatusEvent("", "streaming", "Fallback to batch mode"))
 
-	resp, err := s.adapter.Chat(ctx, req)
+	s.adapterMu.RLock()
+	adapter := s.adapter
+	s.adapterMu.RUnlock()
+
+	resp, err := adapter.Chat(ctx, req)
 	if err != nil {
 		s.sseHub.SendToClient(client, sse.NewErrorEvent(fmt.Sprintf("LLM error: %v", err)))
 		return

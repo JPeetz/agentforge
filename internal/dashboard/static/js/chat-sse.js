@@ -1,14 +1,40 @@
 // AgentForge SSE Chat — real-time streaming chat client with Markdown support
 (function() {
-  var streaming = false;
-  var currentAbortController = null;
+  // State lives on window.agChat so it survives HTMX partial swaps
+  if (!window.agChat) {
+    window.agChat = { streaming: false, abortController: null, model: '' };
+    // Restore model from config
+    fetch('/api/config').then(function(r) { return r.json(); }).then(function(cfg) {
+      window.agChat.model = (cfg && cfg.llm && cfg.llm.model) ? cfg.llm.model : '';
+    }).catch(function() {});
+  }
+
+  // Expose reset for partial reload IIFE
+  window.agChatReset = function() {
+    window.agChat.streaming = false;
+    window.agChat.abortController = null;
+    var btn = document.getElementById('send-btn');
+    if (btn) btn.disabled = false;
+    var out = document.getElementById('stream-output');
+    if (out) out.classList.remove('streaming');
+    var typing = document.getElementById('typing-indicator');
+    if (typing) typing.remove();
+  };
+
+  // Keep local aliases for readability; they read/write through window.agChat
+  var get = function(k) { return window.agChat[k]; };
+  var set = function(k, v) { window.agChat[k] = v; };
 
   window.sendChat = function() {
-    if (streaming) return;
+    if (get('streaming')) return;
     var inp = document.getElementById('chat-input');
     var msg = inp.value.trim();
     if (!msg) return;
     var div = document.getElementById('chat-messages');
+
+    // Remove previous stream-output id to avoid duplicates
+    var prev = document.getElementById('stream-output');
+    if (prev) prev.removeAttribute('id');
 
     // Add user message
     var userMsg = document.createElement('div');
@@ -18,7 +44,7 @@
     inp.value = '';
     div.scrollTop = div.scrollHeight;
 
-    streaming = true;
+    set('streaming', true);
     document.getElementById('send-btn').disabled = true;
 
     // Create streaming output container
@@ -35,13 +61,14 @@
     typing.innerHTML = '<span></span><span></span><span></span>';
     streamDiv.appendChild(typing);
 
-    currentAbortController = new AbortController();
+    var abortCtrl = new AbortController();
+    set('abortController', abortCtrl);
 
     fetch('/api/chat/stream', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({prompt: msg, agent: 'agentforge', model: ''}),
-      signal: currentAbortController.signal
+      body: JSON.stringify({prompt: msg, agent: 'agentforge', model: get('model')}),
+      signal: abortCtrl.signal
     }).then(function(resp) {
       if (!resp.ok) { endStream('HTTP error: ' + resp.status); return; }
       var reader = resp.body.getReader();
@@ -50,7 +77,25 @@
 
       function pump() {
         return reader.read().then(function(result) {
-          if (result.done) { return; }
+          if (result.done) {
+            // Flush any remaining bytes in decoder
+            var tail = decoder.decode();
+            if (tail) {
+              buffer += tail;
+              var lines = buffer.split('\n');
+              buffer = '';
+              var eventType = '';
+              for (var i = 0; i < lines.length; i++) {
+                var line = lines[i];
+                if (line.startsWith('event: ')) { eventType = line.slice(7).trim(); }
+                else if (line.startsWith('data: ')) { handleSSE(eventType, line.slice(6)); eventType = ''; }
+                if (line === '') { eventType = ''; }
+              }
+            }
+            // Fallback: if done event never arrived, clean up
+            if (get('streaming')) endStream(null);
+            return;
+          }
           buffer += decoder.decode(result.value, {stream: true});
           var lines = buffer.split('\n');
           buffer = lines.pop() || '';
@@ -82,8 +127,9 @@
 
   function handleSSE(event, data) {
     try { var d = JSON.parse(data); } catch(e) { return; }
+
+    // chunk/done/error events don't need #stream-output to exist — endStream is safe regardless
     var out = document.getElementById('stream-output');
-    if (!out) return;
 
     var typing = document.getElementById('typing-indicator');
     if (typing) typing.style.display = 'none';
@@ -241,15 +287,19 @@
   }
 
   function endStream(err) {
-    streaming = false;
-    document.getElementById('send-btn').disabled = false;
+    // Critical state reset — must happen regardless of DOM state
+    set('streaming', false);
+    set('abortController', null);
+    var btn = document.getElementById('send-btn');
+    if (btn) btn.disabled = false;
+
+    // DOM cleanup — safe to skip if partial was swapped
     var out = document.getElementById('stream-output');
     if (out) {
       out.classList.remove('streaming');
       if (err) {
         out.innerHTML = '<span class="chat-error">Error: ' + escapeHtml(err) + '</span>';
       } else {
-        // Final Markdown render
         var contentDiv = out.querySelector('.stream-content');
         if (contentDiv) {
           renderMarkdown(contentDiv, contentDiv.textContent);
@@ -276,4 +326,14 @@
             .replace(/>/g, '&gt;')
             .replace(/"/g, '&quot;');
   }
+
+  // Expose for history rendering: reads data-raw attribute, applies markdown
+  window.agChatRenderHistory = function(el) {
+    var raw = el.getAttribute('data-raw');
+    if (!raw) return;
+    var contentDiv = document.createElement('div');
+    contentDiv.className = 'stream-content';
+    el.appendChild(contentDiv);
+    renderMarkdown(contentDiv, raw);
+  };
 })();

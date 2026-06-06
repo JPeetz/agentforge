@@ -431,7 +431,12 @@ func (c *OpenAIClient) StreamChat(ctx context.Context, req Request) (<-chan Stre
 	if req.Model == "" {
 		req.Model = c.cfg.Model
 	}
-	body, err := json.Marshal(req)
+	// Build an anonymous struct that adds stream:true without changing the shared Request type.
+	streamBody := struct {
+		Request
+		Stream bool `json:"stream"`
+	}{Request: req, Stream: true}
+	body, err := json.Marshal(streamBody)
 	if err != nil {
 		return nil, fmt.Errorf("llm: openai stream marshal: %w", err)
 	}

@@ -4,7 +4,10 @@ package dashboard
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
+	"os/exec"
+	"strings"
 	"time"
 
 	"github.com/agentforge/agentforge/internal/auth"
@@ -239,6 +242,132 @@ func (s *Server) handleFileUpload(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]any{
 		"uploads": uploads,
 	})
+}
+
+// ── Providers API ───────────────────────────────────────────────────────────
+
+func (s *Server) handleProvidersAPI(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	if r.Method != http.MethodGet {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	providers := []map[string]any{}
+	for _, info := range s.availableProviders {
+		providers = append(providers, map[string]any{
+			"name":          info.Name,
+			"available":     info.Available,
+			"authenticated": info.Authenticated,
+			"model":         info.Model,
+		})
+	}
+
+	json.NewEncoder(w).Encode(map[string]any{"providers": providers})
+}
+
+// ── Provider Models API ─────────────────────────────────────────────────────
+
+func (s *Server) handleProviderModels(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	if r.Method != http.MethodGet {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	provider := r.URL.Query().Get("provider")
+	var models []string
+
+	switch provider {
+	case "claude-cli":
+		models = []string{
+			"claude-opus-4-7",
+			"claude-sonnet-4-6",
+			"claude-haiku-4-5",
+			"claude-opus-4",
+			"claude-sonnet-4",
+			"claude-haiku-4",
+			"claude-3-5-sonnet-20241022",
+			"claude-3-5-haiku-20241022",
+		}
+	case "gemini-cli":
+		models = []string{
+			"gemini-2.5-pro",
+			"gemini-2.5-flash",
+			"gemini-2.0-flash",
+			"gemini-2.0-flash-thinking-exp",
+			"gemini-1.5-pro",
+			"gemini-1.5-flash",
+			"gemini-pro",
+		}
+	case "openai":
+		models = []string{
+			"gpt-4o", "gpt-4o-mini", "gpt-4-turbo",
+			"gpt-4", "gpt-3.5-turbo", "o1", "o1-mini", "o3-mini",
+		}
+	case "anthropic":
+		models = []string{
+			"claude-opus-4-7", "claude-sonnet-4-6", "claude-haiku-4-5",
+			"claude-opus-4", "claude-sonnet-4",
+			"claude-3-5-sonnet-20241022", "claude-3-5-haiku-20241022",
+		}
+	case "ollama":
+		models = queryOllamaModels(s.cfg.Providers.Ollama.BaseURL)
+	case "openrouter":
+		models = []string{"gpt-4o", "anthropic/claude-opus-4", "anthropic/claude-sonnet-4", "meta-llama/llama-3.1-70b-instruct"}
+	case "google":
+		models = []string{"gemini-2.0-flash", "gemini-1.5-pro", "gemini-1.5-flash", "gemini-pro"}
+	case "groq":
+		models = []string{"llama-3.1-70b-versatile", "llama-3.1-8b-instant", "mixtral-8x7b-32768", "gemma2-9b-it"}
+	case "mistral":
+		models = []string{"mistral-large-latest", "mistral-medium-latest", "mistral-small-latest", "open-mistral-7b"}
+	case "deepseek":
+		models = []string{"deepseek-chat", "deepseek-reasoner"}
+	case "cohere":
+		models = []string{"command-r-plus", "command-r", "command"}
+	default:
+		models = []string{}
+	}
+
+	json.NewEncoder(w).Encode(map[string]any{"models": models, "provider": provider})
+}
+
+func queryOllamaModels(baseURL string) []string {
+	if baseURL == "" {
+		baseURL = "http://localhost:11434"
+	}
+	resp, err := http.Get(baseURL + "/api/tags")
+	if err != nil {
+		return []string{"llama3", "mistral", "codellama"}
+	}
+	defer resp.Body.Close()
+	body, _ := io.ReadAll(resp.Body)
+
+	var result struct {
+		Models []struct {
+			Name string `json:"name"`
+		} `json:"models"`
+	}
+	if err := json.Unmarshal(body, &result); err != nil || len(result.Models) == 0 {
+		return []string{"llama3", "mistral", "codellama"}
+	}
+
+	names := make([]string, 0, len(result.Models))
+	for _, m := range result.Models {
+		// Strip tag for cleaner display (llama3:latest → llama3)
+		name := strings.SplitN(m.Name, ":", 2)[0]
+		names = append(names, name)
+	}
+	return names
+}
+
+func queryCLIModels(cliName string) []string {
+	// Try to get version to confirm CLI is available
+	out, err := exec.Command(cliName, "--version").Output()
+	if err != nil || len(out) == 0 {
+		return nil
+	}
+	return nil // CLI doesn't expose a models list command
 }
 
 // ── Chat Stream (SSE) ───────────────────────────────────────────────────────

@@ -124,6 +124,8 @@ type ProvidersConfig struct {
 	Groq        ProviderConfig `mapstructure:"groq" json:"groq"`
 	Mistral     ProviderConfig `mapstructure:"mistral" json:"mistral"`
 	Cohere      ProviderConfig `mapstructure:"cohere" json:"cohere"`
+	ClaudeCLI   CliProviderConfig `mapstructure:"claudeCli" json:"claudeCli"`
+	GeminiCLI   CliProviderConfig `mapstructure:"geminiCli" json:"geminiCli"`
 	Custom      []CustomProviderConfig `mapstructure:"custom" json:"custom"`
 }
 
@@ -139,6 +141,12 @@ type CustomProviderConfig struct {
 	Enabled bool   `mapstructure:"enabled" json:"enabled"`
 	APIKey  string `mapstructure:"apiKey" json:"-"`
 	BaseURL string `mapstructure:"baseUrl" json:"baseUrl"`
+	Model   string `mapstructure:"model" json:"model"`
+}
+
+type CliProviderConfig struct {
+	Enabled bool   `mapstructure:"enabled" json:"enabled"`
+	CLIPath string `mapstructure:"cliPath" json:"cliPath"`
 	Model   string `mapstructure:"model" json:"model"`
 }
 
@@ -686,16 +694,28 @@ func (c *Config) validateProviders() error {
 		"cohere":     c.Providers.Cohere,
 	}
 
-	// Validate enabled providers have API keys (except ollama which is self-hosted)
+	// Validate the primary provider has everything it needs.
+	// Secondary enabled providers only require a key if they supply one directly —
+	// a stale "enabled" flag with no direct key is a warning-level issue, not fatal.
 	for name, provider := range providerConfigs {
 		if !provider.Enabled {
 			continue
 		}
-		if name != "ollama" && provider.APIKey == "" {
-			return fmt.Errorf("config validation: provider %q is enabled but apiKey is empty", name)
+		isPrimary := name == c.LLM.Provider
+		effectiveKey := provider.APIKey
+		if effectiveKey == "" && isPrimary {
+			effectiveKey = c.LLM.APIKey
 		}
-		if provider.Model == "" {
-			return fmt.Errorf("config validation: provider %q is enabled but model is empty", name)
+		// Non-primary providers: skip key check if no direct key — may be stale flag.
+		if name != "ollama" && effectiveKey == "" && isPrimary {
+			return fmt.Errorf("config validation: primary provider %q has no API key (set llm.apiKey or providers.%s.apiKey)", name, name)
+		}
+		effectiveModel := provider.Model
+		if effectiveModel == "" && isPrimary {
+			effectiveModel = c.LLM.Model
+		}
+		if effectiveModel == "" && isPrimary {
+			return fmt.Errorf("config validation: primary provider %q has no model configured", name)
 		}
 	}
 
@@ -878,6 +898,32 @@ func GenerateDefault() error {
 }
 
 // ── Provider helpers ─────────────────────────────────────────────────────────
+
+// ProviderConfigFor returns the raw config for a named provider without checking
+// whether it is enabled. Used by buildLLMAdapter for the primary provider so users
+// only need to set llm.provider + llm.apiKey without also touching providers.<name>.enabled.
+func (c *Config) ProviderConfigFor(name string) (ProviderConfig, bool) {
+	providers := map[string]*ProviderConfig{
+		"openai":     &c.Providers.OpenAI,
+		"anthropic":  &c.Providers.Anthropic,
+		"openrouter": &c.Providers.OpenRouter,
+		"google":     &c.Providers.Google,
+		"deepseek":   &c.Providers.DeepSeek,
+		"ollama":     &c.Providers.Ollama,
+		"groq":       &c.Providers.Groq,
+		"mistral":    &c.Providers.Mistral,
+		"cohere":     &c.Providers.Cohere,
+	}
+	if p, ok := providers[name]; ok {
+		return *p, true
+	}
+	for _, cp := range c.Providers.Custom {
+		if cp.Name == name {
+			return ProviderConfig{Enabled: cp.Enabled, APIKey: cp.APIKey, BaseURL: cp.BaseURL, Model: cp.Model}, true
+		}
+	}
+	return ProviderConfig{}, false
+}
 
 // ProviderByStack returns the provider with the best matching model for a given stack.
 func (c *Config) ProviderByStack(stack string) (ProviderConfig, bool) {

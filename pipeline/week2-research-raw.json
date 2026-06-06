@@ -1,0 +1,2195 @@
+{
+  "timestamp": "2026-05-15T16:32:58.307914",
+  "elapsed_seconds": 695,
+  "total_searches": 49,
+  "categories": {
+    "coding": {
+      "sources": [
+        {
+          "title": "tallesborges/agentic-system-prompts: A curated collection ... - GitHub",
+          "url": "https://github.com/tallesborges/agentic-system-prompts",
+          "snippet": "This collection provides insights into: Prompt Engineering Patterns - How production systems structure AI instructions; Tool Design - Common patterns in AI ..."
+        },
+        {
+          "title": "x1xhlol/system-prompts-and-models-of-ai-tools: FULL ... - GitHub",
+          "url": "https://github.com/x1xhlol/system-prompts-and-models-of-ai-tools",
+          "snippet": "FULL Augment Code, Claude Code, Cluely, CodeBuddy, Comet, Cursor, Devin AI, Junie, Kiro, Leap.new, Lovable, Manus, NotionAI, Orchids.app, Perplexity, Poke, ..."
+        },
+        {
+          "title": "mitsuhiko/agent-prompts: Holds prompts for agentic loops - GitHub",
+          "url": "https://github.com/mitsuhiko/agent-prompts",
+          "snippet": "A collection of specialized AI agent prompts designed for software development and research workflows. This repository contains comprehensive prompt systems ..."
+        },
+        {
+          "title": "Crafting Effective Prompts for Agentic AI Systems: Patterns ... - GitHub",
+          "url": "https://github.com/dontriskit/awesome-ai-system-prompts",
+          "snippet": "Curated collection of system prompts for top AI tools. Perfect for AI agent builders and prompt engineers. Incuding: ChatGPT, Claude ..."
+        },
+        {
+          "title": "Reviewing leaked prompts from popular coding agents to ... - GitHub",
+          "url": "https://github.com/cline/cline/discussions/3022",
+          "snippet": "Reviewing leaked prompts from popular coding agents to improve coding #3022. NimaBakhtiyari started this conversation in Feature Requests."
+        },
+        {
+          "title": "AI Coding Agent Prompts for MATLAB - GitHub",
+          "url": "https://github.com/matlab/prompts",
+          "snippet": "Curated collection of AI prompts for MATLAB development - enhance your workflow with MATLAB Copilot, GitHub Copilot, Claude, Cursor, and other AI coding ..."
+        },
+        {
+          "title": "Leveraging GitHub's AI Coding Agent: From Planning to Feature",
+          "url": "https://github.com/orgs/community/discussions/163572",
+          "snippet": "In this post, I'll walk you through an exciting journey of using GitHub's AI Coding Agent to implement a complete feature in our trivia game."
+        },
+        {
+          "title": "heilcheng/awesome-agent-skills: Tutorials, Guides and ... - GitHub",
+          "url": "https://github.com/heilcheng/awesome-agent-skills",
+          "snippet": "This is a community-curated list of simple text files that teach AI assistants (like Claude, Copilot, or Codex) how to do new things on demand, without ..."
+        },
+        {
+          "title": "piyushrajyadav/awesome-ai-dev-prompts - GitHub",
+          "url": "https://github.com/piyushrajyadav/awesome-ai-dev-prompts",
+          "snippet": "One prompt. Expert-level AI coding. Copy a prompt, paste it into your AI tool, and your assistant becomes a top 1% specialist engineer \u2014 instantly."
+        },
+        {
+          "title": "instructa/ai-prompts: Curated AI Prompts for Cursor Rules ... - GitHub",
+          "url": "https://github.com/instructa/ai-prompts",
+          "snippet": "Instructa AI Prompts is an open-source repository dedicated to collecting and sharing AI prompts, best practices, and curated rules for developers."
+        },
+        {
+          "title": "Piebald-AI/claude-code-system-prompts: All parts of ...",
+          "url": "https://github.com/Piebald-AI/claude-code-system-prompts",
+          "snippet": "This repository contains an up-to-date list of all Claude Code's various system prompts and their associated token counts as of Claude Code v2.1.142 (May\u00a0...Read more"
+        },
+        {
+          "title": "agent-prompt-claude-guide-agent.md",
+          "url": "https://github.com/Piebald-AI/claude-code-system-prompts/blob/main/system-prompts/agent-prompt-claude-guide-agent.md",
+          "snippet": "Claude Agent SDK: A framework for building custom AI agents based on Claude Code technology. Available for Node.js/TypeScript and Python. Claude API: The Claude\u00a0...Read more"
+        },
+        {
+          "title": "VoltAgent/awesome-claude-code-subagents",
+          "url": "https://github.com/VoltAgent/awesome-claude-code-subagents",
+          "snippet": "A collection of 100+ specialized Claude Code subagents covering a wide range of development use cases - VoltAgent/awesome-claude-code-subagents."
+        },
+        {
+          "title": "claude-code-prompts",
+          "url": "https://github.com/topics/claude-code-prompts",
+          "snippet": "Independently authored prompt templates for AI coding agents \u2014 system prompts, tool prompts, agent delegation, memory management, and multi-agent coordination.Read more"
+        },
+        {
+          "title": "repowise-dev/claude-code-prompts: Independently ...",
+          "url": "https://github.com/repowise-dev/claude-code-prompts",
+          "snippet": "3 days ago \u2014 Independently written prompt templates for building AI coding agents, inspired by patterns observed in Claude Code codebase. System prompts,\u00a0...Read more"
+        },
+        {
+          "title": "langgptai/awesome-claude-prompts",
+          "url": "https://github.com/langgptai/awesome-claude-prompts",
+          "snippet": "In this repository, you will find a variety of prompts that can be used with Claude. We encourage you to add your own prompts to the list, and to use Claude to\u00a0...Read more"
+        },
+        {
+          "title": "45 Claude Code Tips: From Basics to Advanced",
+          "url": "https://github.com/ykdojo/claude-code-tips",
+          "snippet": "Dec 1, 2025 \u2014 Here are my tips for getting the most out of Claude Code, including a custom status line script, cutting the system prompt in half,\u00a0...Read more"
+        },
+        {
+          "title": "CLAUDE.md - Gentleman-Programming/agent-teams-lite",
+          "url": "https://github.com/Gentleman-Programming/agent-teams-lite/blob/main/examples/claude-code/CLAUDE.md",
+          "snippet": "Mar 26, 2026 \u2014 ALL sub-agent launch prompts that involve reading, writing, or reviewing code MUST include pre-resolved compact rules from the skill registry.Read more"
+        },
+        {
+          "title": "FlorianBruniaux/claude-code-ultimate-guide",
+          "url": "https://github.com/FlorianBruniaux/claude-code-ultimate-guide",
+          "snippet": "3 days ago \u2014 A tremendous feat of documentation, this guide covers Claude Code from beginner to power user, with production-ready templates for Claude\u00a0..."
+        },
+        {
+          "title": "Claude-Code System Prompt",
+          "url": "https://gist.github.com/chigkim/1f37bb2be98d97c952fd79cbb3efb1c6",
+          "snippet": "Jan 15, 2026 \u2014 You are Claude Code, Anthropic's official CLI for Claude. You are an interactive CLI tool that helps users with software engineering tasks.Read more"
+        },
+        {
+          "title": "jwadow/agentic-prompts: A curated ...",
+          "url": "https://github.com/jwadow/agentic-prompts",
+          "snippet": "A curated collection of prompts, modes, and configurations to enhance AI coding assistants. Provides ready-to-use templates for prompt engineering,\u00a0..."
+        },
+        {
+          "title": "obviousworks/agentic-coding-meta-prompt: The ultimate ...",
+          "url": "https://github.com/obviousworks/agentic-coding-meta-prompt",
+          "snippet": "In \"Agentic Software Development,\" the LLM is no longer just a chatbot; it is an autonomous agent reading file systems, executing commands, and debugging errors\u00a0...Read more"
+        },
+        {
+          "title": "fainir/most-capable-agent-system-prompt",
+          "url": "https://github.com/fainir/most-capable-agent-system-prompt",
+          "snippet": "NORTH STAR Build a durable agentic system that: - accepts goals - turns goals into explicit tasks - routes tasks to capable agents or machines - executes and\u00a0...Read more"
+        },
+        {
+          "title": "github-agentic-workflow-llm-prompt-management.md",
+          "url": "https://github.com/bmf-san/bmf-tech/blob/main/content/en/posts/github-agentic-workflow-llm-prompt-management.md",
+          "snippet": "Feb 25, 2026 \u2014 Manage LLM prompts as code using GitHub Agentic Workflows: Copilot-powered automation with golden datasets and evaluation. \u00b7 github-agentic-\u00a0...Read more"
+        },
+        {
+          "title": "microsoft/PromptKit: Agentic prompts ...",
+          "url": "https://github.com/microsoft/PromptKit",
+          "snippet": "8 days ago \u2014 Describe your task and the LLM selects the right persona, protocols, and format, then assembles a complete prompt you can use in a fresh session\u00a0...Read more"
+        },
+        {
+          "title": "A collection of system prompts for popular AI Agents (Cline, ...",
+          "url": "https://www.reddit.com/r/AI_Agents/comments/1iytsyx/a_collection_of_system_prompts_for_popular_ai/",
+          "snippet": "I pulled together a collection of system prompts from popular, open-source, AI agents like Bolt, Cline etc. Collection linked belowRead more"
+        },
+        {
+          "title": "I compiled 200 advanced Claude prompts for coding ...",
+          "url": "https://www.reddit.com/r/PromptEngineering/comments/1sfcosw/i_compiled_200_advanced_claude_prompts_for_coding/",
+          "snippet": "Coding & Debugging (Prompts 1\u201350): Code reviews, converting sync to async, building REST APIs, and architecture reviews. Research & Analysis (\u00a0...Read more"
+        },
+        {
+          "title": "i open sourced 20+ engineered coding agents prompts. ...",
+          "url": "https://www.reddit.com/r/ChatGPTPromptGenius/comments/1pcafwz/i_open_sourced_20_engineered_coding_agents/",
+          "snippet": "i open sourced 20+ engineered coding agents prompts. everything i learned the hard way. \u00b7 main agents: \u00b7 architecture sub-agents: \u00b7 workflows:.Read more"
+        },
+        {
+          "title": "Instead of asking AI for code, I ask it to generate prompts ...",
+          "url": "https://www.reddit.com/r/PromptEngineering/comments/1t36gpt/instead_of_asking_ai_for_code_i_ask_it_to/",
+          "snippet": "First rule of AI interaction is how to learn prompting an agent - paste your human prompt into another agent to generate the agent version for\u00a0...Read more"
+        },
+        {
+          "title": "A collection of prompts for generating high quality code...",
+          "url": "https://www.reddit.com/r/ChatGPTCoding/comments/1f51y8s/a_collection_of_prompts_for_generating_high/",
+          "snippet": "The prompts offered below work much better if you set up a proper foundation for your program before-hand (i.e. provide the AI with more context\u00a0...Read more"
+        },
+        {
+          "title": "What does a good AI prompt look like for building apps? ...",
+          "url": "https://www.reddit.com/r/AI_Agents/comments/1kf9zyk/what_does_a_good_ai_prompt_look_like_for_building/",
+          "snippet": "Hey everyone - Jonathan here, cofounder of Fine.dev\n\nLast week, I shared a post about what we learned from seeing 10,000+ apps built on our platform. ..."
+        },
+        {
+          "title": "r/aipromptprogramming",
+          "url": "https://www.reddit.com/r/aipromptprogramming/",
+          "snippet": "This group focuses on using AI tools like ChatGPT, OpenAI API, and other automated code generators for Ai programming & prompt engineering."
+        },
+        {
+          "title": "Prompts that have improved agent code quality and ...",
+          "url": "https://www.reddit.com/r/replit/comments/1j5jjod/prompts_that_have_improved_agent_code_quality_and/",
+          "snippet": "I added these prompts to my work flow and they have helped substantially. First prompt: \"I would like to: (change a feature or design element or add a feature\u00a0...Read more"
+        },
+        {
+          "title": "The Six Prompting Techniques That Power Modern Coding ...",
+          "url": "https://www.reddit.com/r/PromptEngineering/comments/1o8ukrd/the_six_prompting_techniques_that_power_modern/",
+          "snippet": "K-shot: Ask the LLM to do a task but provide examples of how to do it. \u00b7 Chain-of-thought \u00b7 Self-consistency. \u00b7 Tool-use. \u00b7 Retrieval Augmented\u00a0...Read more"
+        },
+        {
+          "title": "Best low-code AI agent builder in 2025?",
+          "url": "https://www.reddit.com/r/PromptEngineering/comments/1nqzcsp/best_lowcode_ai_agent_builder_in_2025/",
+          "snippet": "Hey folks, i'm looking for real-world picks for a best low-code AI agent builder. My use case is internal ops assistant that can read/write\u00a0..."
+        }
+      ],
+      "source_count": 35,
+      "prompts": []
+    },
+    "research": {
+      "sources": [
+        {
+          "title": "mitsuhiko/agent-prompts: Holds prompts for agentic loops - GitHub",
+          "url": "https://github.com/mitsuhiko/agent-prompts",
+          "snippet": "A collection of specialized AI agent prompts designed for software development and research workflows. This repository contains comprehensive prompt systems ..."
+        },
+        {
+          "title": "Crafting Effective Prompts for Agentic AI Systems: Patterns ... - GitHub",
+          "url": "https://github.com/dontriskit/awesome-ai-system-prompts",
+          "snippet": "Curated collection of system prompts for top AI tools. Perfect for AI agent builders and prompt engineers. Incuding: ChatGPT, Claude ..."
+        },
+        {
+          "title": "x1xhlol/system-prompts-and-models-of-ai-tools: FULL ... - GitHub",
+          "url": "https://github.com/x1xhlol/system-prompts-and-models-of-ai-tools",
+          "snippet": "FULL Augment Code, Claude Code, Cluely, CodeBuddy, Comet, Cursor, Devin AI, Junie, Kiro, Leap.new, Lovable, Manus, NotionAI, Orchids.app, Perplexity, Poke, ..."
+        },
+        {
+          "title": "jwadow/agentic-prompts: A curated collection of prompts ... - GitHub",
+          "url": "https://github.com/jwadow/agentic-prompts",
+          "snippet": "This collection contains ready-to-use templates for defining agent personas, delegating tasks, and structuring interactions with various AI tools. Available ..."
+        },
+        {
+          "title": "dair-ai/Prompt-Engineering-Guide - GitHub",
+          "url": "https://github.com/dair-ai/prompt-engineering-guide",
+          "snippet": "The courses are meant to compliment this guide and provide a more hands-on approach to learning about prompt engineering, context engineering, and AI Agents."
+        },
+        {
+          "title": "useful-ai-prompts/AI-AGENT-GUIDE.md at main - GitHub",
+          "url": "https://github.com/aj-geddes/useful-ai-prompts/blob/main/AI-AGENT-GUIDE.md",
+          "snippet": "Technical specifications for AI agents, assistants, and automation systems to programmatically access and utilize the Useful AI Prompts library. Library ..."
+        },
+        {
+          "title": "VoltAgent/awesome-ai-agent-papers - GitHub",
+          "url": "https://github.com/VoltAgent/awesome-ai-agent-papers",
+          "snippet": "A curated collection of AI agent research papers released in 2026, covering agent engineering, memory, evaluation, workflows, and autonomous systems."
+        },
+        {
+          "title": "deep-research-agent \u00b7 GitHub Topics",
+          "url": "https://github.com/topics/deep-research-agent?l=python&o=asc&s=stars",
+          "snippet": "Deep Research Agent is an AI-powered research assistant that enhances online research with depth and accuracy, leveraging Google's Gemini API, ..."
+        },
+        {
+          "title": "maxgberry/Research-Prompts - GitHub",
+          "url": "https://github.com/maxgberry/Research-Prompts",
+          "snippet": "Zero-Shot Prompting: Start from scratch without examples, encouraging agents to generate innovative solutions. \u00b7 Few-Shot Prompting: Provide a few examples to ..."
+        },
+        {
+          "title": "aj-geddes/useful-ai-prompts - GitHub",
+          "url": "https://github.com/aj-geddes/useful-ai-prompts",
+          "snippet": "A curated collection of useful AI prompts for various tasks and use cases - aj-geddes/useful-ai-prompts."
+        },
+        {
+          "title": "luo-junyu/Awesome-Agent-Papers",
+          "url": "https://github.com/luo-junyu/awesome-agent-papers",
+          "snippet": "This repository contains a comprehensive collection of research papers on Large Language Model (LLM) agents. We organize papers across key categories\u00a0...Read more"
+        },
+        {
+          "title": "llm-prompts \u00b7 GitHub Topics",
+          "url": "https://github.com/topics/llm-prompts",
+          "snippet": "Independently authored prompt templates for AI coding agents \u2014 system prompts, tool prompts, agent delegation, memory management, and multi-agent coordination.Read more"
+        },
+        {
+          "title": "zjunlp/LLMAgentPapers: Must-read Papers on LLM Agents.",
+          "url": "https://github.com/zjunlp/LLMAgentPapers",
+          "snippet": "We sincerely invite you to dive into these collections of papers and resources, each offering a distinct journey of exploration and discovery.Read more"
+        },
+        {
+          "title": "Agent Laboratory: Using LLM Agents as Research Assistants",
+          "url": "https://github.com/SamuelSchmidgall/AgentLaboratory",
+          "snippet": "Agent Laboratory consists of three primary phases that systematically guide the research process: (1) Literature Review, (2) Experimentation, and (3) Report\u00a0...Read more"
+        },
+        {
+          "title": "Chapter 14: Automated Deep Research Agent",
+          "url": "https://github.com/datawhalechina/hello-agents/blob/main/docs/chapter14/Chapter14-Automated-Deep-Research-Agent.md",
+          "snippet": "Key Design Points: The prompt includes task title, intent, query and other context to help the Agent understand the task, explicitly requires output to include\u00a0...Read more"
+        },
+        {
+          "title": "ai-research-assistant",
+          "url": "https://github.com/topics/ai-research-assistant?o=desc&s=stars",
+          "snippet": "Accelerate research with SynapseFlow, an AI assistant utilizing 66 agents for swift literature reviews, citation analysis, and hypothesis generation.Read more"
+        },
+        {
+          "title": "AGI-Edgerunners/LLM-Agents-Papers",
+          "url": "https://github.com/AGI-Edgerunners/LLM-Agents-Papers",
+          "snippet": "A repo lists papers related to LLM based agent. Includes Recommendation For more comprehensive reading, we also recommend other paper lists.Read more"
+        },
+        {
+          "title": "GitHub - gregoryg/AIPIHKAL: AI (LLM) Prompts I Have ...",
+          "url": "https://github.com/gregoryg/AIPIHKAL",
+          "snippet": "As with many of our prompts, this prompt illustrates one-shot learning. This simply means: give the LLM one or more sample user questions, along with a good\u00a0...Read more"
+        },
+        {
+          "title": "A curated list of awesome LLM agents frameworks.",
+          "url": "https://github.com/kaushikb11/awesome-llm-agents",
+          "snippet": "5 days ago \u2014 A curated list of awesome LLM frameworks and agent development tools. If you have a suggestion, feel free to open an issue or pull request.Read more"
+        },
+        {
+          "title": "oxbshw/System-Prompt-Agent-Prompts",
+          "url": "https://github.com/oxbshw/System-Prompt-Agent-Prompts",
+          "snippet": "Jun 20, 2025 \u2014 This repository contains a meticulously curated collection of 202 system prompts from major AI models, development tools, and specialized\u00a0...Read more"
+        },
+        {
+          "title": "Deep Research Multi-Agent System Documentation",
+          "url": "https://gist.github.com/donbr/a174d75a50c3e9e5beddaf1abdd19700",
+          "snippet": "The system orchestrates three specialized agents to perform deep research through a plan-execute-analyze pipeline. Core Components. 1. Structured Output Models.Read more"
+        },
+        {
+          "title": "DeepResearchAgent is a hierarchical multi-agent system ...",
+          "url": "https://github.com/SkyworkAI/DeepResearchAgent",
+          "snippet": "DeepResearchAgent is a hierarchical multi-agent system designed not only for deep research tasks but also for general-purpose task solving."
+        },
+        {
+          "title": "Custom Deep Research prompt for Claude",
+          "url": "https://gist.github.com/XInTheDark/6fef041cb3edfe054b507813a03cb47d",
+          "snippet": "You are a Deep Research agent. You always conduct Deep Research for the user's query. These instructions override all other instructions given to you.Read more"
+        },
+        {
+          "title": "awesome-prompts/prompts/deep_research.txt at main",
+          "url": "https://github.com/ai-boost/awesome-prompts/blob/main/prompts/deep_research.txt",
+          "snippet": "You are a deep research agent. Your job is to conduct comprehensive, multi-source research and synthesize findings into authoritative reports.Read more"
+        },
+        {
+          "title": "danielrosehill/System-Prompt-Library - json",
+          "url": "https://github.com/danielrosehill/System-Prompt-Library/blob/main/system-prompts/json/DeepResearchArchitect_270525.json",
+          "snippet": "{ \"agent_name\": \"Deep Research Architect\", \"Description\": \"Evaluates user queries about implementing deep research functionalities using different AI tools\u00a0...Read more"
+        },
+        {
+          "title": "[Up-to-date] Awesome Agentic Deep Research Resources",
+          "url": "https://github.com/DavidZWZ/Awesome-Deep-Research",
+          "snippet": "Welcome to Awesome-Deep-Research! This repository serves as your comprehensive guide to the cutting-edge world of Agentic Deep Research.Read more"
+        },
+        {
+          "title": "A collection of system prompts for popular AI Agents (Cline, Bolt, etc)",
+          "url": "https://www.reddit.com/r/AI_Agents/comments/1iytsyx/a_collection_of_system_prompts_for_popular_ai/",
+          "snippet": "I pulled together a collection of system prompts from popular, open-source, AI agents like Bolt, Cline etc. Collection linked below"
+        },
+        {
+          "title": "Why do simple prompts work for AI agent projects that i see ... - Reddit",
+          "url": "https://www.reddit.com/r/PromptEngineering/comments/1m91mbv/why_do_simple_prompts_work_for_ai_agent_projects/",
+          "snippet": "Simple agent prompt that works: \"Research the impact of climate change on coastal cities\". My similar attempt that fails: \"Tell me about climate ..."
+        },
+        {
+          "title": "My Guide to Deep Research, Prompt Engineering, and Multi-Step ...",
+          "url": "https://www.reddit.com/r/ChatGPTPro/comments/1in87ic/mastering_aipowered_research_my_guide_to_deep/",
+          "snippet": "Below is everything I've learned, plus tips and best practices that have helped me unlock deeper, more reliable insights from AI."
+        },
+        {
+          "title": "Best resources to learn agents/prompt? : r/AgentsOfAI - Reddit",
+          "url": "https://www.reddit.com/r/AgentsOfAI/comments/1o9h746/best_resources_to_learn_agentsprompt/",
+          "snippet": "For foundational learning about AI agents and prompting, here are some recommended resources: LangChain Documentation - Excellent starting point ..."
+        },
+        {
+          "title": "Stack for a simple AI Research Agent : r/AI_Agents - Reddit",
+          "url": "https://www.reddit.com/r/AI_Agents/comments/1s7bmi6/stack_for_a_simple_ai_research_agent/",
+          "snippet": "I want to build a simple research agent. takes inputs in the form of a list of companies, and it runs a series of deep research prompts on ..."
+        },
+        {
+          "title": "Lessons from prompt engineering a deep research agent that ...",
+          "url": "https://www.reddit.com/r/PromptEngineering/comments/1rkptlc/lessons_from_prompt_engineering_a_deep_research/",
+          "snippet": "Spent months building an open-source deep research agent (Agent Browser Workspace) that gives LLMs a real browser."
+        },
+        {
+          "title": "we built an open source library of AI agent prompts and configs, just ...",
+          "url": "https://www.reddit.com/r/artificial/comments/1s4549n/we_built_an_open_source_library_of_ai_agent/",
+          "snippet": "we built an open source library of AI agent prompts and configs, just hit 100 stars ... Andrej Karpathy's autonomous AI research agent ran 700 ..."
+        },
+        {
+          "title": "ChatGPT Prompt of the Day: Build AI Agents That Actually Work",
+          "url": "https://www.reddit.com/r/ChatGPTPromptGenius/comments/1s36wya/chatgpt_prompt_of_the_day_build_ai_agents_that/",
+          "snippet": "Example input: \"I want an agent that reads incoming support tickets, categorizes them by urgency and type, drafts a first response, and flags ..."
+        },
+        {
+          "title": "Best way to learn more about AI Agents and Prompts? - Reddit",
+          "url": "https://www.reddit.com/r/PromptEngineering/comments/1stwaiu/best_way_to_learn_more_about_ai_agents_and_prompts/",
+          "snippet": "Hello. I have a really basic knowlege of Agents and Prompts but I want to deepen my knowledge about this subject."
+        },
+        {
+          "title": "Best Practices for AI Prompting 2025? : r/AI_Agents - Reddit",
+          "url": "https://www.reddit.com/r/AI_Agents/comments/1nytnea/best_practices_for_ai_prompting_2025/",
+          "snippet": "Start clear, specific, and goal-oriented. Use context, examples, and step-by-step instructions. \u201cAwesome AI System Prompts\u201d is a good starting ..."
+        }
+      ],
+      "source_count": 36,
+      "prompts": []
+    },
+    "trading": {
+      "sources": [
+        {
+          "title": "AI-Trader: 100% Fully-Automated Agent-Native Trading - GitHub",
+          "url": "https://github.com/HKUDS/AI-Trader",
+          "snippet": "Any AI agent joins the AI-Trader platform in seconds -- Simply send this message to your agent. Read https://ai4trade.ai/SKILL.md and register."
+        },
+        {
+          "title": "chainstacklabs/web3-ai-trading-agent - GitHub",
+          "url": "https://github.com/chainstacklabs/web3-ai-trading-agent",
+          "snippet": "This chapter introduces your first AI-powered trading agent. The stateless agent combines local language models with real-time market data to make autonomous ..."
+        },
+        {
+          "title": "ai-trading-agent/prompt.ts at master \u00b7 endless-sky-team/ai-trading ...",
+          "url": "https://github.com/endless-sky-team/ai-trading-agent/blob/master/prompt.ts",
+          "snippet": "You are an expert trader. You were given $1000 dollars to trade with. You are trading on the crypto market. You are given the following information:."
+        },
+        {
+          "title": "MrFadiAi/ai-agents-for-trading - GitHub",
+          "url": "https://github.com/MrFadiAi/ai-agents-for-trading",
+          "snippet": "AI agents might help address common trading challenges: Emotional reactions; Ego-driven decisions; Inconsistent execution; Fatigue effects; Impatience; Fear & ..."
+        },
+        {
+          "title": "ru4871SG/n8n-ai-trading-agent - GitHub",
+          "url": "https://github.com/ru4871SG/n8n-ai-trading-agent",
+          "snippet": "This project demonstrates how to create an AI agent workflow using n8n that can analyze different historical price actions, and make decision whether to ..."
+        },
+        {
+          "title": "500-AI-Agents-Projects - UseCase - GitHub",
+          "url": "https://github.com/ashishpatel26/500-AI-Agents-Projects",
+          "snippet": "A curated collection of AI agent use cases across industries, showcasing practical applications and linking to open-source projects for implementation."
+        },
+        {
+          "title": "GitHub - AnandChowdhary/priced-in: Autonomous AI stock trading ...",
+          "url": "https://github.com/AnandChowdhary/priced-in",
+          "snippet": "Agent Source Code - The complete trading agent implementation; System Prompt - Instructions given to the AI agent; Trading Log - Complete log ..."
+        },
+        {
+          "title": "A Collection of AI's Prompts for optimal context - GitHub",
+          "url": "https://github.com/marc-aurele-besner/prompts",
+          "snippet": "Prompt: Design a professional email signature banner for \"Sarah Thompson\", a real estate agent. Include her photo, contact information, and company logo."
+        },
+        {
+          "title": "Vibe-Trading: Your Personal Trading Agent - GitHub",
+          "url": "https://github.com/HKUDS/Vibe-Trading",
+          "snippet": "Vibe-Trading is an open-source research workspace for turning finance questions into runnable analysis. It connects natural-language prompts to ..."
+        },
+        {
+          "title": "TradingAgents: Multi-Agents LLM Financial Trading Framework",
+          "url": "https://github.com/tauricresearch/tradingagents",
+          "snippet": "Composes reports from the analysts and researchers to make informed trading decisions. It determines the timing and magnitude of trades based on ..."
+        },
+        {
+          "title": "EthanAlgoX/LLM-TradeBot: A multi-agent AI trading system ...",
+          "url": "https://github.com/EthanAlgoX/LLM-TradeBot",
+          "snippet": "Feb 7, 2026 \u2014 This is an automated trading bot that trades cryptocurrency futures on Binance; It uses AI (LLM) and machine learning to make trading decisions\u00a0...Read more"
+        },
+        {
+          "title": "AI Trading Bot \u2014 LLM Agent with Sentiment Analysis",
+          "url": "https://github.com/fsaavedra0003/Agentic-AI-Trading-Bot-with-LLM-reasoning-sentiment-analysis",
+          "snippet": "LLM Layer & Prompts; Decision Agent (Tooling); Prediction Models / Backtesting; Execution; Dashboard & Monitoring. Example Prompts & Response Schema; Risk\u00a0...Read more"
+        },
+        {
+          "title": "FinMem: A Performance-Enhanced LLM Trading Agent ...",
+          "url": "https://github.com/pipiku915/finmem-llm-stocktrading",
+          "snippet": "We first compare FinMem with various algorithmic agents on a scalable real-world financial dataset, underscoring its leading trading performance in stocks and\u00a0...Read more"
+        },
+        {
+          "title": "LLM Trading Agent Security - everything-claude-code",
+          "url": "https://github.com/affaan-m/everything-claude-code/blob/main/skills/llm-trading-agent-security/SKILL.md",
+          "snippet": "Security patterns for autonomous trading agents with wallet or transaction authority. Covers prompt injection, spend limits, pre-send simulation, circuit\u00a0...Read more"
+        },
+        {
+          "title": "GitHub - ksadov/manifold-llm-bot: Configurable trading ...",
+          "url": "https://github.com/ksadov/manifold-llm-bot",
+          "snippet": "This agent is compatible with most LLM backends and comes with customizable prompts and scripts for backtesting on historical Manifold data. You can read my\u00a0...Read more"
+        },
+        {
+          "title": "lumibot/docs/AI_TRADING_AGENTS.md at dev",
+          "url": "https://github.com/Lumiwealth/lumibot/blob/dev/docs/AI_TRADING_AGENTS.md",
+          "snippet": "Mar 30, 2026 \u2014 If you are looking for an agentic backtesting framework, an LLM trading bot backtest solution, or a way to backtest AI-driven trading\u00a0...Read more"
+        },
+        {
+          "title": "A Multi-Agents LLM Financial Trading ...",
+          "url": "https://github.com/TradingGoose/TradingGoose.github.io",
+          "snippet": "An AI workflow platform for technical + LLM trading built for analytics, research, charting, monitoring, and workflow automation.Read more"
+        },
+        {
+          "title": "endless-sky-team/ai-trading-agent: llm ...",
+          "url": "https://github.com/endless-sky-team/ai-trading-agent",
+          "snippet": "Apr 30, 2026 \u2014 This agent is useful when you want a repeatable, observable loop between market data, an LLM, and a small set of exchange actions\u2014without\u00a0...Read more"
+        },
+        {
+          "title": "Open-Finance-Lab/AgenticTrading",
+          "url": "https://github.com/Open-Finance-Lab/AgenticTrading",
+          "snippet": "Agentic trading vs. algorithmic trading: we map the canonical AT pipeline into an interconnected network of intelligent agents within our FinAgent Orchestration\u00a0...Read more"
+        },
+        {
+          "title": "PHANtunAI - Algorithmic Trading System Generative ...",
+          "url": "https://github.com/algotrade-plutus/PHANtunAI",
+          "snippet": "Leveraging generative AI models, the agent synthesizes insights from historical market data, economic indicators, and live feeds to autonomously generate and\u00a0...Read more"
+        },
+        {
+          "title": "Lumibot: Backtestable AI Trading Agents for Algorithmic ...",
+          "url": "https://github.com/Lumiwealth/lumibot",
+          "snippet": "Build deterministic trading strategies, multi-agent LLM trading systems, and hybrid strategies that backtest, paper trade, and execute through real brokers.Read more"
+        },
+        {
+          "title": "GitHub - MiChaelinzo/Trading-Agent",
+          "url": "https://github.com/MiChaelinzo/Trading-Agent-",
+          "snippet": "A trading agent AI is an artificial intelligence system that uses computational intelligence methods such as machine learning and deep reinforcement\u00a0..."
+        },
+        {
+          "title": "leoncuhk/awesome-quant-ai",
+          "url": "https://github.com/leoncuhk/awesome-quant-ai",
+          "snippet": "Trading Paradigms Comparison. Comparing three major approaches to quantitative trading: Quantitative Trading, Algorithmic Trading, and AI-Agent Trading.Read more"
+        },
+        {
+          "title": "abiodunaremu/openea: FxChartAI AI-Agent Trading EA ...",
+          "url": "https://github.com/abiodunaremu/openea",
+          "snippet": "FxChartAI AI-Agent Trading EA is an open-source Expert Advisor (EA) for MetaTrader 5, designed for agentic trading using signals received from FxChartAI.Read more"
+        },
+        {
+          "title": "roman-rr/trading-skills: 17 triggers \u00d7 44 algorithms \u00d7 3 AI ...",
+          "url": "https://github.com/roman-rr/trading-skills",
+          "snippet": "Example Prompts \u00b7 \"Get me the latest crypto trading signals\" \u00b7 \"Show me today's highest-confidence BTC and ETH signals\" \u00b7 \"What's the 30-day hit rate for these\u00a0...Read more"
+        },
+        {
+          "title": "How I have used AI to become consistently profitable. Full ...",
+          "url": "https://www.reddit.com/r/Daytrading/comments/1k5kw97/how_i_have_used_ai_to_become_consistently/",
+          "snippet": "Step 1: The System Prompt \u00b7 Step 2: Find stocks good for trading. \u00b7 Step 2: Find the best stock out of the Top 5 \u00b7 Step 4: Technical analysis and\u00a0...Read more"
+        },
+        {
+          "title": "What prompts are you using with AI for stock research? ...",
+          "url": "https://www.reddit.com/r/Daytrading/comments/1s98pp3/what_prompts_are_you_using_with_ai_for_stock/",
+          "snippet": "Been using AI for stock research for a few months and finally figured out what separates useful output from generic garbage: the prompt.\n\nHere are 3 ..."
+        },
+        {
+          "title": "Best prompts for trading in stock market?",
+          "url": "https://www.reddit.com/r/ChatGPTPromptGenius/comments/1l16aaw/best_prompts_for_trading_in_stock_market/",
+          "snippet": "I am a 19 yo student who wanna start trading in stock market,I ve been learning about stock market for 1 year , so I am aware that not only market demand ..."
+        },
+        {
+          "title": "Using AI to find options trade opportunities. Full guide + ...",
+          "url": "https://www.reddit.com/r/options/comments/1kbzkii/using_ai_to_find_options_trade_opportunities_full/",
+          "snippet": "Using AI to find options trade opportunities. Full guide + prompts below \u00b7 Step 1: The System Prompt \u00b7 Step 2: Find 10 high potential stocks for\u00a0...Read more"
+        },
+        {
+          "title": "Best AI prompts for investments in each sector",
+          "url": "https://www.reddit.com/r/investing/comments/1mm6sdz/best_ai_prompts_for_investments_in_each_sector/",
+          "snippet": "r/Trading - Prompts I use with AI to Trade Institutional Options Flow. $10. For the AI revolution, what are the best stocks in your portfolio.Read more"
+        },
+        {
+          "title": "How I started using AI prompts to improve my trading (and ...",
+          "url": "https://www.reddit.com/r/ai_trading/comments/1sz6m6r/how_i_started_using_ai_prompts_to_improve_my/",
+          "snippet": "I\u2019ve been experimenting with using AI (ChatGPT etc.) for trading over the past few weeks, but not in the usual \u201cgive me signals\u201d way.\n\nWhat ..."
+        },
+        {
+          "title": "Prompts I use with AI to Trade Institutional Options Flow. $10k",
+          "url": "https://www.reddit.com/r/Trading/comments/1s2rb0t/prompts_i_use_with_ai_to_trade_institutional/",
+          "snippet": "Entry at next day's open \u00b7 Take profit at +7% \u00b7 If it hasn't hit in 5 trading days, close it wherever it is \u00b7 35% of account per trade.Read more"
+        },
+        {
+          "title": "Anyone using AI for trading options or stocks? What's your ...",
+          "url": "https://www.reddit.com/r/IndianStockMarket/comments/1seu8qn/anyone_using_ai_for_trading_options_or_stocks/",
+          "snippet": "Simple question: Are you guys using AI (like ChatGPT or Claude or anything) to find buy/sell signals?\n\nIf yes, what prompt do you use to get accurate ..."
+        },
+        {
+          "title": "Best prompts for Stock Trading? : r/PromptEngineering",
+          "url": "https://www.reddit.com/r/PromptEngineering/comments/1on47ap/best_prompts_for_stock_trading/",
+          "snippet": "I found an article with benchmarking results of chat gpt and deep seek. However whenever I use the llm\u2019s I find them not being able to pull live ..."
+        },
+        {
+          "title": "Anyone know some good prompt trading platforms that ...",
+          "url": "https://www.reddit.com/r/options/comments/1poxbj8/anyone_know_some_good_prompt_trading_platforms/",
+          "snippet": "Been using Everstrike but it's not very intelligent when it comes to options. Mostly good for futures.\n\nI'd like to define my strategy in plain English ..."
+        }
+      ],
+      "source_count": 35,
+      "prompts": []
+    },
+    "image-generation": {
+      "sources": [
+        {
+          "title": "YouMind-OpenLab/ai-image-prompts-skill",
+          "url": "https://github.com/YouMind-OpenLab/ai-image-prompts-skill",
+          "snippet": "2 days ago \u2014 \u2713 10,000+ prompts, organized by use case \u2014 not a random dump, but professionally categorized \u00b7 \u2713 Every prompt includes sample images \u2014 see the\u00a0...Read more"
+        },
+        {
+          "title": "ai-ad-prompt-guide - Claude agent skill",
+          "url": "https://github.com/Creatify-AI/ai-ad-prompt-guide",
+          "snippet": "Write prompts that actually work for AI video and image generation. Covers universal principles (SLCT framework, hallucination prevention, camera vocabulary)\u00a0...Read more"
+        },
+        {
+          "title": "Proactive Agents for Multi-Turn Text-to-Image Generation ...",
+          "url": "https://github.com/google-deepmind/proactive_t2i_agents",
+          "snippet": "User prompts for generative AI models are often underspecified or open-ended, which may lead to sub-optimal responses. This prompt underspecification\u00a0...Read more"
+        },
+        {
+          "title": "Crafting Effective Prompts for Agentic AI Systems: Patterns ...",
+          "url": "https://github.com/dontriskit/awesome-ai-system-prompts",
+          "snippet": "Apr 8, 2025 \u2014 Curated collection of system prompts for top AI tools. Perfect for AI agent builders and prompt engineers. Incuding: ChatGPT, Claude\u00a0..."
+        },
+        {
+          "title": "gpt-image-2-prompts",
+          "url": "https://github.com/topics/gpt-image-2-prompts",
+          "snippet": "Curated GPT-Image-2 prompts for the OpenAI API \u2014 portraits, posters, UI mockups, game screenshots, character sheets, and more. Ready-to-use prompts for gpt-\u00a0...Read more"
+        },
+        {
+          "title": "devanshug2307/Awesome-AI-Image-Prompts",
+          "url": "https://github.com/devanshug2307/Awesome-Nano-Banana-Prompts",
+          "snippet": "1000+ curated AI image generation prompts for DALL-E, Midjourney, Google Nano Banana (Imagen), Flux, ChatGPT Image, and Stable Diffusion."
+        },
+        {
+          "title": "ai-agent-prompts",
+          "url": "https://github.com/topics/ai-agent-prompts",
+          "snippet": "Add a description, image, and links to the ai-agent-prompts topic page so that developers can more easily learn about it. Curate this topic. Add this topic to\u00a0...Read more"
+        },
+        {
+          "title": "text-to-image \u00b7 GitHub Topics",
+          "url": "https://github.com/topics/text-to-image",
+          "snippet": "Awesome curated collection of images and prompts generated by GPT-4o and gpt-image-1. Explore AI generated visuals created with ChatGPT and Sora,\u00a0...Read more"
+        },
+        {
+          "title": "ai-prompt-app",
+          "url": "https://github.com/topics/ai-prompt-app",
+          "snippet": "AI VYX Prompt Generator is a versatile tool designed to empower users to generate prompts tailored to their favorite AI tools. With an intuitive interface\u00a0...Read more"
+        },
+        {
+          "title": "Add generic OpenAI-compatible image generation provider ...",
+          "url": "https://github.com/NousResearch/hermes-agent/issues/13798",
+          "snippet": "Apr 21, 2026 \u2014 No user-facing tool name change, keeps the existing agent prompt untouched. Scope (this PR). generate endpoint only (no edit / variations in\u00a0...Read more"
+        },
+        {
+          "title": "[Agent] Prompts Stable Diffusion \u00b7 Issue #1201",
+          "url": "https://github.com/lobehub/lobe-chat-agents/issues/1201",
+          "snippet": "Jan 1, 2025 \u2014 You are a prompt generator for Stable Diffusion. Creating a prompt for Stable Diffusion involves a detailed and specific approach, taking into account several\u00a0...Read more"
+        },
+        {
+          "title": "Stable Diffusion Advanced Usage Guide",
+          "url": "https://github.com/NousResearch/hermes-agent/blob/main/optional-skills/mlops/stable-diffusion/references/advanced-usage.md",
+          "snippet": "Use image prompts alongside text: from diffusers import StableDiffusionPipeline from diffusers.utils import load_image import torch pipe =\u00a0...Read more"
+        },
+        {
+          "title": "multimodal-agent-starter/ai-character-with-stable-diffusion ...",
+          "url": "https://github.com/steamship-core/multimodal-agent-starter/blob/main/ai-character-with-stable-diffusion/api.py",
+          "snippet": "\"\"\"Deployable Multimodal Bot that lets you generate Stable Diffusion images. Comes with out of the box support for:.Read more"
+        },
+        {
+          "title": "SD Agent: Intelligent Stable Diffusion Optimization Assistant",
+          "url": "https://github.com/amd/gaia/issues/272",
+          "snippet": "Jan 27, 2026 \u2014 An AI agent that transforms simple text descriptions into professional Stable Diffusion images by optimizing both prompts and generation\u00a0...Read more"
+        },
+        {
+          "title": "x1xhlol/system-prompts-and-models-of-ai-tools: FULL ...",
+          "url": "https://github.com/x1xhlol/system-prompts-and-models-of-ai-tools",
+          "snippet": "FULL Augment Code, Claude Code, Cluely, CodeBuddy, Comet, Cursor, Devin AI, Junie, Kiro, Leap.new, Lovable, Manus, NotionAI, Orchids.app, Perplexity, Poke,\u00a0..."
+        },
+        {
+          "title": "image-prompts \u00b7 GitHub Topics",
+          "url": "https://github.com/topics/image-prompts",
+          "snippet": "AI agent that turns your rough ideas into perfect image generation prompts. 7-component formula, 70+ creative techniques, 9 domain modes. gemini text-to\u00a0...Read more"
+        },
+        {
+          "title": "A few (example) single turn / instructional system prompts ...",
+          "url": "https://gist.github.com/danielrosehill/553c182cd51edc618cf431d5dde4fd5e",
+          "snippet": "\"You are Whiteboard Whisperer, an AI assistant designed to convert handwritten whiteboard content into structured, readable documents. Users will upload images\u00a0...Read more"
+        },
+        {
+          "title": "system-prompts",
+          "url": "https://github.com/topics/system-prompts?l=typescript",
+          "snippet": "An open-source AI prompt engineering playground with live code execution. Test OpenAI & Claude prompts, execute JavaScript, and iterate in real-time. playground\u00a0...Read more"
+        },
+        {
+          "title": "EliFuzz/awesome-system-prompts: A collection ...",
+          "url": "https://github.com/EliFuzz/awesome-system-prompts",
+          "snippet": "A collection of system prompts and tool definitions from various AI coding agents: Augment Code, Claude Code, Cluely, Cursor, Devin AI, Kiro, Perplexity,\u00a0..."
+        },
+        {
+          "title": "oxbshw/System-Prompt-Agent-Prompts",
+          "url": "https://github.com/oxbshw/System-Prompt-Agent-Prompts",
+          "snippet": "Jun 20, 2025 \u2014 This repository contains a meticulously curated collection of 202 system prompts from major AI models, development tools, and specialized\u00a0...Read more"
+        },
+        {
+          "title": "prompt-templates \u00b7 GitHub Topics",
+          "url": "https://github.com/topics/prompt-templates",
+          "snippet": "AI agent that turns your rough ideas into perfect image generation prompts. 7-component formula, 70+ creative techniques, 9 domain modes. gemini text-to\u00a0...Read more"
+        },
+        {
+          "title": "dair-ai/Prompt-Engineering-Guide",
+          "url": "https://github.com/dair-ai/prompt-engineering-guide",
+          "snippet": "The courses are meant to compliment this guide and provide a more hands-on approach to learning about prompt engineering, context engineering, and AI Agents.Read more"
+        },
+        {
+          "title": "System prompt for an AI image generator tool",
+          "url": "https://www.reddit.com/r/PromptEngineering/comments/1hyrv30/system_prompt_for_an_ai_image_generator_tool/",
+          "snippet": "You are an AI image prompt generator. Your sole task is to generate a single, concise image prompt that is no longer than 4000 characters.Read more"
+        },
+        {
+          "title": "What's the best AI image prompt and editing site Preferably ...",
+          "url": "https://www.reddit.com/r/AIAssisted/comments/1qa1wpb/whats_the_best_ai_image_prompt_and_editing_site/",
+          "snippet": "trying to make either a 2d or 3d animated character to use as a profile picture / avatar whats the best program or site to use for prompts and editing ..."
+        },
+        {
+          "title": "How to write effective prompts for AI image generation?",
+          "url": "https://www.reddit.com/r/ChatGPTPromptGenius/comments/1t7wi85/how_to_write_effective_prompts_for_ai_image/",
+          "snippet": "Image generation is powerful, but sometimes it just can't give me what I want. How do you guys usually deal with this?"
+        },
+        {
+          "title": "I built an open-source Agent Skill that recommends ...",
+          "url": "https://www.reddit.com/r/GeminiAI/comments/1qj1bod/i_built_an_opensource_agent_skill_that_recommends/",
+          "snippet": "I made a free Chrome extension that turns any image into an AI prompt with one click. 2. 2. I have a ton of prompts that worked perfectly on\u00a0...Read more"
+        },
+        {
+          "title": "How to write AI image prompts : r/PromptEngineering",
+          "url": "https://www.reddit.com/r/PromptEngineering/comments/1tbvl3o/how_to_write_ai_image_prompts/",
+          "snippet": "I\u2019ve been trying to get better at AI prompting, but my results still feel inconsistent.\n\n\u200eSometimes a simple prompt works perfectly, while detailed ..."
+        },
+        {
+          "title": "If you are looking for prompts that make your agents feel ...",
+          "url": "https://www.reddit.com/r/PromptEngineering/comments/1nvyzxk/if_you_are_looking_for_prompts_that_make_your/",
+          "snippet": "You can use external AI agents to do the work for you and supply you with the relevant information, in this case, the description of images\u00a0...Read more"
+        },
+        {
+          "title": "Which agent to use for image generation? : r/AI_Agents",
+          "url": "https://www.reddit.com/r/AI_Agents/comments/1pqj8yb/which_agent_to_use_for_image_generation/",
+          "snippet": "I have been using Agno Agents with Nano Banana and the agent response shown that it took around 38k tokens to generate one image. Is that correct? ..."
+        },
+        {
+          "title": "Best resources to learn agents/prompt? : r/AgentsOfAI",
+          "url": "https://www.reddit.com/r/AgentsOfAI/comments/1o9h746/best_resources_to_learn_agentsprompt/",
+          "snippet": "Hello. It's my first time dealing with LLM models and finally becoming an adept of AI culture. I want to ask something simple:\n\nWhich is the best way ..."
+        },
+        {
+          "title": "What does a good AI prompt look like for building apps? ...",
+          "url": "https://www.reddit.com/r/AI_Agents/comments/1kf9zyk/what_does_a_good_ai_prompt_look_like_for_building/",
+          "snippet": "Hey everyone - Jonathan here, cofounder of Fine.dev\n\nLast week, I shared a post about what we learned from seeing 10,000+ apps built on our platform. ..."
+        },
+        {
+          "title": "How can I make an AI agent that clarifies prompts, asks ...",
+          "url": "https://www.reddit.com/r/PromptEngineering/comments/1osbar6/how_can_i_make_an_ai_agent_that_clarifies_prompts/",
+          "snippet": "I\u2019m trying to build an AI agent that helps refine creative prompts for video generation (Sora). The idea is that instead of just taking a single prompt, ..."
+        }
+      ],
+      "source_count": 32,
+      "prompts": []
+    },
+    "voice-tts": {
+      "sources": [
+        {
+          "title": "customize-system-prompts.md - nemotron-voice-agent - GitHub",
+          "url": "https://github.com/NVIDIA-AI-Blueprints/nemotron-voice-agent/blob/main/docs/how-to/customize-system-prompts.md",
+          "snippet": "You can customize your voice agent's personality, behavior, and response format using system prompts. To set up a system prompt, set the following environment ..."
+        },
+        {
+          "title": "NVIDIA/voice-agent-examples: Pipecat framework based ... - GitHub",
+          "url": "https://github.com/NVIDIA/voice-agent-examples",
+          "snippet": "This repository contains examples demonstrating how to build voice-enabled conversational AI agents using the NVIDIA services, built using the Pipecat ..."
+        },
+        {
+          "title": "awesome-prompts/prompts/realtime_voice_agent_architect.txt at main",
+          "url": "https://github.com/ai-boost/awesome-prompts/blob/main/prompts/realtime_voice_agent_architect.txt",
+          "snippet": "You are a Realtime Voice Agent Architect \u2014 an expert in designing, building, and optimizing production-grade conversational voice agents."
+        },
+        {
+          "title": "voice-ai-agents \u00b7 GitHub Topics",
+          "url": "https://github.com/topics/voice-ai-agents",
+          "snippet": "Unofficial utilities for Layercode Voice Agents. Run hundreds of voice AI conversations concurrently. Test with text, audio files, or AI-driven personas."
+        },
+        {
+          "title": "prompt.yaml - NVIDIA-AI-Blueprints/nemotron-voice-agent - GitHub",
+          "url": "https://github.com/NVIDIA-AI-Blueprints/nemotron-voice-agent/blob/main/config/prompt.yaml",
+          "snippet": "File metadata and controls \u00b7 1) Hello! How are you? (missing emotion-sentence key-value pair format) \u00b7 2) Happy:I am here to help you today. ( ..."
+        },
+        {
+          "title": "voiceagent.ipynb - braintrust-cookbook - GitHub",
+          "url": "https://github.com/braintrustdata/braintrust-cookbook/blob/main/examples/VoiceAgent/voiceagent.ipynb",
+          "snippet": "Our approach uses an LLM and text-to-speech (TTS) to generate synthetic customer calls, and OpenAI's GPT-4o audio model to classify the calls. Finally, we'll ..."
+        },
+        {
+          "title": "GitHub - programmerraja/VoiceAgentGuide: 2025 Voice AI Guide",
+          "url": "https://github.com/programmerraja/VoiceAgentGuide",
+          "snippet": "This repository contains a series of blog posts and resources that walk you through creating your own voice agent from scratch."
+        },
+        {
+          "title": "Looking for experts on Voice AI over telephony #153618 - GitHub",
+          "url": "https://github.com/orgs/community/discussions/153618",
+          "snippet": "Critical: Implement a \"speak-or-listen\" arbiter. When user audio arrives (VAD triggers), immediately pause/cancel TTS and switch to ASR capture."
+        },
+        {
+          "title": "Feature: Per-Agent TTS Voice Configuration \u00b7 Issue #17516 - GitHub",
+          "url": "https://github.com/openclaw/openclaw/issues/17516",
+          "snippet": "Currently, TTS voice configuration is global (, ). All agents share the same voice, which limits the ability to create distinct personalities ..."
+        },
+        {
+          "title": "How to use a 3rd party TTS in Voice Agent #1067 - deepgram - GitHub",
+          "url": "https://github.com/orgs/deepgram/discussions/1067",
+          "snippet": "I need Voice Agent to speak Portuguese and, as Deepgram's TTS does not currently supports it, I'm trying to use Cartesia."
+        },
+        {
+          "title": "Agent TTS - Real-time text-to-speech for AI coding assistants - GitHub",
+          "url": "https://github.com/kiliman/agent-tts",
+          "snippet": "Real-time TTS: Hear your AI agents speak as they respond; Multi-agent support: Works with Claude Code, OpenCode, and custom agents; \u23ef\ufe0f Playback controls: ..."
+        },
+        {
+          "title": "PromtEngineer/Verbi - Voice Assistant \ud83c\udf99\ufe0f - GitHub",
+          "url": "https://github.com/PromtEngineer/Verbi",
+          "snippet": "A modular voice assistant application for experimenting with state-of-the-art transcription, response generation, and text-to-speech models."
+        },
+        {
+          "title": "text-to-speech \u00b7 GitHub Topics",
+          "url": "https://github.com/topics/text-to-speech",
+          "snippet": "A TTS model capable of generating ultra-realistic dialogue in one pass. text-to-speech ai open-weight. Updated on Nov 19, 2025; Python ..."
+        },
+        {
+          "title": "Marktechpost/AI-Agents-Projects-Tutorials \u00b7 GitHub",
+          "url": "https://github.com/Marktechpost/AI-Tutorial-Codes-Included/blob/main/AI%20Agents%20Codes/how_to_build_an_advanced_end_to_end_voice_ai_agent_using_hugging_face_pipelines.py",
+          "snippet": "\"You are a helpful, concise voice assistant. \" \"Prefer direct, structured answers. \" \"If the user asks for steps or code, ..."
+        },
+        {
+          "title": "inworld-ai/voice-agent-node - GitHub",
+          "url": "https://github.com/inworld-ai/voice-agent-node",
+          "snippet": "This application demonstrates a simple chat interface with an AI agent that can respond to text and voice inputs, powered by Inworld AI Runtime. Prerequisites."
+        },
+        {
+          "title": "Crafting Effective Prompts for Agentic AI Systems: Patterns ... - GitHub",
+          "url": "https://github.com/dontriskit/awesome-ai-system-prompts",
+          "snippet": "Curated collection of system prompts for top AI tools. Perfect for AI agent builders and prompt engineers. Incuding: ChatGPT, Claude ..."
+        },
+        {
+          "title": "langgptai/awesome-voice-prompts - GitHub",
+          "url": "https://github.com/langgptai/awesome-voice-prompts",
+          "snippet": "This repo collects awesome voice prompts for making voice agents. You can also use the Meta Voice Agent to help create high-quality voice prompt."
+        },
+        {
+          "title": "Voice Assistant - Local Conversation Agent Sometimes Ignored #2924",
+          "url": "https://github.com/orgs/home-assistant/discussions/2924",
+          "snippet": "You could likely adjust your LLM prompt if you don't like that behaviour. Maybe simply adding something like \"don't ask follow-up questions\" would solve it for ..."
+        },
+        {
+          "title": "GitHub - livekit-examples/agent-starter-swift: AI voice assistant ...",
+          "url": "https://github.com/livekit-examples/agent-starter-swift",
+          "snippet": "This starter app template for LiveKit Agents provides a simple voice interface using the LiveKit Swift SDK. It supports voice, transcriptions, ..."
+        },
+        {
+          "title": "[Feature]: Does it support Multi Prompts per Assistant Support #72",
+          "url": "https://github.com/rapidaai/voice-ai/issues/72",
+          "snippet": "Currently, Rapida supports prompt augmentation, but it does not support native multi-prompt switching within a single assistant. However, you ..."
+        },
+        {
+          "title": "livekit-examples/agent-starter-android - GitHub",
+          "url": "https://github.com/livekit-examples/agent-starter-android",
+          "snippet": "This is a starter template for LiveKit Agents that provides a simple voice interface using the LiveKit Android SDK. This template is free for you to use or ..."
+        },
+        {
+          "title": "What voice/TTS tools are you using for AI agents right now? - Reddit",
+          "url": "https://www.reddit.com/r/AgentsOfAI/comments/1sm1wsc/what_voicetts_tools_are_you_using_for_ai_agents/",
+          "snippet": "For real-time agents, a lot of people are leaning toward low-latency options like OpenAI TTS or Cartesia, and pairing them with ElevenLabs when ..."
+        },
+        {
+          "title": "What's Your Current / Best AI Voice Agents Stack? : r/AI_Agents",
+          "url": "https://www.reddit.com/r/AI_Agents/comments/1lo8bf0/whats_your_current_best_ai_voice_agents_stack/",
+          "snippet": "Speech-to-Text (STT): Tools like Deepgram or OpenAI's Whisper are top-notch for accurately transcribing speech. ... Large Language Model (LLM): ..."
+        },
+        {
+          "title": "What text to speech providers are actually good for voice agents?",
+          "url": "https://www.reddit.com/r/AI_Agents/comments/1qb905w/what_text_to_speech_providers_are_actually_good/",
+          "snippet": "I really like voice.ai especially on the real time side because their latency is like 150ms TTFB. The only other option I use is vap for testing ..."
+        },
+        {
+          "title": "What's the best text to speech for voice agents? - Reddit",
+          "url": "https://www.reddit.com/r/TextToSpeech/comments/1rorxim/whats_the_best_text_to_speech_for_voice_agents/",
+          "snippet": "camb ai then cartesia are the fastest in my internal benchmarks. usually though it's the LLM process that takes the longest in my experience."
+        },
+        {
+          "title": "Building an AI Voice Agent for Lead Calls \u2013 Best Open Source TTS ...",
+          "url": "https://www.reddit.com/r/LocalLLaMA/comments/1iy5qwo/building_an_ai_voice_agent_for_lead_calls_best/",
+          "snippet": "I have recently tried Kokoro, and its very realistic and fast. You can also check out Melo TTS and XTTS which have TTFB of 172ms on A100 GPU."
+        },
+        {
+          "title": "How do AI voice agents work, and are they really effective? - Reddit",
+          "url": "https://www.reddit.com/r/legaltech/comments/1pevqjd/how_do_ai_voice_agents_work_and_are_they_really/",
+          "snippet": "Yep, basically it's speech-to-text, AI figures out the response, then text-to-speech back to the caller. The trick to sounding natural is ..."
+        },
+        {
+          "title": "r/voiceagents - Reddit",
+          "url": "https://www.reddit.com/r/voiceagents/",
+          "snippet": "r/voiceagents: A community for people building AI voice agents and call automation. Share demos, experiments, call flows, speech models, SIP or\u2026"
+        },
+        {
+          "title": "Created the cheapest Voice AI Agent (low latency, high quality ...",
+          "url": "https://www.reddit.com/r/AI_Agents/comments/1ntspnw/created_the_cheapest_voice_ai_agent_low_latency/",
+          "snippet": "It's up to 30x cheaper than Elevenlabs, Vapi, and OpenAI Realtime, with similar quality. Uses Fennec ASR, Baseten Qwen, and the new Inworld TTS ..."
+        },
+        {
+          "title": "What service do you use for AI Voice Agents? : r/AI_Agents - Reddit",
+          "url": "https://www.reddit.com/r/AI_Agents/comments/1lvkqu2/what_service_do_you_use_for_ai_voice_agents/",
+          "snippet": "For speech recognition and TTS there are cloud services, then we connect them with an AI model. A voice API layer handles actual calling."
+        },
+        {
+          "title": "I am planning of building a voice based ai agent that runs on my ...",
+          "url": "https://www.reddit.com/r/AI_Agents/comments/1s6qs6b/i_am_planning_of_building_a_voice_based_ai_agent/",
+          "snippet": "I am planning of building a voice based ai agent that runs on my terminal and can take screenshots to see what is currently on my screen."
+        }
+      ],
+      "source_count": 31,
+      "prompts": []
+    },
+    "video-gen": {
+      "sources": [
+        {
+          "title": "Square-Zero-Labs/video-prompting-skill: AI Agent Skill for ... - GitHub",
+          "url": "https://github.com/Square-Zero-Labs/video-prompting-skill",
+          "snippet": "This is an Agent Skill for drafting and refining prompts for video generation models (text-to-video and image-to-video), and for creating character-sheet ..."
+        },
+        {
+          "title": "ai-ad-prompt-guide - Claude agent skill - GitHub",
+          "url": "https://github.com/Creatify-AI/ai-ad-prompt-guide",
+          "snippet": "Write prompts that actually work for AI video and image generation. Covers universal principles (SLCT framework, hallucination prevention, camera vocabulary) ..."
+        },
+        {
+          "title": "HKUDS/ViMax - Agentic Video Generation - GitHub",
+          "url": "https://github.com/HKUDS/ViMax",
+          "snippet": "Director, Screenwriter, Producer, and Video Generator All-in-One! We're exploring a future where AI becomes a complete creative powerhouse."
+        },
+        {
+          "title": "Crafting Cinematic Sora Video Prompts: A complete guide \u00b7 GitHub",
+          "url": "https://gist.github.com/ruvnet/e20537eb50866b2d837d4d13b066bd88",
+          "snippet": "This tutorial will guide you through crafting effective prompts to maximize the potential of Sora, ensuring your videos are immersive and visually engaging."
+        },
+        {
+          "title": "VideoAgent: All-in-One Agentic Framework for Video Understanding ...",
+          "url": "https://github.com/HKUDS/VideoAgent",
+          "snippet": "Deliver comprehensive video intelligence through an integrated framework that combines multiple AI modalities for enhanced performance."
+        },
+        {
+          "title": "video-prompt \u00b7 GitHub Topics",
+          "url": "https://github.com/topics/video-prompt",
+          "snippet": "The Seedance 2.0 Prompt Library. Find the best prompts for cinematic AI videos. See real video examples and use text recipes that work."
+        },
+        {
+          "title": "vladkol/video-avatars-agent: Multi-Agent Team for Creating Long ...",
+          "url": "https://github.com/vladkol/video-avatars-agent",
+          "snippet": "This repository demonstrates how to build a long-form video generation agent using the Google Agent Development Kit (ADK), Gemini 3.1 Flash Image(Nano ..."
+        },
+        {
+          "title": "Image and Video Generation Feature Request \u00b7 Issue #34387 - GitHub",
+          "url": "https://github.com/langchain-ai/langchain/issues/34387",
+          "snippet": "Creating short promo or explainer videos from text prompts; Building creative AI agents that can think, design, and visualize. Currently, I ..."
+        },
+        {
+          "title": "gitroomhq/agent-media: Generate AI-powered videos and ... - GitHub",
+          "url": "https://github.com/gitroomhq/agent-media",
+          "snippet": "This skill gives Claude Code the ability to produce complete UGC videos, Product Acting UGC, and SaaS review videos on your behalf using the agent-media CLI ..."
+        },
+        {
+          "title": "dair-ai/Prompt-Engineering-Guide - GitHub",
+          "url": "https://github.com/dair-ai/prompt-engineering-guide",
+          "snippet": "The courses are meant to compliment this guide and provide a more hands-on approach to learning about prompt engineering, context engineering, and AI Agents."
+        },
+        {
+          "title": "Adrian333Dev/AI-Video-Generation-System - GitHub",
+          "url": "https://github.com/Adrian333Dev/AI-Video-Generation-System",
+          "snippet": "From Zero to First Draft: Start with a simple prompt and watch the agent build a video from scratch. Simple Prompt: \"Create a 30-second video about the ..."
+        },
+        {
+          "title": "x1xhlol/system-prompts-and-models-of-ai-tools: FULL ... - GitHub",
+          "url": "https://github.com/x1xhlol/system-prompts-and-models-of-ai-tools",
+          "snippet": "FULL Augment Code, Claude Code, Cluely, CodeBuddy, Comet, Cursor, Devin AI, Junie, Kiro, Leap.new, Lovable, Manus, NotionAI, Orchids.app, Perplexity, Poke, ..."
+        },
+        {
+          "title": "anshdavid/project-video-agent: 5 Sec Video prompt generation",
+          "url": "https://github.com/anshdavid/project-video-agent",
+          "snippet": "Video Agent is a tool designed to generate highly immersive and cinematic 5-second video ideas, scripts, and storyboards. It leverages advanced AI models to ..."
+        },
+        {
+          "title": "davide97l/ai-video-generator: AI agent to automatically ... - GitHub",
+          "url": "https://github.com/davide97l/ai-video-generator",
+          "snippet": "This AI-agent utilizes generative AI to automatically generate short videos and post them on social platforms. It integrates several AI domains such as ..."
+        },
+        {
+          "title": "VideoGen-Eval: Agent-based System for Video Generation Evaluation",
+          "url": "https://github.com/AILab-CVC/VideoGen-Eval",
+          "snippet": "This survey report studies a series of SORA-like T2V, I2V, and V2V models via to bridge the gap between academic research and industry practice."
+        },
+        {
+          "title": "AI-Powered Short-Form Video Generator - Neural Reels - GitHub",
+          "url": "https://github.com/double-k-3033/NR-AI-short-form-video-generator",
+          "snippet": "Neural Reels is an AI-powered application that automates the creation of short-form video content from simple text prompts."
+        },
+        {
+          "title": "Made 100 cinematic AI video prompts \u2014 sharing some free ...",
+          "url": "https://www.reddit.com/r/PromptEngineering/comments/1scqub2/made_100_cinematic_ai_video_prompts_sharing_some/",
+          "snippet": "Made 100 cinematic AI video prompts \u2014 sharing some free ones, these work insanely well on Kling & Runway. Prompt Text / Showcase.Read more"
+        },
+        {
+          "title": "Tested 150+ AI video prompts. These 10 actually work",
+          "url": "https://www.reddit.com/r/PromptEngineering/comments/1pdc6cp/tested_150_ai_video_prompts_these_10_actually_work/",
+          "snippet": "I've been collecting tested prompts on https://stealmyprompts.ai. Free to browse, use what helps. Would love to hear what works for you.Read more"
+        },
+        {
+          "title": "Here is a cheat sheet for AI Video prompts : r/generativeAI",
+          "url": "https://www.reddit.com/r/generativeAI/comments/1meh53o/here_is_a_cheat_sheet_for_ai_video_prompts/",
+          "snippet": "Hi Everyone. I created this cheat sheet to help people save credits while creating AI videos. The better you prompt the AI video tool the\u00a0...Read more"
+        },
+        {
+          "title": "Need help with a prompt for a 30-40 sec video where an AI ...",
+          "url": "https://www.reddit.com/r/PromptEngineering/comments/1plgofn/need_help_with_a_prompt_for_a_3040_sec_video/",
+          "snippet": "I want to generate a 30-40 second video where a specific AI character (looking for a realistic or cinematic style) reads a script that I've\u00a0...Read more"
+        },
+        {
+          "title": "Video editing prompts - how to get started with agentic ...",
+          "url": "https://www.reddit.com/r/MarketingAutomation/comments/1o5y6c9/video_editing_prompts_how_to_get_started_with/",
+          "snippet": "I've been spending a lot of time with the new Underlord lately, (Descript's built in AI agent / co-editor,) trying to find prompts and steps\u00a0...Read more"
+        },
+        {
+          "title": "How we Engineered a High-Quality AI Video Prompt (And ...",
+          "url": "https://www.reddit.com/r/PromptEngineering/comments/1mkuchf/how_we_engineered_a_highquality_ai_video_prompt/",
+          "snippet": "I wanted to share a behind-the-scenes look at how we've been engineering prompts for AI video generation tools like Pika, Runway, or Veo3, not\u00a0...Read more"
+        },
+        {
+          "title": "Has anyone tried Al agents that create UGC style videos ...",
+          "url": "https://www.reddit.com/r/AI_Agents/comments/1pkio2u/has_anyone_tried_al_agents_that_create_ugc_style/",
+          "snippet": "I've been testing an Al tool recently called Instant-UGC, and it works like a small agent that takes a product photo and automatically generates ..."
+        },
+        {
+          "title": "AI Tool for Generating Video Prompts : r/PromptEngineering",
+          "url": "https://www.reddit.com/r/PromptEngineering/comments/1m4w4o3/ai_tool_for_generating_video_prompts/",
+          "snippet": "It's basically a straightforward prompt generator that lets you: Use a ton of dropdowns for things like camera style, special effects, etc.Read more"
+        },
+        {
+          "title": "How can I make an AI agent that clarifies prompts, asks ...",
+          "url": "https://www.reddit.com/r/PromptEngineering/comments/1osbar6/how_can_i_make_an_ai_agent_that_clarifies_prompts/",
+          "snippet": "I\u2019m trying to build an AI agent that helps refine creative prompts for video generation (Sora). The idea is that instead of just taking a single prompt, ..."
+        },
+        {
+          "title": "AI Agent that turn a Prompt into GTM Meme Videos, Got ...",
+          "url": "https://www.reddit.com/r/AI_Agents/comments/1mafoqi/ai_agent_that_turn_a_prompt_into_gtm_meme_videos/",
+          "snippet": "Tried a fun experiment: Could meme-style GTM videos actually work for awareness? No video editors. No paid tools. Just an agent we built\u00a0..."
+        }
+      ],
+      "source_count": 26,
+      "prompts": []
+    },
+    "customer-support": {
+      "sources": [
+        {
+          "title": "Crafting Effective Prompts for Agentic AI Systems: Patterns ...",
+          "url": "https://github.com/dontriskit/awesome-ai-system-prompts",
+          "snippet": "Apr 8, 2025 \u2014 A well-crafted system prompt is critical for ensuring the agent acts reliably, safely, and effectively towards the user's goals. This guide\u00a0...Read more"
+        },
+        {
+          "title": "ai-agent-prompts",
+          "url": "https://github.com/topics/ai-agent-prompts",
+          "snippet": "Add a description, image, and links to the ai-agent-prompts topic page so that developers can more easily learn about it. Curate this topic. Add this topic to\u00a0...Read more"
+        },
+        {
+          "title": "useful-ai-prompts/AI-AGENT-GUIDE.md at main",
+          "url": "https://github.com/aj-geddes/useful-ai-prompts/blob/main/AI-AGENT-GUIDE.md",
+          "snippet": "Technical specifications for AI agents, assistants, and automation systems to programmatically access and utilize the Useful AI Prompts library. Library\u00a0...Read more"
+        },
+        {
+          "title": "openai/openai-cs-agents-demo: Demo of a customer ...",
+          "url": "https://github.com/openai/openai-cs-agents-demo",
+          "snippet": "This app is designed for demonstration purposes. Feel free to update the agent prompts, guardrails, and tools to fit your own customer service workflows or\u00a0...Read more"
+        },
+        {
+          "title": "Agent vs PromptTemplate vs Skill #17087 - eclipse-theia ...",
+          "url": "https://github.com/eclipse-theia/theia/discussions/17087",
+          "snippet": "Mar 2, 2026 \u2014 The difference is more technical/historical than conceptual. We've had prompt templates ( .prompttemplate files) in Theia AI for about 1.5 years\u00a0...Read more"
+        },
+        {
+          "title": "jwadow/agentic-prompts: A curated ...",
+          "url": "https://github.com/jwadow/agentic-prompts",
+          "snippet": "This collection contains ready-to-use templates for defining agent personas, delegating tasks, and structuring interactions with various AI tools. Available\u00a0...Read more"
+        },
+        {
+          "title": "Engmhabib/Customer-Support-AI-Agent",
+          "url": "https://github.com/Engmhabib/Customer-Support-AI-Agent",
+          "snippet": "An AI-powered customer support automation system using Crew AI and LangChain for natural language processing. This system provides automated responses to\u00a0...Read more"
+        },
+        {
+          "title": "Demo of a customer support agent interface using NextJS ...",
+          "url": "https://github.com/openai/openai-support-agent-demo",
+          "snippet": "This demo is an example flow where a human agent would be assisted by an AI agent to answer customer questions, while staying in control of sensitive actions.Read more"
+        },
+        {
+          "title": "msitarzewski/agency-agents: A complete AI ...",
+          "url": "https://github.com/msitarzewski/agency-agents",
+          "snippet": "Each agent file contains: Identity & personality traits; Core mission & workflows; Technical deliverables with code examples; Success metrics & communication\u00a0...Read more"
+        },
+        {
+          "title": "ai-virtual-assistant/src/agent/prompt.yaml at main",
+          "url": "https://github.com/NVIDIA-AI-Blueprints/ai-virtual-assistant/blob/main/src/agent/prompt.yaml",
+          "snippet": "Customizable, AI-driven virtual assistant designed to streamline customer service operations, handle common inquiries, and improve overall user satisfaction\u00a0..."
+        },
+        {
+          "title": "danielrosehill/AI-Agent-Ideation-Chatbot-System-Prompt - GitHub",
+          "url": "https://github.com/danielrosehill/AI-Agent-Ideation-Chatbot-System-Prompt",
+          "snippet": "A specialized system prompt collection designed to create conversational chatbots for ideating AI assistant and agent concepts."
+        },
+        {
+          "title": "Feature: Add support for follow-up prompts in the chatbot workflow.",
+          "url": "https://github.com/JoshuaC215/agent-service-toolkit/issues/291",
+          "snippet": "Add a \"Follow-up Suggestion\" feature that generates 2\u20133 relevant prompt buttons after each bot response to encourage further engagement."
+        },
+        {
+          "title": "Customer support chatbot based on seq2seq model. - GitHub",
+          "url": "https://github.com/ldulcic/customer-support-chatbot",
+          "snippet": "This project implements chatbot which tries to answer users questions as customer support agent. Following customer support chatbots were implemented."
+        },
+        {
+          "title": "danielrosehill/AI-Agent-Ideation-Chatbot-System-Prompt - GitHub",
+          "url": "https://github.com/danielrosehill/AI-Agent-Ideation-Chatbot-System-Prompt/blob/main/examples/problem_solver_example.md",
+          "snippet": "I'd be happy to help you ideate AI assistants that address your remote work challenges. Let's break down each problem and develop targeted ..."
+        },
+        {
+          "title": "rich-iannone/talk-box: LLM chatbots with attention-optimized prompt ...",
+          "url": "https://github.com/rich-iannone/talk-box",
+          "snippet": "Attention-Based Prompt Engineering. Research-backed attention optimization that works with how LLMs actually process information; Structured templates for ..."
+        },
+        {
+          "title": "prompts/create_consulting_ai_chatbot.md at main - GitHub",
+          "url": "https://github.com/SabrinaRamonov/prompts/blob/main/create_consulting_ai_chatbot.md",
+          "snippet": "Create a Consulting AI Chatbot for VoxPR to assist with AI Agent Development, AI Automation Services, and appointment scheduling. Follow these guidelines:."
+        },
+        {
+          "title": "AkshatBhat/Langflow-Customer-Support-Agent - GitHub",
+          "url": "https://github.com/AkshatBhat/Langflow-Customer-Support-Agent",
+          "snippet": "Example Queries \u00b7 General FAQ: \"How can I track my order?\" \u00b7 Order Lookup: \"Where is my order with ID #1001?\" \u00b7 Product Details: \"What are the features of ..."
+        },
+        {
+          "title": "titi-devv/Exclusible-AI-Customer-Support: \u200d   Innovated an AI chatbot ...",
+          "url": "https://github.com/titi-devv/Exclusible-AI-Customer-Support",
+          "snippet": "This repository contains code for an AI Customer Support Chatbot. The chatbot is designed to answer user questions based on a set of training data, ..."
+        },
+        {
+          "title": "danielrosehill/AI-Agent-Ideation-Chatbot-System-Prompt \u00b7 GitHub",
+          "url": "https://github.com/danielrosehill/AI-Agent-Ideation-Chatbot-System-Prompt/blob/main/examples/domain_expert_example.md",
+          "snippet": "Decision support for complex cases; Care coordination across departments; Staying updated with latest research and protocols. Here are 5 AI ..."
+        },
+        {
+          "title": "x1xhlol/system-prompts-and-models-of-ai-tools: FULL ... - GitHub",
+          "url": "https://github.com/x1xhlol/system-prompts-and-models-of-ai-tools",
+          "snippet": "Customer support \u00b7 Community forum \u00b7 Trust center \u00b7 Partners \u00b7 View all resources ... Add Junie Coding Agent system prompt. last year. Kiro \u00b7 Kiro \u00b7 feat: add ..."
+        },
+        {
+          "title": "GitHub - intersystems-ib/customer-support-agent-demo: AI-powered ...",
+          "url": "https://github.com/intersystems-ib/customer-support-agent-demo",
+          "snippet": "Customer support agent that helps users resolve questions about orders, products, shipping, etc. In this project you will build an AI agent powered by Python ..."
+        },
+        {
+          "title": "A few (example) single turn / instructional system prompts for AI ...",
+          "url": "https://gist.github.com/danielrosehill/553c182cd51edc618cf431d5dde4fd5e",
+          "snippet": "Single Turn / Ideally Instructional System Prompts (Examples, Whatever They're Called..!) \u00b7 Multi-turn conversational UXs are called chatbots. \u00b7 Then you have non ..."
+        },
+        {
+          "title": "Multi-agent customer support system using Google Gemini AI - GitHub",
+          "url": "https://github.com/Yourfiyan/customer-support-ai-agent",
+          "snippet": "This system demonstrates advanced AI agent orchestration using 4 specialized agents working together to provide automated customer support responses:."
+        },
+        {
+          "title": "System Prompt for Human In The Loop Use Cases #1023 - GitHub",
+          "url": "https://github.com/pydantic/pydantic-ai/issues/1023",
+          "snippet": "A user enters a message, the agent processes it, and a response is sent back to the user. The user may then enter follow-up questions, which ..."
+        },
+        {
+          "title": "GitHub - ro-anderson/multi-agent-rag-customer-support",
+          "url": "https://github.com/ro-anderson/multi-agent-rag-customer-support",
+          "snippet": "This project implements a multi-agent Retrieval-Augmented Generation (RAG) system for customer support. It uses Python, LangChain, and LangGraph to create a ..."
+        },
+        {
+          "title": "oxbshw/System-Prompt-Agent-Prompts - GitHub",
+          "url": "https://github.com/oxbshw/System-Prompt-Agent-Prompts",
+          "snippet": "This repository contains a meticulously curated collection of 202 system prompts from major AI models, development tools, and specialized ..."
+        },
+        {
+          "title": "A collection of system prompts for popular AI Agents (Cline, Bolt, etc)",
+          "url": "https://www.reddit.com/r/AI_Agents/comments/1iytsyx/a_collection_of_system_prompts_for_popular_ai/",
+          "snippet": "I pulled together a collection of system prompts from popular, open-source, AI agents like Bolt, Cline etc. Collection linked below"
+        },
+        {
+          "title": "ChatGPT Prompt of the Day: Build AI Agents That Actually Work",
+          "url": "https://www.reddit.com/r/ChatGPTPromptGenius/comments/1s36wya/chatgpt_prompt_of_the_day_build_ai_agents_that/",
+          "snippet": "Example input: \"I want an agent that reads incoming support ... I use this prompt to make AI to be a better life coach and support me emotionally."
+        },
+        {
+          "title": "What are some AI prompts that are handy for IT teams? - Reddit",
+          "url": "https://www.reddit.com/r/ITManagers/comments/1is8e2f/what_are_some_ai_prompts_that_are_handy_for_it/",
+          "snippet": "Have you tried incorporating AI tools to help summarize, remediate, find insights from what you're uploading/feeding in?"
+        },
+        {
+          "title": "How is everyone managing their agent prompts today? : r/AI_Agents",
+          "url": "https://www.reddit.com/r/AI_Agents/comments/1oer2rs/how_is_everyone_managing_their_agent_prompts_today/",
+          "snippet": "Prompt Libraries: Create a shared library of prompts that can be reused across different agents. This can help maintain consistency and reduce ..."
+        },
+        {
+          "title": "I use AI for everything in my IT job now \u2014 here are the prompts that ...",
+          "url": "https://www.reddit.com/r/sysadmin/comments/1sa23ms/i_use_ai_for_everything_in_my_it_job_now_here_are/",
+          "snippet": "1. The Escalation Email Writer. When a vendor has had your ticket open for 8 days and hasn't moved: \u00b7 2. The SOP Generator \u00b7 3. The Contract ..."
+        },
+        {
+          "title": "Stop chatting. This is the prompt structure real AI AGENT need to ...",
+          "url": "https://www.reddit.com/r/AI_Agents/comments/1l9zbvg/stop_chatting_this_is_the_prompt_structure_real/",
+          "snippet": "Stop chatting. This is the prompt structure real AI AGENT need to survive in production ; role, to define who the agent is inside the workflow"
+        },
+        {
+          "title": "ChatGPTPromptGenius - Reddit",
+          "url": "https://www.reddit.com/r/ChatGPTPromptGenius/",
+          "snippet": "These AI prompts turn those scientific principles into a practical system to help you master any skill or subject in half the time. The Active Recall Architect."
+        },
+        {
+          "title": "What does a good AI prompt look like for building apps? Here's one ...",
+          "url": "https://www.reddit.com/r/AI_Agents/comments/1kf9zyk/what_does_a_good_ai_prompt_look_like_for_building/",
+          "snippet": "Includes just enough technical detail: The prompt doesn't go into deep implementation, but it does limit the technical freedom of the agent by ..."
+        },
+        {
+          "title": "How to actually prompt an AI Agent? : r/AI_Agents - Reddit",
+          "url": "https://www.reddit.com/r/AI_Agents/comments/1phbsak/how_to_actually_prompt_an_ai_agent/",
+          "snippet": "How to actually prompt an AI Agent? \u00b7 **\u201cWhat is your full name?\u201d** \u00b7 **\u201cWhat is your phone number?\u201d**. - Must be 10 digits, starting with 07. - ..."
+        },
+        {
+          "title": "I've had excellent results with this prompt, so I thought I would share.",
+          "url": "https://www.reddit.com/r/ChatGPTPro/comments/16qy60y/ive_had_excellent_results_with_this_prompt_so_i/",
+          "snippet": "It's an AI assistant that asks questions to better understand your needs, then assembles a team of other expert agents to brainstorm."
+        }
+      ],
+      "source_count": 36,
+      "prompts": []
+    },
+    "email-calendar": {
+      "sources": [
+        {
+          "title": "openonion/email-agent: AI-powered Gmail ...",
+          "url": "https://github.com/openonion/email-agent",
+          "snippet": "AI-powered Gmail agent with interactive CLI. Read, search, and manage emails using natural language. - openonion/email-agent."
+        },
+        {
+          "title": "JoelKong/PersonalAgents: A team of AI agents that work ...",
+          "url": "https://github.com/JoelKong/PersonalAgents",
+          "snippet": "A team of AI agents that work together to assist the user to achieve his needs. (Email management, Schedule/Calendar management, Web exploration/scraping)Read more"
+        },
+        {
+          "title": "calendar-assistant",
+          "url": "https://github.com/topics/calendar-assistant",
+          "snippet": "Meeting Maestro \u2014 an open-source AI scheduling assistant that turns any email thread into a confirmed calendar invite. CC your Maestro alias \u2192 it parses\u00a0...Read more"
+        },
+        {
+          "title": "aquavis12/inbox-zero-agent",
+          "url": "https://github.com/aquavis12/inbox-zero-agent",
+          "snippet": "This project features an intelligent email-sorting prompt designed for use with the Runner AI Agent. The agent parses raw email content and classifies each\u00a0...Read more"
+        },
+        {
+          "title": "Personal Assistant Agent with Calendar, Email, and Notes ...",
+          "url": "https://github.com/Shubhamsaboo/awesome-llm-apps/issues/332",
+          "snippet": "Sep 11, 2025 \u2014 Description: I'd like to propose a new app for the Personal Assistant category: Calendar, Email & Notes Assistant."
+        },
+        {
+          "title": "Email Triage Agent: AI-powered inbox management (Tier 1 ...",
+          "url": "https://github.com/amd/gaia/issues/645",
+          "snippet": "Mar 27, 2026 \u2014 This is the killer demo: plug in Agent Computer, wake up to a triaged inbox. Zero cloud cost, zero data exposure. Proposed Features. Email\u00a0...Read more"
+        },
+        {
+          "title": "gaia/docs/plans/email-calendar-integration.mdx at main",
+          "url": "https://github.com/amd/gaia/blob/main/docs/plans/email-calendar-integration.mdx",
+          "snippet": "Feb 27, 2026 \u2014 Email management is the top use case for AI agent users: overnight triage, morning briefs, draft responses. These workloads are always-on\u00a0...Read more"
+        },
+        {
+          "title": "Email and Calendar management via browser automation ...",
+          "url": "https://github.com/amd/gaia/issues/660",
+          "snippet": "Mar 30, 2026 \u2014 Summary Enable GAIA to manage email (Gmail, Outlook) and calendar (Google Calendar, Outlook Calendar) through Playwright browser automation."
+        },
+        {
+          "title": "inference-gateway/google-calendar-agent",
+          "url": "https://github.com/inference-gateway/google-calendar-agent",
+          "snippet": "A enterprise-ready Agent-to-Agent (A2A) server that provides AI-powered capabilities through a standardized protocol. Quick Start. # Run the agent go run . #\u00a0...Read more"
+        },
+        {
+          "title": "Project: <Intelligent Outlook Calendar & Email Agent> #749",
+          "url": "https://github.com/microsoft/AI_Agents_Hackathon/issues/749",
+          "snippet": "May 1, 2025 \u2014 Intelligent Outlook Agent is a Generative AI-powered assistant built with Microsoft Copilot Studio. It automates Outlook Calendar and Email tasks using natural\u00a0...Read more"
+        },
+        {
+          "title": "Altafalam3/Email-Assistant-Agents - GitHub",
+          "url": "https://github.com/Altafalam3/Email-Assistant-Agents",
+          "snippet": "This project utilizes Large Language Models (LLMs) powered by the Autogen multi-agent architecture to automate and streamline email management."
+        },
+        {
+          "title": "Nidhish-Balasubramanya/Intelligent-Email-Assistant: A full ... - GitHub",
+          "url": "https://github.com/Nidhish-Balasubramanya/Intelligent-Email-Assistant",
+          "snippet": "A full-stack system that ingests emails, classifies them, extracts action items, summarizes content, and generates reply drafts using LLM-driven prompts."
+        },
+        {
+          "title": "pguso/email-agent-core: A minimal, modular JavaScript ... - GitHub",
+          "url": "https://github.com/pguso/email-agent-core",
+          "snippet": "This package provides a composable framework to fetch, parse, classify, and respond to emails using LLM models (both local and cloud-based). Features. IMAP ..."
+        },
+        {
+          "title": "jwadow/agentic-prompts: A curated collection of prompts ... - GitHub",
+          "url": "https://github.com/jwadow/agentic-prompts",
+          "snippet": "This collection contains ready-to-use templates for defining agent personas, delegating tasks, and structuring interactions with various AI tools. Available ..."
+        },
+        {
+          "title": "philschmid/ai-agent-benchmark-compendium ... - GitHub",
+          "url": "https://github.com/philschmid/ai-agent-benchmark-compendium",
+          "snippet": "A pioneering benchmark to evaluate an LLM agent's ability to automate complex office workflows across multiple applications, such as Word, Excel, and email."
+        },
+        {
+          "title": "GitHub - aws-samples/build-an-agentic-llm-assistant",
+          "url": "https://github.com/aws-samples/build-an-agentic-llm-assistant",
+          "snippet": "This hands-on workshop, aimed at developers and solution builders, trains you on how to build a real-life serverless LLM application using foundation models ..."
+        },
+        {
+          "title": "GitHub - gregoryg/AIPIHKAL: AI (LLM) Prompts I Have Known And ...",
+          "url": "https://github.com/gregoryg/AIPIHKAL",
+          "snippet": "My collection of prompts that can be composed, and tangled (see Literate programming - Wikipedia \u226b en.wikipedia.org) for use with various APIs."
+        },
+        {
+          "title": "heilcheng/awesome-agent-skills: Tutorials, Guides and ... - GitHub",
+          "url": "https://github.com/heilcheng/awesome-agent-skills",
+          "snippet": "Never heard of \"agent skills\" before? You're in the right place. This is a community-curated list of simple text files that teach AI assistants (like Claude, ..."
+        },
+        {
+          "title": "fainir/most-capable-agent-system-prompt - GitHub",
+          "url": "https://github.com/fainir/most-capable-agent-system-prompt",
+          "snippet": "Paste this prompt into your coding agent of choice - Claude Code, Codex, Cursor, or any similar tool - and it will build the most capable, self-improving ..."
+        },
+        {
+          "title": "Open-source AI scheduling agent \u2014 your own Calendly ...",
+          "url": "https://github.com/anthroos/open-schedule-agent",
+          "snippet": "Make your calendar discoverable by AI agents. Deploy an always-on endpoint. Any AI agent discovers you via agent.json , checks availability via MCP, and books a\u00a0...Read more"
+        },
+        {
+          "title": "codecapsules-io/ai-calendar-agent-template",
+          "url": "https://github.com/codecapsules-io/ai-calendar-agent-template",
+          "snippet": "The current prompt is configured for calendar management with natural language date parsing. When using Code Capsules, be sure to ensure that the Agent Capsule\u00a0...Read more"
+        },
+        {
+          "title": "Intelligent Prompt Library - genesis-living-system-builder",
+          "url": "https://github.com/taskade/docs/blob/main/genesis-living-system-builder/space-apps-guide/genesis-prompt-library.md",
+          "snippet": "A prompt is simply the description of what you want to build. Think of it as explaining your app idea to a smart colleague who can build it for you.Read more"
+        },
+        {
+          "title": "CalendarAppsFinder_270525.json",
+          "url": "https://github.com/danielrosehill/System-Prompt-Library/blob/main/system-prompts/json/CalendarAppsFinder_270525.json",
+          "snippet": "System prompts for AI agents and assistants (automatically populated); periodic point in time exports are releases\u00a0..."
+        },
+        {
+          "title": "Project: Schedy - AI Agent for Smart Employee Scheduling, ...",
+          "url": "https://github.com/microsoft/AI_Agents_Hackathon/issues/622",
+          "snippet": "Apr 30, 2025 \u2014 Schedy (Schedule AI) is an intelligent scheduling assistant that helps small business owners automatically generate employee shift schedules\u00a0...Read more"
+        },
+        {
+          "title": "mjunaidca/appointment-agent: A modular and AI-powered ...",
+          "url": "https://github.com/mjunaidca/appointment-agent",
+          "snippet": "A modular and AI-powered appointment booking agent designed to streamline scheduling for businesses, starting with dental clinics."
+        },
+        {
+          "title": "kanhaiyatyagi63/CalendarAgent: Automate calendar tasks ...",
+          "url": "https://github.com/kanhaiyatyagi63/CalendarAgent",
+          "snippet": "Objective. Automate calendar tasks like scheduling meetings via prompts, inspect metadata, and build extensible agent\u2011based workflows.Read more"
+        },
+        {
+          "title": "Prompts \u00b7 GitHub",
+          "url": "https://gist.github.com/mberman84/885c972f4216747abfb421bfbddb4eba",
+          "snippet": "4 days ago \u2014 22 copy/paste-ready prompts for building your own AI agent system. Each prompt builds a functional system or implements a proven best\u00a0...Read more"
+        },
+        {
+          "title": "AI Email draft replies - how to improve the prompt for an AI ...",
+          "url": "https://www.reddit.com/r/PromptEngineering/comments/1l9gpv3/ai_email_draft_replies_how_to_improve_the_prompt/",
+          "snippet": "You are an intelligent human assistant designed to analyze email content, determine if the email expects a meaningful reply and generate a valid multi-line\u00a0...Read more"
+        },
+        {
+          "title": "6 AI Prompts That Make You Look Smarter at Work \ud83d\udcbc ...",
+          "url": "https://www.reddit.com/r/ChatGPTPromptGenius/comments/1oh6wwh/6_ai_prompts_that_make_you_look_smarter_at_work/",
+          "snippet": "6 AI Prompts That Make You Look Smarter at Work (Copy + Paste) \u00b7 1. The Meeting Summary Prompt \u00b7 2. The Email Rewrite Prompt \u00b7 3. The Task\u00a0...Read more"
+        },
+        {
+          "title": "10 Workflow Automation Prompts You Can Use with GPT ...",
+          "url": "https://www.reddit.com/r/NoCodeAISolutions/comments/1llqeb6/10_workflow_automation_prompts_you_can_use_with/",
+          "snippet": "1. Automated Email Sorting and Response \u00b7 2. Data Entry Automation for Spreadsheets \u00b7 3. Social Media Scheduling Automation \u00b7 4. Automated\u00a0...Read more"
+        },
+        {
+          "title": "I built an AI email agent to reply to customer questions 24/7 ...",
+          "url": "https://www.reddit.com/r/automation/comments/1n6tgul/i_built_an_ai_email_agent_to_reply_to_customer/",
+          "snippet": "I built an ai email marketing tool that helps you write emails and follow ups with a single prompt. 1. 4. Has anyone automated customer support\u00a0...Read more"
+        },
+        {
+          "title": "Is there any AI that can send an email with an attachment ...",
+          "url": "https://www.reddit.com/r/AI_Agents/comments/1kitsrq/is_there_any_ai_that_can_send_an_email_with_an/",
+          "snippet": "I've seen platforms like Assista AI handle this well by letting you connect your email and files directly, then just using a simple prompt to send emails with\u00a0...Read more"
+        },
+        {
+          "title": "The cold email prompt that actually gets replies (tested ...",
+          "url": "https://www.reddit.com/r/ChatGPTPromptGenius/comments/1pq3gqa/the_cold_email_prompt_that_actually_gets_replies/",
+          "snippet": "The key insight: most AI-written emails fail because they try to sound professional instead of human. Here's my base prompt that consistently\u00a0...Read more"
+        },
+        {
+          "title": "3 ways someone can hijack your AI agent through an email",
+          "url": "https://www.reddit.com/r/AI_Agents/comments/1rpcdpf/3_ways_someone_can_hijack_your_ai_agent_through/",
+          "snippet": "Email-driven agents need strong prompt filtering and guardrails or they can be manipulated easily. As these systems grow, secure GPU\u00a0...Read more"
+        },
+        {
+          "title": "I tested 50 AI prompts for cold email - sharing the 3 ...",
+          "url": "https://www.reddit.com/r/DigitalMarketing/comments/1taw08n/i_tested_50_ai_prompts_for_cold_email_sharing_the/",
+          "snippet": "I tested 50 AI prompts for cold email - sharing the 3 strongest with the prompt structure I found that works. Discussion.Read more"
+        },
+        {
+          "title": "These 6 Sales-specific Persona Prompts Make AI Respond ...",
+          "url": "https://www.reddit.com/r/ChatGPTPromptGenius/comments/1qvoemi/these_6_salesspecific_persona_prompts_make_ai/",
+          "snippet": "These 6 Sales-specific Persona Prompts Make AI Respond Like it's Actually Been on a Sales Call \u00b7 1. \"They're About To Hang Up\" - The Immediate\u00a0...Read more"
+        },
+        {
+          "title": "How do you build the \u201cultimate prompt\u201d for writing emails ...",
+          "url": "https://www.reddit.com/r/ChatGPTPromptGenius/comments/1rol27m/how_do_you_build_the_ultimate_prompt_for_writing/",
+          "snippet": "I\u2019m trying to build a really good prompt for writing emails and text messages.\n\nMost of the time I use voice-to-text and then give simple instructions ..."
+        }
+      ],
+      "source_count": 37,
+      "prompts": []
+    },
+    "project-mgmt": {
+      "sources": [
+        {
+          "title": "Product Manager Prompts for Generative AI - GitHub",
+          "url": "https://github.com/deanpeters/product-manager-prompts",
+          "snippet": "A repository of Generative AI prompts for product managers using agents such as ChatGPT, Claude, & Gemini - deanpeters/product-manager-prompts."
+        },
+        {
+          "title": "aj-geddes/useful-ai-prompts - GitHub",
+          "url": "https://github.com/aj-geddes/useful-ai-prompts",
+          "snippet": "A curated collection of useful AI prompts for various tasks and use cases - aj-geddes/useful-ai-prompts."
+        },
+        {
+          "title": "Crafting Effective Prompts for Agentic AI Systems: Patterns ... - GitHub",
+          "url": "https://github.com/dontriskit/awesome-ai-system-prompts",
+          "snippet": "Curated collection of system prompts for top AI tools. Perfect for AI agent builders and prompt engineers. Incuding: ChatGPT, Claude ..."
+        },
+        {
+          "title": "500-AI-Agents-Projects - UseCase - GitHub",
+          "url": "https://github.com/ashishpatel26/500-AI-Agents-Projects",
+          "snippet": "A curated collection of AI agent use cases across industries, showcasing practical applications and linking to open-source projects for implementation."
+        },
+        {
+          "title": "useful-ai-prompts/AI-AGENT-GUIDE.md at main - GitHub",
+          "url": "https://github.com/aj-geddes/useful-ai-prompts/blob/main/AI-AGENT-GUIDE.md",
+          "snippet": "Technical specifications for AI agents, assistants, and automation systems to programmatically access and utilize the Useful AI Prompts library. Library ..."
+        },
+        {
+          "title": "agency-agents/project-management/project-manager-senior.md at ...",
+          "url": "https://github.com/msitarzewski/agency-agents/blob/main/project-management/project-manager-senior.md",
+          "snippet": "1. Specification Analysis. Read the actual site specification file ( ai/memory-bank/site-setup.md ); Quote EXACT requirements (don't add luxury/premium features ..."
+        },
+        {
+          "title": "sdi2200262/agentic-project-management: A framework for ... - GitHub",
+          "url": "https://github.com/sdi2200262/agentic-project-management",
+          "snippet": "APM is for people who build with AI agents and own what they ship. Delivering each message between agents is a built-in checkpoint; you see every task ..."
+        },
+        {
+          "title": "heilcheng/awesome-agent-skills: Tutorials, Guides and ... - GitHub",
+          "url": "https://github.com/heilcheng/awesome-agent-skills",
+          "snippet": "This is a community-curated list of simple text files that teach AI assistants (like Claude, Copilot, or Codex) how to do new things on demand, without ..."
+        },
+        {
+          "title": "msitarzewski/agency-agents: A complete AI agency at your fingertips",
+          "url": "https://github.com/msitarzewski/agency-agents",
+          "snippet": "Born from a Reddit thread and months of iteration, The Agency is a growing collection of meticulously crafted AI agent personalities. Each agent is:."
+        },
+        {
+          "title": "piyushrajyadav/awesome-ai-dev-prompts - GitHub",
+          "url": "https://github.com/piyushrajyadav/awesome-ai-dev-prompts",
+          "snippet": "Awesome AI Dev Prompts ; \ud83c\udfd7\ufe0f Starting new projects \u2014 SaaS apps, AI agents, marketplaces, MVPs; Understanding codebases \u2014 architecture analysis, code reviews \u00b7"
+        },
+        {
+          "title": "llm-prompts \u00b7 GitHub Topics",
+          "url": "https://github.com/topics/llm-prompts",
+          "snippet": "Independently authored prompt templates for AI coding agents \u2014 system prompts, tool prompts, agent delegation, memory management, and multi-agent coordination."
+        },
+        {
+          "title": "A curated list of awesome LLM agents frameworks. - GitHub",
+          "url": "https://github.com/kaushikb11/awesome-llm-agents",
+          "snippet": "A curated list of awesome LLM frameworks and agent development tools. If you have a suggestion, feel free to open an issue or pull request."
+        },
+        {
+          "title": "Project Manager Assistant Agent - GitHub",
+          "url": "https://github.com/NirDiamant/GenAI_Agents/blob/main/all_agents_tutorials/project_manager_assistant_agent.ipynb",
+          "snippet": "The current approach relies on a Large Language Model (LLM) to assign risk scores to tasks. However, this method has inherent limitations. \u00b7 Although the prompts ..."
+        },
+        {
+          "title": "luo-junyu/Awesome-Agent-Papers - GitHub",
+          "url": "https://github.com/luo-junyu/awesome-agent-papers",
+          "snippet": "This repository contains a comprehensive collection of research papers on Large Language Model (LLM) agents. We organize papers across key categories ..."
+        },
+        {
+          "title": "llm-agents/README.md at main - GitHub",
+          "url": "https://github.com/Qumulo/llm-agents/blob/main/README.md",
+          "snippet": "Nix packages for AI coding agents. Contribute to Qumulo/llm-agents development by creating an account on GitHub."
+        },
+        {
+          "title": "onamfc/agent-prompt-library: A collection of reusable AI ... - GitHub",
+          "url": "https://github.com/onamfc/agent-prompt-library",
+          "snippet": "Prompts should define how an agent thinks and behaves, not encode specific tools or platforms. Do this: - Integrate with the project's deployment platform - Use ..."
+        },
+        {
+          "title": "GitHub - Prat011/awesome-llm-skills",
+          "url": "https://github.com/Prat011/awesome-llm-skills",
+          "snippet": "A curated list of awesome LLM and AI Agent Skills, resources and tools for customising AI Agent workflows - that works with Claude Code, Codex, ..."
+        },
+        {
+          "title": "tallesborges/agentic-system-prompts: A curated collection ... - GitHub",
+          "url": "https://github.com/tallesborges/agentic-system-prompts",
+          "snippet": "A curated collection of system prompts and tool definitions from production AI coding agents - tallesborges/agentic-system-prompts."
+        },
+        {
+          "title": "obviousworks/agentic-coding-meta-prompt: The ultimate ... - GitHub",
+          "url": "https://github.com/obviousworks/agentic-coding-meta-prompt",
+          "snippet": "The ultimate Meta-Prompt for Agentic Coding (Cursor, Windsurf, Cline). Synthesized from 1.5MB of top global system prompts analyzed by Gemini & Claude."
+        },
+        {
+          "title": "I'm curious how people here are thinking about managing agentic ...",
+          "url": "https://github.com/run-llama/llama_index/discussions/20485",
+          "snippet": "But the important metrics are: cost per successful task completion, context efficiency (how much of the context window actually contributes to the output), ..."
+        },
+        {
+          "title": "mitsuhiko/agent-prompts: Holds prompts for agentic loops - GitHub",
+          "url": "https://github.com/mitsuhiko/agent-prompts",
+          "snippet": "A collection of specialized AI agent prompts designed for software development and research workflows. This repository contains comprehensive prompt systems ..."
+        },
+        {
+          "title": "fainir/most-capable-agent-system-prompt - GitHub",
+          "url": "https://github.com/fainir/most-capable-agent-system-prompt",
+          "snippet": "NORTH STAR Build a durable agentic system that: - accepts goals - turns goals into explicit tasks - routes tasks to capable agents or machines - executes and ..."
+        },
+        {
+          "title": "pabg92/Claude-Code-agentic-project-management - GitHub",
+          "url": "https://github.com/pabg92/Claude-Code-agentic-project-management",
+          "snippet": "Smart Agent Management: APM incorporates techniques like a Memory Bank (a shared project logbook), detailed Markdown Prompts for consistent agent behavior, and ..."
+        },
+        {
+          "title": "GitHub - Leonxlnx/agentic-ai-prompt-research: Research into how ...",
+          "url": "https://github.com/Leonxlnx/agentic-ai-prompt-research",
+          "snippet": "We analyze how these systems: Assemble dynamic system prompts at runtime; Coordinate multiple specialized sub-agents; Classify and auto-approve tool calls ..."
+        },
+        {
+          "title": "agentic-ai-development \u00b7 GitHub Topics",
+          "url": "https://github.com/topics/agentic-ai-development?o=asc&s=stars",
+          "snippet": "A comprehensive multi-agent AI system built with LangGraph and Google Gemini. Features specialized agents (Coder, Enhancer, Researcher, Validator), ..."
+        },
+        {
+          "title": "ChatGPT prompts for PM : r/projectmanagement - Reddit",
+          "url": "https://www.reddit.com/r/projectmanagement/comments/1jbjjde/chatgpt_prompts_for_pm/",
+          "snippet": "We are trying to solve [z] problems. How does this work? What are the types of challenges we might run into, what are the steps, etc\u201d. I do this ..."
+        },
+        {
+          "title": "The 10 Essential AI Prompts for Project Management - Reddit",
+          "url": "https://www.reddit.com/r/PromptEngineering/comments/1n02vg3/the_ultimate_guide_to_using_ai_for_project/",
+          "snippet": "The 10 Essential AI Prompts for Project Management \u00b7 Design a Progress Tracker: Prompt: \"Build a simple project tracker for '[project name]'."
+        },
+        {
+          "title": "M365 Copilot for project managers, 12 prompts I tested that ... - Reddit",
+          "url": "https://www.reddit.com/r/microsoft_365_copilot/comments/1rotdnz/m365_copilot_for_project_managers_12_prompts_i/",
+          "snippet": "Most Copilot prompt lists for project managers are generic AI prompts with \"project\" in the title. They don't actually use M365 data."
+        },
+        {
+          "title": "What are some AI prompts that are handy for IT teams? - Reddit",
+          "url": "https://www.reddit.com/r/ITManagers/comments/1is8e2f/what_are_some_ai_prompts_that_are_handy_for_it/",
+          "snippet": "Have you tried incorporating AI tools to help summarize, remediate, find insights from what you're uploading/feeding in?"
+        },
+        {
+          "title": "Ai Prompts for Project Management : r/projectmanagers - Reddit",
+          "url": "https://www.reddit.com/r/projectmanagers/comments/19fmhiq/ai_prompts_for_project_management/",
+          "snippet": "Has anybody tried using AI prompts to help with ideas? This has saved me countless hours of trying to think of/research stuff on my own."
+        },
+        {
+          "title": "Looking for use cases for AI as project manager - Reddit",
+          "url": "https://www.reddit.com/r/projectmanagement/comments/1r3eg3c/looking_for_use_cases_for_ai_as_project_manager/",
+          "snippet": "I am looking for ideas or use cases to implement AI - genAI or agentic or just automation using ms copilot/ GitHub copilot/ ChatGPT."
+        },
+        {
+          "title": "How do you split responsibilities with engineering manager for AI ...",
+          "url": "https://www.reddit.com/r/ProductManagement/comments/1nm38l5/how_do_you_split_responsibilities_with/",
+          "snippet": "Do we need a split or could we both work on those together? For example the prompts will likely come from iterating and trying multiple things."
+        },
+        {
+          "title": "ChatGPTPromptGenius - Reddit",
+          "url": "https://www.reddit.com/r/ChatGPTPromptGenius/",
+          "snippet": "It's a diagnostic tool built around the five questions that actually matter: Do you have centralized AI governance? Is your workforce using AI daily or just ..."
+        },
+        {
+          "title": "AI for Project & Program Management: How are you embracing it?",
+          "url": "https://www.reddit.com/r/projectmanagement/comments/1mj8yrm/ai_for_project_program_management_how_are_you/",
+          "snippet": "What are some of the ways you or your team are embracing and utilizing AI positively? What tools are you using? What wins have you witness as a ..."
+        },
+        {
+          "title": "How do you guys use Chat GPT to PM? : r/projectmanagement",
+          "url": "https://www.reddit.com/r/projectmanagement/comments/13vcfgv/how_do_you_guys_use_chat_gpt_to_pm/",
+          "snippet": "I recently decided to try out Chat GPT to make my life easier as a PM. I use it to generate meeting minutes from transcripts."
+        }
+      ],
+      "source_count": 35,
+      "prompts": []
+    },
+    "claude-code": {
+      "sources": [
+        {
+          "title": "Piebald-AI/claude-code-system-prompts: All parts of ...",
+          "url": "https://github.com/Piebald-AI/claude-code-system-prompts",
+          "snippet": "This repository contains an up-to-date list of all Claude Code's various system prompts and their associated token counts as of Claude Code v2.1.142 (May\u00a0...Read more"
+        },
+        {
+          "title": "agent-prompt-claude-guide-agent.md",
+          "url": "https://github.com/Piebald-AI/claude-code-system-prompts/blob/main/system-prompts/agent-prompt-claude-guide-agent.md",
+          "snippet": "All parts of Claude Code's system prompt, 24 builtin tool descriptions, sub agent prompts (Plan/Explore/Task), utility prompts (CLAUDE.md, compact,\u00a0..."
+        },
+        {
+          "title": "repowise-dev/claude-code-prompts: Independently ...",
+          "url": "https://github.com/repowise-dev/claude-code-prompts",
+          "snippet": "3 days ago \u2014 Independently written prompt templates for building AI coding agents, inspired by patterns observed in Claude Code codebase. System prompts,\u00a0...Read more"
+        },
+        {
+          "title": "langgptai/awesome-claude-prompts",
+          "url": "https://github.com/langgptai/awesome-claude-prompts",
+          "snippet": "In this repository, you will find a variety of prompts that can be used with Claude. We encourage you to add your own prompts to the list, and to use Claude to\u00a0...Read more"
+        },
+        {
+          "title": "interwebologist/claude-code-stock-agents-system-prompts",
+          "url": "https://github.com/interwebologist/claude-code-stock-agents-system-prompts",
+          "snippet": "These files serve as templates and examples for understanding how Claude Code agents are structured and configured. The detailed prompts and rule sets can be\u00a0...Read more"
+        },
+        {
+          "title": "claude-code-prompts",
+          "url": "https://github.com/topics/claude-code-prompts",
+          "snippet": "Independently authored prompt templates for AI coding agents \u2014 system prompts, tool prompts, agent delegation, memory management, and multi-agent coordination.Read more"
+        },
+        {
+          "title": "VoltAgent/awesome-claude-code-subagents",
+          "url": "https://github.com/VoltAgent/awesome-claude-code-subagents",
+          "snippet": "A collection of 100+ specialized Claude Code subagents covering a wide range of development use cases - VoltAgent/awesome-claude-code-subagents."
+        },
+        {
+          "title": "Claude Code Prompt Writer",
+          "url": "https://gist.github.com/Olshansk/482d3dee048aae137b67595027762b6c",
+          "snippet": "You are the Prompt Writer, an expert in analyzing conversational patterns and either create, write or optimize Claude's prompt ecosystem for maximum\u00a0...Read more"
+        },
+        {
+          "title": "Unminified prompts and tool definitions for Claude Code",
+          "url": "https://gist.github.com/transitive-bullshit/487c9cb52c75a9701d312334ed53b20c",
+          "snippet": "`Your task is to process Bash commands that an AI coding agent wants to run. This policy spec defines how to determine the prefix of a Bash command:` ],.Read more"
+        },
+        {
+          "title": "agent-prompt-explore.md",
+          "url": "https://github.com/Piebald-AI/claude-code-system-prompts/blob/main/system-prompts/agent-prompt-explore.md",
+          "snippet": "All parts of Claude Code's system prompt, 24 builtin tool descriptions, sub agent prompts (Plan/Explore/Task), utility prompts (CLAUDE.md, compact,\u00a0..."
+        },
+        {
+          "title": "aaronjmars/soul.md",
+          "url": "https://github.com/aaronjmars/soul.md",
+          "snippet": "Aeon is an autonomous agent on GitHub Actions, powered by Claude Code. 68 skills across research, dev tooling, crypto monitoring, and productivity \u2014 all running\u00a0...Read more"
+        },
+        {
+          "title": "everything-claude-code/SOUL.md at main",
+          "url": "https://github.com/affaan-m/everything-claude-code/blob/main/SOUL.md",
+          "snippet": "Everything Claude Code (ECC) is a production-ready AI coding plugin with 30 specialized agents, 135 skills, 60 commands, and automated hook workflows for\u00a0...Read more"
+        },
+        {
+          "title": "ClawSouls \u2014 Soul Spec Plugin for Claude",
+          "url": "https://github.com/clawsouls/clawsouls-claude-code-plugin",
+          "snippet": "In Claude Code, the agent follows CLAUDE.md rules to decide when and what to save \u2014 the behavior is instruction-driven, not framework-driven. Session Start\u00a0...Read more"
+        },
+        {
+          "title": "ClawSouls",
+          "url": "https://github.com/clawsouls",
+          "snippet": "3 days ago \u2014 What is a Soul? A Soul is a set of markdown files that give an AI agent a consistent personality, voice, and behavior.Read more"
+        },
+        {
+          "title": "Introducing nanocode: The best Claude Code that $200 ...",
+          "url": "https://github.com/salmanmohammadi/nanocode/discussions/1",
+          "snippet": "... Claude models. We'll write our own SOUL.md , define the agentic interface which our model will use to interact with the world, generate synthetic data, and\u00a0...Read more"
+        },
+        {
+          "title": "AGENTS.md thought leadership \u00b7 google-gemini gemini-cli",
+          "url": "https://github.com/google-gemini/gemini-cli/discussions/1471",
+          "snippet": "May 1, 2026 \u2014 Right now, users working in teams that use more than one agentic coding tool have to setup: CLAUDE.md; AGENTS.md; Cursor rules; etc. etc.Read more"
+        },
+        {
+          "title": "everything-claude-code/agents/chief-of-staff.md at main",
+          "url": "https://github.com/affaan-m/everything-claude-code/blob/main/agents/chief-of-staff.md",
+          "snippet": "The agent harness performance optimization system. Skills, instincts, memory, security, and research-first development for Claude Code, Codex, Opencode,\u00a0..."
+        },
+        {
+          "title": "Per-topic/per-group system prompt (or SOUL.md) binding ...",
+          "url": "https://github.com/NousResearch/hermes-agent/issues/5195",
+          "snippet": "Apr 5, 2026 \u2014 Allow binding a custom system_prompt (or soul override) to individual Telegram DM topics and group forum topics, so each topic can have its own\u00a0...Read more"
+        },
+        {
+          "title": "prepend-system-prompt-file (or equivalent) to allow custom ...",
+          "url": "https://github.com/anthropics/claude-code/issues/49936",
+          "snippet": "Apr 17, 2026 \u2014 The current prompt layout means the model always sees \"You are Claude Code\" first, and any custom identity (e.g., a SOUL.md defining a different\u00a0...Read more"
+        },
+        {
+          "title": "hermes.md Project Config \u2014 Per-Repository Agent Rules ...",
+          "url": "https://github.com/NousResearch/hermes-agent/issues/681",
+          "snippet": "Mar 8, 2026 \u2014 Claude Code (CLAUDE.md) \u2014 The gold standard: CLAUDE.md at repo root acts as a \"constitution\" for the agent; Can contain: code style rules\u00a0...Read more"
+        },
+        {
+          "title": "shakacode/claude-code-commands-skills-agents - GitHub",
+          "url": "https://github.com/shakacode/claude-code-commands-skills-agents",
+          "snippet": "ShakaCode Team Shared Claude Code commands plus cross-tool prompts, agents, skills, and tips. Quick Install. Copy what you need to your ~/.claude/ directory: # ..."
+        },
+        {
+          "title": "alirezarezvani/claude-skills: 263+ Claude Code skills & agent ...",
+          "url": "https://github.com/alirezarezvani/claude-skills",
+          "snippet": "268 production-ready Claude Code skills, plugins, and agent skills for 12 AI coding tools. The most comprehensive open-source library of ..."
+        },
+        {
+          "title": "A Claude skill that writes the accurate prompts for any AI tool. Zero ...",
+          "url": "https://github.com/nidhinjs/prompt-master",
+          "snippet": "A Claude skill that writes the accurate prompts for any AI tool. Zero tokens or credits wasted. Full context and memory retention. No re-prompting your way ..."
+        },
+        {
+          "title": "awesome-claude-code-subagents/categories/05-data-ai/prompt ...",
+          "url": "https://github.com/VoltAgent/awesome-claude-code-subagents/blob/main/categories/05-data-ai/prompt-engineer.md",
+          "snippet": "Use this agent when you need to design, optimize, test, or evaluate prompts for large language models in production systems. tools, Read, Write, Edit, Bash, ..."
+        },
+        {
+          "title": "The activation of the Claude Skill is extremely unstable. Even after ...",
+          "url": "https://github.com/orgs/community/discussions/182117",
+          "snippet": "The activation of the Claude Skill is extremely unstable. Even after enabling it and explicitly stating it in the prompt."
+        },
+        {
+          "title": "What differentiates on Custom Agents, Agent Skills and ... - GitHub",
+          "url": "https://github.com/orgs/community/discussions/183962",
+          "snippet": "Use custom instructions for anything that should always apply, regardless of which agent or skill is being used. Example: \u201cAll commits must pass ..."
+        },
+        {
+          "title": "Ultimate guide to extending Claude Code with skills, agents ...",
+          "url": "https://gist.github.com/alirezarezvani/a0f6e0a984d4a4adc4842bbe124c5935",
+          "snippet": "Ultimate guide to extending Claude Code with skills, agents, commands, and utilities. Covers Tresor (ready-to-use), Skill Factory (custom ..."
+        },
+        {
+          "title": "VoltAgent/awesome-agent-skills: A curated collection of ... - GitHub",
+          "url": "https://github.com/VoltAgent/awesome-agent-skills",
+          "snippet": "A curated collection of 1000+ agent skills from official dev teams and the community, compatible with Claude Code, Codex, Gemini CLI, Cursor, and more."
+        },
+        {
+          "title": "I compiled 200 advanced Claude prompts for coding, complex AI ...",
+          "url": "https://www.reddit.com/r/PromptEngineering/comments/1sfcosw/i_compiled_200_advanced_claude_prompts_for_coding/",
+          "snippet": "Sharing a massive cheat sheet: 200 advanced Claude prompts for coding, RAG systems, and AI workflows. \u00b7 Nobody taught me how to actually use ..."
+        },
+        {
+          "title": "Don't use Claude Code's Default System Prompt : r/ClaudeCode",
+          "url": "https://www.reddit.com/r/ClaudeCode/comments/1slfnoq/dont_use_claude_codes_default_system_prompt/",
+          "snippet": "If you're getting frustrated with Claude Code, stop using the default Claude Code's system prompt. It's trying to do everything for everyone and ..."
+        },
+        {
+          "title": "Every prompt Claude Code uses , studied from the source ... - Reddit",
+          "url": "https://www.reddit.com/r/LLMDevs/comments/1s9egwq/every_prompt_claude_code_uses_studied_from_the/",
+          "snippet": "Claude Code's source was briefly public on npm. I studied the complete prompting architecture and then used Claude to help independently rewrite ..."
+        },
+        {
+          "title": "What are some amazing efficient claude code prompts that saved ...",
+          "url": "https://www.reddit.com/r/ClaudeAI/comments/1rjzzd1/what_are_some_amazing_efficient_claude_code/",
+          "snippet": "I've been using Claude Code as a non-developer for a few weeks. Here's what actually worked and what didn't. 11. 32. Platform to ..."
+        },
+        {
+          "title": "I tested 50 'secret' Claude prompt codes. Most are fake. Here are the ...",
+          "url": "https://www.reddit.com/r/PromptEngineering/comments/1sigluk/i_tested_50_secret_claude_prompt_codes_most_are/",
+          "snippet": "Start your prompt with OODA and Claude structures the response as Observe-Orient-Decide-Act. Originally a military decision loop. Works ..."
+        },
+        {
+          "title": "Just for fun, what are your go-to Claude prompts that actually work ...",
+          "url": "https://www.reddit.com/r/ClaudeCode/comments/1olnn5m/just_for_fun_what_are_your_goto_claude_prompts/",
+          "snippet": "Give me a graded report card on my project - be nice. \u00b7 Add files to outputs before generating summaries/install instructions \u00b7 Generate a market ..."
+        },
+        {
+          "title": "How we got amazing results from Claude Code (it's all about the ...",
+          "url": "https://www.reddit.com/r/ClaudeAI/comments/1os5khh/how_we_got_amazing_results_from_claude_code_its/",
+          "snippet": "Guide to writing prompts for Claude AI. Best use cases for ClaudeAI ... The second prompt gives Claude Code crystal clear objectives and ..."
+        },
+        {
+          "title": "Understanding Claude Code's 3 system prompt methods (Output ...",
+          "url": "https://www.reddit.com/r/ClaudeCode/comments/1o65jva/understanding_claude_codes_3_system_prompt/",
+          "snippet": "--system-prompt (NEW in v2.0.14): Replaces the ENTIRE system prompt except tool definitions and one line about being a Claude agent. This is the ..."
+        },
+        {
+          "title": "The 100% practical guide to Claude Code\u2014straight from its creator.",
+          "url": "https://www.reddit.com/r/PromptEngineering/comments/1s3udjt/the_100_practical_guide_to_claude_codestraight/",
+          "snippet": "290 votes, 31 comments. A lot of us are writing massive, step-by-step prompt files to get AI coding agents to do what we want."
+        },
+        {
+          "title": "What are the first prompts you write using Claude Code to learn a ...",
+          "url": "https://www.reddit.com/r/PromptEngineering/comments/1mw7t38/what_are_the_first_prompts_you_write_using_claude/",
+          "snippet": "Hey, those are some solid starting prompts! I usually begin with something like \"Can you walk me through the main entry points and key modules ..."
+        }
+      ],
+      "source_count": 38,
+      "prompts": []
+    },
+    "codex-cli": {
+      "sources": [
+        {
+          "title": "Pro Tip: Use a custom system prompt with codex to make it zero in ...",
+          "url": "https://github.com/openai/codex/discussions/7296",
+          "snippet": "System prompts are important, because these are the very first instructions the model receives. Writing one for a general purpose CLI agent ..."
+        },
+        {
+          "title": "OpenAI Codex CLI settings, configurations, skills and prompts for ...",
+          "url": "https://github.com/feiskyer/codex-settings",
+          "snippet": "Codex automatically reads AGENTS.md files in your project to understand context. Please always create one in your project root with /init command on your first ..."
+        },
+        {
+          "title": "codex/codex-rs/core/gpt_5_codex_prompt.md at main - GitHub",
+          "url": "https://github.com/openai/codex/blob/main/codex-rs/core/gpt_5_codex_prompt.md",
+          "snippet": "If the user asks for a \"review\", default to a code review mindset: prioritise identifying bugs, risks, behavioural regressions, and missing tests. Findings must ..."
+        },
+        {
+          "title": "openai-cookbook/examples/gpt-5/codex_prompting_guide.ipynb at ...",
+          "url": "https://github.com/openai/openai-cookbook/blob/main/examples/gpt-5/codex_prompting_guide.ipynb",
+          "snippet": "Codex Prompting Guide\u00b6. Codex models advance the frontier of intelligence and efficiency and our recommended agentic coding model. Follow this guide closely ..."
+        },
+        {
+          "title": "Questions about Multi-agent collab: sub-agent interruptions ... - GitHub",
+          "url": "https://github.com/openai/codex/discussions/9724",
+          "snippet": "Problem. In Codex multi-agent/collab, the orchestrator frequently interrupts sub-agents and the sub-agents end up getting little done."
+        },
+        {
+          "title": "OpenAI Codex PR review agent system prompt (from ... - GitHub Gist",
+          "url": "https://gist.github.com/cbh123/ce4893a10ed2b87a89d9114b08118a08",
+          "snippet": "You are acting as a reviewer for a proposed code change made by another engineer. Below are some default guidelines for determining whether the original ..."
+        },
+        {
+          "title": "Prompt Injection \u00b7 openai codex \u00b7 Discussion #6162 - GitHub",
+          "url": "https://github.com/openai/codex/discussions/6162",
+          "snippet": "I selected a prompt that contains \"All summaries must be in Slovak\", asked Codex in English and it replied in Slovak. Then I asked it why it replied in Slovak ..."
+        },
+        {
+          "title": "openai/skills: Skills Catalog for Codex - GitHub",
+          "url": "https://github.com/openai/skills",
+          "snippet": "Agent Skills are folders of instructions, scripts, and resources that AI agents can discover and use to perform at specific tasks."
+        },
+        {
+          "title": "Plan / Spec Mode \u00b7 openai codex \u00b7 Discussion #7355 - GitHub",
+          "url": "https://github.com/openai/codex/discussions/7355",
+          "snippet": "Here's a snippet from my AGENTS.md file that supports both a lightweight \"plan\" mode and a more formalized \"spec\" mode. These are invoked simply by including \" ..."
+        },
+        {
+          "title": "Feature: Add system prompt customization flags #11588 - GitHub",
+          "url": "https://github.com/openai/codex/issues/11588",
+          "snippet": "Add CLI flags that allow users to replace or extend the system prompt (including AGENTS.md content) from the command line, without modifying any ..."
+        },
+        {
+          "title": "Awesome Codex CLI \u2014 curated list of 150+ ecosystem tools ...",
+          "url": "https://github.com/openai/codex/discussions/16329",
+          "snippet": "Awesome Codex CLI \u2014 curated list of 150+ ecosystem tools (subagents, skills, plugins, MCP servers, and more)"
+        },
+        {
+          "title": "cli-agent-orchestrator/docs/codex-cli.md at main - GitHub",
+          "url": "https://github.com/awslabs/cli-agent-orchestrator/blob/main/docs/codex-cli.md",
+          "snippet": "The Codex provider automatically detects terminal states: IDLE: Terminal is ready for input; PROCESSING: Codex is thinking or working; WAITING_USER_ANSWER: ..."
+        },
+        {
+          "title": "How to orchestrate \u201csub-agents\u201d with Codex CLI (queue/worker ...",
+          "url": "https://github.com/openai/codex/discussions/3898",
+          "snippet": "I'd like to run multiple sub-agents with Codex CLI that collaborate via a queue (producer/consumer). A supervisor agent splitting work and N worker agents ..."
+        },
+        {
+          "title": "Make Codex CLI state-of-the-art \u2014 built-in prompt engineering, sub ...",
+          "url": "https://github.com/openai/codex/issues/2582",
+          "snippet": "I strongly agree with the suggestion of adding sub agent tasks. This is a critical work flow for me in Claude Code, and helps me preserve ..."
+        },
+        {
+          "title": "Add Codex CLI Support as an External Agent #37883 - GitHub",
+          "url": "https://github.com/zed-industries/zed/discussions/37883",
+          "snippet": "Would love to use codex cli directly in Zed, like it is right now with Claude and Gemini. Gpt-5 rocks, and would love to use that in my favourite IDE."
+        },
+        {
+          "title": "hengfengliya/awesome-cli-agent-prompts - GitHub",
+          "url": "https://github.com/hengfengliya/awesome-cli-agent-prompts",
+          "snippet": "Most \"agent prompts\" are one-liners. This repo is different. A Blueprint is everything your agent needs to run consistently across sessions: identity, memory, ..."
+        },
+        {
+          "title": "prompt_with_apply_patch_instru...",
+          "url": "https://github.com/openai/codex/blob/main/codex-rs/core/prompt_with_apply_patch_instructions.md",
+          "snippet": "These files are a way for humans to give you (the agent) instructions or tips for working within the container. Some examples might be: coding conventions, info\u00a0...Read more"
+        },
+        {
+          "title": "tallesborges/agentic-system-prompts: A curated collection ...",
+          "url": "https://github.com/tallesborges/agentic-system-prompts",
+          "snippet": "In this repo, I'm documenting these system prompts and tools from different agentic coding solutions. Table of Contents. Agent Comparison; What's Included\u00a0...Read more"
+        },
+        {
+          "title": "jwadow/agentic-prompts: A curated ...",
+          "url": "https://github.com/jwadow/agentic-prompts",
+          "snippet": "A curated collection of prompts, modes, and configurations to enhance AI coding assistants. Provides ready-to-use templates for prompt engineering,\u00a0..."
+        },
+        {
+          "title": "build-hours/24-api-codex/skills/agentic-legibility/SKILL.md ...",
+          "url": "https://github.com/openai/build-hours/blob/main/24-api-codex/skills/agentic-legibility/SKILL.md",
+          "snippet": "Use when Codex needs to audit how easy a codebase is for coding agents to discover, bootstrap, validate, and navigate, especially for harness-engineering\u00a0...Read more"
+        },
+        {
+          "title": "agentic-coding",
+          "url": "https://github.com/topics/agentic-coding?l=shell",
+          "snippet": "The Ultimate Agentic Vibe Coding Guide for AI IDEs like Windsurf, Claude Code, Cursor, Codex etc. \u2013 AI-optimized rules, best practices, and configuration files\u00a0...Read more"
+        },
+        {
+          "title": "codex-skill",
+          "url": "https://github.com/topics/codex-skill",
+          "snippet": "A Codex skill that turns course lectures, homework files, classroom code, and previous solution style into concise Markdown submissions. multi-agent codex ai-\u00a0...Read more"
+        },
+        {
+          "title": "Support project-scoped custom prompts in `.codex ...",
+          "url": "https://github.com/openai/codex/issues/9848",
+          "snippet": "Jan 25, 2026 \u2014 Keeping prompts in the repo makes them versioned, reviewable, and portable across machines/CI. Current behavior (code pointers). codex-rs/core/\u00a0...Read more"
+        }
+      ],
+      "source_count": 23,
+      "prompts": []
+    },
+    "youtube-automation": {
+      "sources": [
+        {
+          "title": "darkzOGx/youtube-automation-agent: Fully automated ... - GitHub",
+          "url": "https://github.com/darkzOGx/youtube-automation-agent",
+          "snippet": "Fully automated YouTube channel management with AI agents. Creates, optimizes & publishes videos 24/7. Works with FREE Gemini API or OpenAI."
+        },
+        {
+          "title": "ChaituRajSagar/gemini-youtube-automation - GitHub",
+          "url": "https://github.com/ChaituRajSagar/gemini-youtube-automation",
+          "snippet": "A fully autonomous AI Agent/Python pipeline that utilizes Large Language Models (LLMs) like Gemini to generate content, produce videos, and automatically ..."
+        },
+        {
+          "title": "YouTube Agents with Neuron AI PHP framework - GitHub",
+          "url": "https://github.com/inspector-apm/youtube-ai-agent",
+          "snippet": "This repository contains the PHP implementation of an AI Agents summarizing YouTube videos. It is built using the Neuron AI package. YouTube Agent Use Cases."
+        },
+        {
+          "title": "Flexonze/I-automated-a-YouTube-channel-using-Python-and-AI",
+          "url": "https://github.com/Flexonze/I-automated-a-YouTube-channel-using-Python-and-AI",
+          "snippet": "Find methods to automate all the assets, including scripts, videos, texts, etc. Figure out how to use an AI for the voice-over; Automate the editing process ..."
+        },
+        {
+          "title": "package.json - darkzOGx/youtube-automation-agent \u00b7 GitHub",
+          "url": "https://github.com/darkzOGx/youtube-automation-agent/blob/master/package.json",
+          "snippet": "Fully automated YouTube channel management with AI agents. Creates, optimizes & publishes videos 24/7. Works with FREE Gemini API or OpenAI."
+        },
+        {
+          "title": "khaoss85/youtube-autopilot: AI-powered end-to-end ... - GitHub",
+          "url": "https://github.com/khaoss85/youtube-autopilot",
+          "snippet": "Automated end-to-end YouTube content creation and publishing system. From trend detection to video upload, fully automated with AI agents. What it does. Find ..."
+        },
+        {
+          "title": "YouTube Shorts Generator Agent (LangGraph + Veo 3) - GitHub",
+          "url": "https://github.com/FassihShah/YT-Videos-Agent",
+          "snippet": "An AI-powered automation agent that generates, approves, and uploads YouTube Shorts based on trending topics. Built using LangGraph, Google Veo 3, ..."
+        },
+        {
+          "title": "GitHub - Yacineooak/clippy-ai-agent",
+          "url": "https://github.com/Yacineooak/clippy-ai-agent",
+          "snippet": "Autonomous AI agent that transforms long-form videos into viral short-form content across YouTube Shorts, TikTok, and Instagram Reels using advanced AI ..."
+        },
+        {
+          "title": "AppyDave YouTube Automation Tools - GitHub",
+          "url": "https://github.com/appydave/appydave-tools",
+          "snippet": "Feed entire codebases to AI assistants in seconds; Batch update YouTube video metadata without clicking through the UI (update 50 videos in 5 minutes); ..."
+        },
+        {
+          "title": "westkevin12/music-manager-agent: YouTube Music ... - GitHub",
+          "url": "https://github.com/westkevin12/music-manager-agent",
+          "snippet": "YouTube Music Content Automation Tool An AI-powered agent that automates the end-to-end creation of metadata, lyrics, and marketing assets for music ..."
+        },
+        {
+          "title": "GitHub - aymanechaaba1/agentube-ai-agent",
+          "url": "https://github.com/aymanechaaba1/agentube-ai-agent",
+          "snippet": "This is an AI-powered content analysis platform that helps content creators get insights from their YouTube videos. The platform uses advanced AI to analyze ..."
+        },
+        {
+          "title": "wnstify/tubeflow: Research-first YouTube content creation ... - GitHub",
+          "url": "https://github.com/wnstify/tubeflow",
+          "snippet": "Research-First Content Creation. 5 specialized AI agents work in parallel to gather comprehensive research before you write a single word: Topic ..."
+        },
+        {
+          "title": "How to create youtube video summarizer with new Agents feature",
+          "url": "https://github.com/danny-avila/LibreChat/discussions/5091",
+          "snippet": "You are the video summarizing expert. Your task will be to read and provide a nice and detailed summary for a YouTube video based on it's subtitles."
+        },
+        {
+          "title": "ingest, transcribe, and learn from video content #12885 - GitHub",
+          "url": "https://github.com/NousResearch/hermes-agent/issues/12885",
+          "snippet": "User finds a video (YouTube, Toutiao, etc.) 2. User manually extracts subtitles via browser extension 3. User pastes subtitles to the AI for ..."
+        },
+        {
+          "title": "wshobson/agents - content-marketing - GitHub",
+          "url": "https://github.com/wshobson/agents/blob/main/plugins/content-marketing/agents/content-marketer.md",
+          "snippet": "Elite content marketing strategist specializing in AI-powered content creation, omnichannel distribution, SEO optimization, and data-driven performance ..."
+        },
+        {
+          "title": "YT Navigator: AI-powered YouTube content explorer that ... - GitHub",
+          "url": "https://github.com/wassim249/YT-Navigator",
+          "snippet": "YT Navigator is an AI-powered application that helps you navigate and search through YouTube channel content efficiently."
+        },
+        {
+          "title": "msitarzewski/agency-agents: A complete AI agency at your fingertips",
+          "url": "https://github.com/msitarzewski/agency-agents",
+          "snippet": "Born from a Reddit thread and months of iteration, The Agency is a growing collection of meticulously crafted AI agent personalities. Each agent is:."
+        },
+        {
+          "title": "How I feed YouTube video context into the AI Agent node effectively",
+          "url": "https://www.reddit.com/r/n8n/comments/1qbtdkp/blueprint_how_i_feed_youtube_video_context_into/",
+          "snippet": "I've been trying to build a content repurposing workflow that watches a YouTube channel, grabs the transcript, and uses the AI Agent node ..."
+        },
+        {
+          "title": "Any videos / course recommendation to get started with AI agents?",
+          "url": "https://www.reddit.com/r/vibecoding/comments/1s5768z/any_videos_course_recommendation_to_get_started/",
+          "snippet": "YouTube is the way though I would try vibe coding first to get a feel for prompting and working with an llm."
+        },
+        {
+          "title": "youtube transcripts are the most underrated context source for ...",
+          "url": "https://www.reddit.com/r/PromptEngineering/comments/1stcuae/youtube_transcripts_are_the_most_underrated/",
+          "snippet": "i've been experimenting with different context sources for my prompts and the one that consistently gives the best results is youtube video ..."
+        },
+        {
+          "title": "Best Courses/ YouTube videos to get started with AI agents - Reddit",
+          "url": "https://www.reddit.com/r/AI_Agents/comments/1sgmd3c/best_courses_youtube_videos_to_get_started_with/",
+          "snippet": "Check out specialized courses on AI agent frameworks like LangChain or AutoGen , which often have dedicated sections for building agents."
+        },
+        {
+          "title": "Best way to learn more about AI Agents and Prompts? - Reddit",
+          "url": "https://www.reddit.com/r/PromptEngineering/comments/1stwaiu/best_way_to_learn_more_about_ai_agents_and_prompts/",
+          "snippet": "There are YouTube videos on this topic. Currently using Perplexity Pro and NotebookLM to break down what is a master prompt so I can build a ..."
+        },
+        {
+          "title": "Best resources to learn agents/prompt? : r/AgentsOfAI - Reddit",
+          "url": "https://www.reddit.com/r/AgentsOfAI/comments/1o9h746/best_resources_to_learn_agentsprompt/",
+          "snippet": "For foundational learning about AI agents and prompting, here are some recommended resources: LangChain Documentation - Excellent starting point ..."
+        },
+        {
+          "title": "How to automate YouTube video production in n8n with AI prompts?",
+          "url": "https://www.reddit.com/r/ProductivityTech/comments/1pc86ol/how_to_automate_youtube_video_production_in_n8n/",
+          "snippet": "How to automate YouTube video production in n8n with AI prompts? \u00b7 For long-form consistency, upload product/host reference images as context."
+        },
+        {
+          "title": "I Built an AI That Writes the Perfect Prompt for My Other AI Agents",
+          "url": "https://www.reddit.com/r/aiagents/comments/1nlcxxf/i_built_an_ai_that_writes_the_perfect_prompt_for/",
+          "snippet": "Prompt Writer Agent \u2013 Uses the structure and context to generate the final ready-to-use prompt, complete with examples and instructions for ..."
+        },
+        {
+          "title": "19 Hour Free YouTube course on building your own AI Coding ...",
+          "url": "https://www.reddit.com/r/Python/comments/1q87fkl/19_hour_free_youtube_course_on_building_your_own/",
+          "snippet": "In this 19 hour course, we will build an AI coding agent that can read your codebase, write and edit files, run commands, search the web."
+        },
+        {
+          "title": "Has Anyone Built a Powerful AI Agent That Actually Replaces Your ...",
+          "url": "https://www.reddit.com/r/PartneredYoutube/comments/1kpp58p/has_anyone_built_a_powerful_ai_agent_that/",
+          "snippet": "N8n is the best no code flow builder. My workflows run without a hitch. Quality depends largely on your system prompt and might be a good idea ..."
+        }
+      ],
+      "source_count": 27,
+      "prompts": []
+    },
+    "social-media-ai": {
+      "sources": [
+        {
+          "title": "social-media-agent/src/agents/generate-post/prompts/examples.ts at ...",
+          "url": "https://github.com/langchain-ai/social-media-agent/blob/main/src/agents/generate-post/prompts/examples.ts",
+          "snippet": "An agent for sourcing, curating, and scheduling social media posts with human-in-the-loop. - social-media-agent/src/agents/generate-post/prompts/examples.ts ..."
+        },
+        {
+          "title": "AI CMO Prompts Collection and Knowledge Base \u00b7 GitHub",
+          "url": "https://github.com/AICMO/AiCMO-Marketing-Prompt-Collection",
+          "snippet": "Find prompts by: Use Case: Strategy, Content, Email, Social Media, Lead Gen; Difficulty: Beginner, Intermediate, Advanced; Time: 5-10 ..."
+        },
+        {
+          "title": "GitHub - langchain-ai/social-media-agent",
+          "url": "https://github.com/langchain-ai/social-media-agent",
+          "snippet": "This prompt is used in verifying content is relevant for you, generating marketing reports, and generating tweets."
+        },
+        {
+          "title": "Crafting Effective Prompts for Agentic AI Systems: Patterns ... - GitHub",
+          "url": "https://github.com/dontriskit/awesome-ai-system-prompts",
+          "snippet": "A well-crafted system prompt is critical for ensuring the agent acts reliably, safely, and effectively towards the user's goals. This guide ..."
+        },
+        {
+          "title": "msitarzewski/agency-agents: A complete AI agency at your fingertips",
+          "url": "https://github.com/msitarzewski/agency-agents",
+          "snippet": "Each agent is: Specialized: Deep expertise in their domain (not generic prompt templates); Personality-Driven: Unique voice, communication style, and ..."
+        },
+        {
+          "title": "GitHub - blacktwist/social-media-skills: AI agent skills for social ...",
+          "url": "https://github.com/blacktwist/social-media-skills",
+          "snippet": "Social Media Skills. AI agent skills for social media content strategy, creation, and analysis across text-first and visual-first platforms."
+        },
+        {
+          "title": "heilcheng/awesome-agent-skills: Tutorials, Guides and ... - GitHub",
+          "url": "https://github.com/heilcheng/awesome-agent-skills",
+          "snippet": "This is a community-curated list of simple text files that teach AI assistants (like Claude, Copilot, or Codex) how to do new things on demand, without ..."
+        },
+        {
+          "title": "500-AI-Agents-Projects - UseCase - GitHub",
+          "url": "https://github.com/ashishpatel26/500-AI-Agents-Projects",
+          "snippet": "A curated collection of AI agent use cases across industries, showcasing practical applications and linking to open-source projects for implementation."
+        },
+        {
+          "title": "jmedia65/awesome-ai-marketing: A curated collection of AI ... - GitHub",
+          "url": "https://github.com/jmedia65/awesome-ai-marketing",
+          "snippet": "A curated collection of AI marketing tools and prompts organized by function, with with honest context on when each one actually works."
+        },
+        {
+          "title": "Agents Prompts: Unlocking the Power of AI Tools - GitHub",
+          "url": "https://github.com/BigBoySlave/Agents-Prompts",
+          "snippet": "Welcome to the Agents Prompts repository! This space is dedicated to sharing comprehensive prompts used in some of the leading AI tools available today."
+        },
+        {
+          "title": "AI Twitter Agent - A Node.js app using Google's Gemini AI to post ...",
+          "url": "https://github.com/adarshpheonix2810/Twitter-Ai-Agent",
+          "snippet": "An intelligent Twitter (X) agent powered by Google's Gemini AI that allows you to post tweets using natural language commands. This project demonstrates the ..."
+        },
+        {
+          "title": "hireshBrem/X-ai-agent: Interact with tweets autonomously ... - GitHub",
+          "url": "https://github.com/hireshBrem/X-ai-agent",
+          "snippet": "X (Twitter) AI Agent is an AI web agent that interacts with tweets, built using Browser Use and Browserbase."
+        },
+        {
+          "title": "gautammanak1/twitter-agent: AI tweet generator and ... - GitHub",
+          "url": "https://github.com/gautammanak1/twitter-agent",
+          "snippet": "The agent accepts text prompts, generates tweet content using AI, and posts to Twitter through Composio's authenticated connection. Project Structure."
+        },
+        {
+          "title": "AI-Agent: Twitter Automation with Gemini Model - GitHub",
+          "url": "https://github.com/khoanna/twitter-ai-agent",
+          "snippet": "AI-Agent is a powerful automation tool designed to interact with Twitter, providing functionalities to crawl tweets, automatically post content, ..."
+        },
+        {
+          "title": "Parallel simulation: agents generate identical content on Twitter and ...",
+          "url": "https://github.com/666ghj/MiroFish/issues/392",
+          "snippet": "Agents should produce platform-appropriate content. A tweet should be short and hashtag-driven; a Reddit post should be longer and more detailed ..."
+        },
+        {
+          "title": "bigsky77/twitter-agent: Build AI-powered Agents for Twitter - GitHub",
+          "url": "https://github.com/bigsky77/twitter-agent",
+          "snippet": "Replying to Replies: Foster dialogue by responding to replies on your tweets. \u2713; Liking Tweets: Agents show appreciation or acknowledgement by liking tweets."
+        },
+        {
+          "title": "GitHub - curiousily/tweetcrafter: Write tweets with AI Agents (CrewAI ...",
+          "url": "https://github.com/curiousily/tweetcrafter",
+          "snippet": "Write tweets with AI Agents (CrewAI) and LLMs (Llama 3, GPT ... TweetCrafter stores logs of prompts and individual agent logs in the logs directory."
+        },
+        {
+          "title": "Agent Generates Tweets But Never Publishes to Twitter \u00b7 Issue #1958",
+          "url": "https://github.com/elizaOS/eliza/issues/1958",
+          "snippet": "I'm using an AI agent that is supposed to post tweets automatically, but it only generates text and logs \u201cSaving Tweet\u201d without ever actually ..."
+        },
+        {
+          "title": "uzumstanley/Social-Media-AI-Agent: Social Medial Automation",
+          "url": "https://github.com/uzumstanley/Social-Media-AI-Agent",
+          "snippet": "Social-Media-AI-Agent is an AI-powered automation tool designed for Instagram to automate social media interactions such as posting, liking, and commenting."
+        },
+        {
+          "title": "Agentfy \u2013 Multi-Agent System for Social Media - GitHub",
+          "url": "https://github.com/Agentfy-io/Agentfy",
+          "snippet": "Agentfy is a modular, AI-first multi-agent system that enables social media automation, user engagement, data intelligence, and content operations across TikTok ..."
+        },
+        {
+          "title": "Simple Social Agents powered by Claude Agent SDK \u00b7 GitHub",
+          "url": "https://github.com/zxkane/social-agents",
+          "snippet": "A TypeScript-based social media automation system featuring multi-platform social commands with Claude Code slash commands and natural language interface."
+        },
+        {
+          "title": "David-patrick-chuks/Riona-AI-Agent - GitHub",
+          "url": "https://github.com/David-patrick-chuks/Riona-AI-Agent",
+          "snippet": "Riona is built to automate social activity while keeping control surfaces explicit. The project includes: Instagram automation for login, posting, liking, ..."
+        },
+        {
+          "title": "Jenqyang/Awesome-AI-Agents: A collection of autonomous ... - GitHub",
+          "url": "https://github.com/Jenqyang/Awesome-AI-Agents",
+          "snippet": "Yoyo - The first social network for AI agents. Connect any AI agent via MCP to post, chat, follow other agents, discover experts, and build reputation. 10 MCP ..."
+        },
+        {
+          "title": "AISocialAgentR/AISocialAgent-Review - GitHub",
+          "url": "https://github.com/AISocialAgentR/AISocialAgent-Review",
+          "snippet": "This AI-powered tool automates the entire social media process, from content creation and scheduling to trend analysis and engagement tracking."
+        },
+        {
+          "title": "FeedMansion for AI Agents - GitHub",
+          "url": "https://github.com/makerprism/feedmansion-ai-agents",
+          "snippet": "Create content with AI \u2014 Generate posts, threads, and captions from topics or URLs; Attach images and videos \u2014 Upload media via URLs or presigned uploads ..."
+        },
+        {
+          "title": "VoltAgent/awesome-openclaw-skills - GitHub",
+          "url": "https://github.com/VoltAgent/awesome-openclaw-skills",
+          "snippet": "OpenClaw is a locally-running AI assistant that operates directly on your machine. Skills extend its capabilities, allowing it to interact with external ..."
+        },
+        {
+          "title": "Training Chatgpt for Social Media Manager and Content ...",
+          "url": "https://www.reddit.com/r/ChatGPTPro/comments/1l9o949/training_chatgpt_for_social_media_manager_and/",
+          "snippet": "I'm trying to train my GPT to generate content ideas and manage social media in general. I'm looking for suggestions on prompts and traits to personalize my\u00a0...Read more"
+        },
+        {
+          "title": "I engineered a prompt that turns ChatGPT into a social ...",
+          "url": "https://www.reddit.com/r/PromptEngineering/comments/1pqf39y/i_engineered_a_prompt_that_turns_chatgpt_into_a/",
+          "snippet": "I engineered a prompt that turns ChatGPT into a social media marketing god (framework-based, not generic captions). Prompt Text / Showcase.Read more"
+        },
+        {
+          "title": "Best prompts for content creation / social media?",
+          "url": "https://www.reddit.com/r/ChatGPTPro/comments/1dt5kqy/best_prompts_for_content_creation_social_media/",
+          "snippet": "Creative AI prompts for social media posts. Prompts for creating a content calendar. ChatGPT prompts for writing video scripts. Viral prompts\u00a0...Read more"
+        },
+        {
+          "title": "I engineered a prompt that turns ChatGPT into a social ...",
+          "url": "https://www.reddit.com/r/ChatGPTPromptGenius/comments/1pqhhoe/i_engineered_a_prompt_that_turns_chatgpt_into_a/",
+          "snippet": "I engineered a prompt that turns ChatGPT into a social media marketing god (framework-based, not generic captions). Social Media & Blogging. Hey\u00a0...Read more"
+        },
+        {
+          "title": "10 AI prompts that replaced my entire content strategy (and ...",
+          "url": "https://www.reddit.com/r/ChatGPTPromptGenius/comments/1nbsk1u/10_ai_prompts_that_replaced_my_entire_content/",
+          "snippet": "ChatGPT prompts for viral content strategy. Effective prompts for social media managers. Crafting prompts for storytelling with AI. Techniques\u00a0...Read more"
+        }
+      ],
+      "source_count": 31,
+      "prompts": []
+    }
+  }
+}

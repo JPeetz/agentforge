@@ -16,10 +16,11 @@ import (
 // ── Types ────────────────────────────────────────────────────────────────────
 
 type SSEEvent struct {
-	Event string      `json:"event,omitempty"`
-	Data  interface{} `json:"data"`
-	ID    string      `json:"id,omitempty"`
-	Retry int         `json:"retry,omitempty"`
+	Event      string      `json:"event,omitempty"`
+	Data       interface{} `json:"data"`
+	ID         string      `json:"id,omitempty"`
+	Retry      int         `json:"retry,omitempty"`
+	CloseAfter bool        `json:"-"` // if true, listen disconnects AFTER writing this event
 }
 
 type StreamChunk struct {
@@ -179,6 +180,12 @@ func (h *Hub) Connect(w http.ResponseWriter) (*Client, error) {
 }
 
 func (c *Client) listen(h *Hub) {
+	defer func() {
+		if r := recover(); r != nil {
+			// ResponseWriter was closed before this goroutine stopped writing — safe to ignore.
+			h.Disconnect(c)
+		}
+	}()
 	keepAlive := time.NewTicker(15 * time.Second)
 	defer keepAlive.Stop()
 	for {
@@ -186,6 +193,10 @@ func (c *Client) listen(h *Hub) {
 		case event := <-c.ch:
 			if err := c.Writer.Write(event); err != nil {
 				h.log("sse: client %s write error: %v", c.ID, err)
+				h.Disconnect(c)
+				return
+			}
+			if event.CloseAfter {
 				h.Disconnect(c)
 				return
 			}
@@ -271,7 +282,7 @@ func NewToolCallEvent(id, name, args string, done bool, errStr string) SSEEvent 
 }
 
 func NewDoneEvent(model string, usage *Usage) SSEEvent {
-	return SSEEvent{Event: "done", Data: StreamChunk{Done: true, Model: model, Usage: usage}}
+	return SSEEvent{Event: "done", Data: StreamChunk{Done: true, Model: model, Usage: usage}, CloseAfter: true}
 }
 
 func NewStatusEvent(agent, status, message string) SSEEvent {
@@ -279,7 +290,7 @@ func NewStatusEvent(agent, status, message string) SSEEvent {
 }
 
 func NewErrorEvent(errStr string) SSEEvent {
-	return SSEEvent{Event: "error", Data: StreamChunk{Error: errStr, Done: true}}
+	return SSEEvent{Event: "error", Data: StreamChunk{Error: errStr, Done: true}, CloseAfter: true}
 }
 
 func NewCostUpdateEvent(sessionID, model string, deltaCost, totalCost float64, inputTokens, outputTokens, cachedTokens int) SSEEvent {

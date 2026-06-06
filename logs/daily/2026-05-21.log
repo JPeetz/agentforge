@@ -1,0 +1,89 @@
+# Pipeline Run Log — 2026-05-21
+
+## Article
+- **Title:** OpenClaw Personal AI Assistant Setup: Complete Guide 2026
+- **Slug:** openclaw-deep-dive-personal-ai-assistant-setup
+- **Date:** 2026-05-21
+- **Word count:** 1978
+
+## Research Sources
+1. OpenClaw GitHub (github.com/openclaw/openclaw) — 373k stars, v2026.5.19-alpha.1, May 20, 2026
+2. OpenClaw Official Docs (docs.openclaw.ai/start/openclaw) — Personal assistant setup guide
+3. OpenClaw Releases (github.com/openclaw/openclaw/releases) — 168 releases, v2026.5.19-alpha.1
+4. The New Stack Security Analysis (thenewstack.io/openclaw-github-stars-security/) — 373k stars, ClawHub hack, security warnings
+5. Cherry Servers Hardware Guide (cherryservers.com/blog/openclaw-hardware-requirements) — Updated May 15, 2026
+6. Cyera Research: Claw Chain (cyera.com/blog/claw-chain-cyera-research-unveil-four-chainable-vulnerabilities-in-openclaw) — CVE-2026-42434, 9.6 CVSS, 180K+ instances
+7. NVD CVE-2026-24763 (nvd.nist.gov/vuln/detail/CVE-2026-24763) — Command injection prior to 2026.1.29
+8. SentinelOne CVE-2026-42434 (sentinelone.com/vulnerability-database/cve-2026-42434/) — Sandbox escape RCE
+9. GreenNode Cost Analysis (greennode.ai/blog/self-hosting-openclaw-pros-and-cons) — Oracle Cloud Always Free tier
+10. sfailabs.com TCO Analysis (sfailabs.com/guides/openclaw-self-hosted-vs-managed) — $40-80/month hard costs, $250-500/month with labor
+11. xcloud.host Cost Guide (xcloud.host/managed-vs-self-hosting-openclaw/) — $20-60/month API costs
+12. Reddit r/selfhosted — Installation frustration, security hardening requirements
+13. Reddit r/LocalLLaMA — Hardware requirements, LM Studio integration, air-gapped setups
+14. Hacker News — Adoption questions, security concerns, paradigm shift discussions
+15. LanceDB Memory Plugin (lancedb.com/blog/openclaw-memory) — Memory backend for OpenClaw
+16. SQLite Memory Backend (pingcap.com/blog/local-first-rag) — Local-first RAG with SQLite
+
+## SEO Check
+- **Score:** 84/100
+- **Title length:** 57 chars (within limit)
+- **Description length:** 147 chars (within limit)
+- **H2 headings:** 7
+- **Word count:** 1978
+- **Flesch score:** 42.5 (acceptable for technical content)
+- **Issues:** Secondary keywords not in title/description (non-blocking)
+
+## GEO Audit (SEO-API)
+- **Entity density:** 74/100 (good) — PASS
+- **Answer structure:** 71/100 (good) — PASS
+- **Quotability:** 66/100 (good) — PASS
+- **E-E-A-T composite:** 33/100 (moderate) — below 50 threshold, systemic pattern
+- **Citation-likelihood (OpenRouter):** 88/100 — PASS (cite-ready)
+
+## QA Gate: PASS (19/20)
+
+### Passed (19):
+[x] GEO definition block present (first paragraph after H1, 55 words, includes primary keyword)
+[x] Hook in first content paragraph ("Here is what nobody tells you before you start")
+[x] FAQ block present (6 H3 questions from HN/Reddit community discussions)
+[x] Image reference present (![alt](images/2026-05-21-openclaw-deep-dive-hero.png))
+[x] GEO quotable summary present ("The Verdict" section, 70 words)
+[x] Every performance claim cites a source
+[x] GitHub repos with star counts and dates (373k stars, v2026.5.19-alpha.1)
+[x] No forbidden phrases
+[x] No duplicate closing paragraphs
+[x] No rhetorical questions
+[x] No flattery
+[x] Honest tradeoffs section included ("The Security Reality" + cost TCO)
+[x] Word count >= 1500 (1978)
+[x] At least 2 H2 headings (7)
+[x] SEO score >= 80 (84)
+[x] Entity density >= 50 (74)
+[x] Answer structure >= 50 (71)
+[x] Quotability >= 50 (66)
+[x] Citation-likelihood >= 75 (88)
+[x] SEO meta-check score >= 80 (84)
+
+### Failed (1):
+[ ] E-E-A-T composite >= 50 (scored 33) — Non-blocking. Systemic pattern across all articles. Authority subscore (24) is the weakest. Experience (30) and trust (30) need more "According to [source]" citations and "However/It depends" caveats.
+
+## Brand Review: PASS
+- No AI tells detected
+- No forbidden phrases
+- Direct voice, specific data, confrontational hook
+- Reads like a developer who's deployed OpenClaw
+
+## Featured Image
+- Generated via Fal.ai FLUX.1-dev
+- 62KB, landscape 16:9
+- Copied to drafts/images/, queue/images/, and ~/Documents/AgentForge/
+
+## PDF Generation
+- 97KB with embedded image at ~/Documents/AgentForge/2026-05-21-openclaw-deep-dive-personal-ai-assistant-setup.pdf
+- Hero image at ~/Documents/AgentForge/2026-05-21-openclaw-deep-dive-hero.png
+
+## Monetisation Notes
+- Affiliate opportunities: Hetzner VPS, Cherry Servers, Oracle Cloud
+- Course potential: "OpenClaw Masterclass" — setup, security, skills development
+- Follow-up articles: OpenClaw skills deep dive, OpenClaw vs alternatives comparison
+- SaaS partnership: ClawHub skills marketplace (when security improves)
