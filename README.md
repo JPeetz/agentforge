@@ -427,4 +427,4 @@ AgentForge is [BUSL-1.1](LICENSE) licensed — free for any use except productio
 
 **Built with Go. Secured by design. Deployed anywhere.**
 
-[Website](https://agentforge.dev) · [Docs](https://docs.agentforge.dev) · [Discord](https://discord.gg/agentforge) · [Blog](https://agentforge.dev/blog)
+[Website](https://agentforge.dev) · [Docs](https://docs.agentforge.dev) · [Agent Skills](https://github.com/JPeetz/agent-skills) · [Discord](https://discord.gg/agentforge) · [Blog](https://agentforge.dev/blog)
