@@ -419,6 +419,20 @@ make daemon      # start daemon
 
 ---
 
+## 🌐 AgentForge Ecosystem
+
+AgentForge is more than a framework — it's a suite of open-source tools:
+
+| Project | Repo | Description |
+|---------|------|-------------|
+| **Agent Skills** | [JPeetz/agent-skills](https://github.com/JPeetz/agent-skills) | Highest-quality collection of cross-platform agent skills — 18+ production skills, twice-weekly releases |
+| **MeMex Zero RAG** | [JPeetz/MeMex-Zero-RAG](https://github.com/JPeetz/MeMex-Zero-RAG) | Local-first AI memory system — structured wiki, git-based persistence, full-text search |
+| **CodeFlow · AF Edition** | [JPeetz/codeflow-agentforge](https://github.com/JPeetz/codeflow-agentforge) | Codebase & Obsidian vault visualization — dependency graphs, health scores, blast radius |
+| **SEO + GEO API** | [JPeetz/SEO-API](https://github.com/JPeetz/SEO-API) | Dual-purpose SEO keyword research & geographic query API |
+| **RaceIntel** | [JPeetz/raceintel](https://github.com/JPeetz/raceintel) | Horse racing intelligence platform — form analysis, racecards, predictions |
+
+---
+
 ## License
 
 AgentForge is [BUSL-1.1](LICENSE) licensed — free for any use except production SaaS hosting. Converts to Apache 2.0 after 4 years.
