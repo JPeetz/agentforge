@@ -29,9 +29,9 @@ func (s *Server) handleLoginAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if s.authStore == nil || s.authManager == nil {
-		// Fallback: accept any password (backward compat for testing)
 		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte(`{"accessToken":"dev-token","refreshToken":"dev-refresh","user":{"id":"admin-001","username":"admin","role":"admin"}}`))
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(`{"error":"authentication service unavailable"}`))
 		return
 	}
 	user, err := s.authStore.AuthenticateUser(req.Username, req.Password)
